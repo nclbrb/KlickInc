@@ -4,7 +4,7 @@ body {
     font-family: 'Outfit';
 }
 
-.login-container {
+.register-container {
     max-width: 400px;
     width: 100%;
     padding: 2rem;
@@ -12,9 +12,9 @@ body {
     background-color: #f7f7f7;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border: solid 2px gainsboro;
-  }
+}
 
-.login-form {
+.register-form {
     margin-top: 30px;
 }
 
@@ -25,4 +25,3 @@ body {
 .btn {
     margin-top: 10px;
 }
-  

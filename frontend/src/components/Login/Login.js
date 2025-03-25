@@ -1,6 +1,5 @@
-// src/components/Login/Login.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 import './Login.css';
 
 function Login({ onLogin }) {
@@ -8,11 +7,20 @@ function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const credentials = {
+    'projectmanager@example.com': { email: 'projectmanager@example.com', role: 'project_manager', password: 'manager123' },
+    'teammember@example.com': { email: 'teammember@example.com', role: 'team_member', password: 'team123' }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Since this is a dummy setup, we accept any password.
-    onLogin({ email });
-    navigate('/dashboard');
+
+    if (credentials[email] && credentials[email].password === password) {
+      onLogin(credentials[email]);
+      navigate(credentials[email].role === 'project_manager' ? '/project-manager-dashboard' : '/team-member-dashboard');
+    } else {
+      alert('Invalid email or password');
+    }
   };
 
   return (
@@ -38,12 +46,16 @@ function Login({ onLogin }) {
               className="form-control"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter any password"
+              placeholder="Enter your password"
               required 
             />
           </div>
           <button type="submit" className="btn btn-primary w-100">Login</button>
         </form>
+        <div className="mt-2 text-center">
+          {/* Fixed the link path to '/register' */}
+          <Link to="/register" className="text-decoration-none text-primary">Don't have an account? Register</Link>
+        </div>
       </div>
     </div>
   );

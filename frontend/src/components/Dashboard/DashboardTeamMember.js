@@ -1,19 +1,19 @@
-// src/components/Dashboard/Dashboard.js
 import React from 'react';
 import { Container, Row, Col, Card, Nav, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 
-function Dashboard({ user, onLogout }) {
+function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
 
-  // Dummy data for projects and tasks
+  // Dummy data for projects and tasks relevant to a team member
   const projects = [
     { id: 1, name: "Project Alpha" },
     { id: 2, name: "Project Beta" }
   ];
   const tasks = [
-    { id: 1, name: "Task One", projectId: 1 },
-    { id: 2, name: "Task Two", projectId: 2 }
+    { id: 1, name: "Task One", projectId: 1, status: "in_progress" },
+    { id: 2, name: "Task Two", projectId: 2, status: "pending" },
+    { id: 3, name: "Task Three", projectId: 1, status: "completed" }
   ];
 
   // Handle Logout and navigate to login
@@ -60,10 +60,11 @@ function Dashboard({ user, onLogout }) {
 
         {/* Main Content */}
         <Col className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2 className="mb-4">Dashboard</h2>
+          <h2 className="mb-4">Team Member Dashboard</h2>
           <p className="lead">Welcome, {user.email}!</p>
           
           <Row className="mb-4">
+            {/* Assigned Projects */}
             <Col xs={12} md={6} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
               <Card className="shadow-sm rounded" style={{ width: '600px' }}>
                 <Card.Header className="bg-primary text-white">Assigned Projects</Card.Header>
@@ -78,6 +79,8 @@ function Dashboard({ user, onLogout }) {
                 </Card.Body>
               </Card>
             </Col>
+
+            {/* Assigned Tasks */}
             <Col xs={12} md={6} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
               <Card className="shadow-sm rounded" style={{ width: '600px' }}>
                 <Card.Header className="bg-success text-white">Assigned Tasks</Card.Header>
@@ -85,7 +88,11 @@ function Dashboard({ user, onLogout }) {
                   <ul className="list-unstyled mb-0">
                     {tasks.map((task) => (
                       <li key={task.id} className="py-1 border-bottom">
-                        {task.name} <small className="text-muted">(Project ID: {task.projectId})</small>
+                        {task.name} 
+                        <small className="text-muted"> (Project ID: {task.projectId})</small>
+                        <div className="mt-2">
+                          <strong>Status:</strong> {task.status}
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -93,11 +100,12 @@ function Dashboard({ user, onLogout }) {
               </Card>
             </Col>
           </Row>
-          {/* Additional main content can go here */}
+
+          {/* Additional main content for Team Member could go here */}
         </Col>
       </Row>
     </Container>
   );
 }
 
-export default Dashboard;
+export default DashboardTeamMember;
