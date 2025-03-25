@@ -1,9 +1,11 @@
-// src/App.js
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login/Login';
-import Dashboard from './components/Dashboard/Dashboard';
+import Register from './components/Register/Register';  
+import DashboardProjectManager from './components/Dashboard/DashboardProjectManager'; 
+import DashboardTeamMember from './components/Dashboard/DashboardTeamMember'; 
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,23 +21,38 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Login route */}
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route 
-          path="/dashboard" 
-          element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} 
+
+        {/* Register route */}
+        <Route path="/register" element={<Register />} />  {/* Add Register route */}
+
+        {/* Project Manager Dashboard */}
+        <Route
+          path="/project-manager-dashboard"
+          element={user?.role === 'project_manager' ? (
+            <DashboardProjectManager user={user} onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" />
+          )}
         />
-        <Route 
-          path="/projects"
-          element={user ? <div style={{ padding: '20px' }}><h2>Projects Page</h2><p>Coming soon...</p></div> : <Navigate to="/login" />} 
+        
+        {/* Team Member Dashboard */}
+        <Route
+          path="/team-member-dashboard"
+          element={user?.role === 'team_member' ? (
+            <DashboardTeamMember user={user} onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" />
+          )}
         />
+        
+        {/* Redirect if the user is not logged in */}
         <Route 
-          path="/tasks"
-          element={user ? <div style={{ padding: '20px' }}><h2>Tasks Page</h2><p>Coming soon...</p></div> : <Navigate to="/login" />} 
+          path="*"
+          element={<Navigate to={user ? (user.role === 'project_manager' ? '/project-manager-dashboard' : '/team-member-dashboard') : '/login'} />}
         />
-        <Route 
-          path="*" 
-          element={<Navigate to={user ? "/dashboard" : "/login"} />} 
-        />
+        
       </Routes>
     </Router>
   );
