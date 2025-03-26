@@ -1,23 +1,44 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../api'; // Make sure this is your configured Axios instance
 import './Register.css';
 
 function Register() {
   const navigate = useNavigate();
-  
-  const [name, setName] = useState('');
+
+  const [username, setUsername] = useState(''); // Using username as per your database table
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState(''); 
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [role, setRole] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (name && email && password && role) {
-      alert(`Registration successful for ${role} (${name})`);
-      navigate('/login'); 
-    } else {
-      alert('Please fill in all fields');
+    // Validate that all fields are filled
+    if (!username || !email || !password || !passwordConfirmation || !role) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    try {
+      // Call your backend registration endpoint
+      const response = await api.post('/register', {
+        username, // This field must match what your AuthController expects
+        email,
+        password,
+        password_confirmation: passwordConfirmation,
+        role,
+      });
+
+      // Optional: You can display a success message or automatically log the user in
+      alert("Registration successful. Please log in.");
+      navigate('/login');
+    } catch (err) {
+      console.error("Registration error:", err);
+      // Optionally, extract error messages from the response
+      setError("Registration failed. Please try again.");
     }
   };
 
@@ -25,15 +46,16 @@ function Register() {
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <div className="register-container">
         <h2 className="text-center">Register</h2>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
         <form onSubmit={handleSubmit} className="register-form">
           <div className="form-group mb-3">
-            <label>Name:</label>
+            <label>Username:</label>
             <input 
               type="text"
               className="form-control"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your name"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
               required 
             />
           </div>
@@ -58,6 +80,18 @@ function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
+              required 
+            />
+          </div>
+
+          <div className="form-group mb-3">
+            <label>Confirm Password:</label>
+            <input 
+              type="password"
+              className="form-control"
+              value={passwordConfirmation}
+              onChange={(e) => setPasswordConfirmation(e.target.value)}
+              placeholder="Confirm your password"
               required 
             />
           </div>
