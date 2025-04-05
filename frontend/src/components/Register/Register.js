@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link from react-router-dom
 import api from '../../api'; // Make sure this is your configured Axios instance
 import './Register.css';
 
@@ -112,6 +112,13 @@ function Register() {
 
           <button type="submit" className="btn btn-primary w-100">Register</button>
         </form>
+
+        {/* New link added below the register button */}
+        <div className="text-center mt-3">
+          <span>
+            Already Have an Account? <Link to="/login">Login</Link>
+          </span>
+        </div>
       </div>
     </div>
   );
