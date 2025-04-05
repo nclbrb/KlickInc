@@ -3,9 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProjectController; // Corrected the import path for ProjectController
+use App\Http\Controllers\ProjectController;
 
-// Public routes for authentication
+// Public routes for user authentication
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -17,9 +17,20 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Routes for managing projects (requires authentication)
-    Route::get('/projects', [ProjectController::class, 'index']);        // Get all projects
-    Route::post('/projects', [ProjectController::class, 'store']);       // Create a new project
-    Route::put('/projects/{id}', [ProjectController::class, 'update']);  // Update a project
-    Route::delete('/projects/{id}', [ProjectController::class, 'destroy']); // Delete a project
+    // Project Endpoints:
+    // GET /api/projects - List projects (for project managers, this returns all projects;
+    // for team members, the controller logic can filter to return only their assigned projects)
+    Route::get('/projects', [ProjectController::class, 'index']);
+
+    // POST /api/projects - Create a new project
+    Route::post('/projects', [ProjectController::class, 'store']);
+
+    // GET /api/projects/{id} - Retrieve a single project by its ID
+    Route::get('/projects/{id}', [ProjectController::class, 'show']);
+
+    // PUT /api/projects/{id} - Update an existing project
+    Route::put('/projects/{id}', [ProjectController::class, 'update']);
+
+    // DELETE /api/projects/{id} - Delete a project
+    Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
 });
