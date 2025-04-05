@@ -1,24 +1,31 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Nav, Button, Form } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Nav, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
+import ProjectModal from './ProjectModal';
+import axios from 'axios';
 
-function DashboardTeamManager({ user, onLogout }) {
+function DashboardProjectManager({ user, onLogout }) {
   const navigate = useNavigate();
 
-  // Dummy data for projects and tasks relevant to a manager
-  const projects = [
-    { id: 1, name: "Project Alpha" },
-    { id: 2, name: "Project Beta" }
-  ];
-  const tasks = [
-    { id: 1, name: "Task One", projectId: 1, status: "in_progress" },
-    { id: 2, name: "Task Two", projectId: 2, status: "pending" },
-    { id: 3, name: "Task Three", projectId: 1, status: "completed" }
-  ];
+  const [projects, setProjects] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
 
-  // New project form state
-  const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDescription, setNewProjectDescription] = useState('');
+  // Fetch projects when the component mounts
+  useEffect(() => {
+    refreshProjects(); // Fetch initial list of projects
+  }, []);
+
+  // Fetch projects from the API
+  const refreshProjects = () => {
+    axios.get('/api/projects') // Assuming your API endpoint for projects is '/api/projects'
+      .then(response => {
+        setProjects(response.data); // Update state with fetched projects
+      })
+      .catch(error => {
+        console.error('There was an error fetching projects!', error);
+      });
+  };
 
   const handleLogout = () => {
     onLogout();
@@ -26,13 +33,25 @@ function DashboardTeamManager({ user, onLogout }) {
   };
 
   const handleCreateProject = () => {
-    // Logic to create a new project
-    alert(`Creating new project: ${newProjectName}`);
-    setNewProjectName('');
-    setNewProjectDescription('');
+    setSelectedProject(null); // Clear selected project to create a new one
+    setShowModal(true); // Open the modal for creating a new project
   };
 
-  // Sidebar style: fixed width, full height, flex layout with logout at bottom
+  const handleEditProject = (project) => {
+    setSelectedProject(project); // Set selected project for editing
+    setShowModal(true); // Open the modal for editing an existing project
+  };
+
+  const handleDeleteProject = (id) => {
+    axios.delete(`/api/projects/${id}`) // Delete the project from the backend
+      .then(() => {
+        refreshProjects(); // Refresh the list after deletion
+      })
+      .catch(error => {
+        console.error('There was an error deleting the project!', error);
+      });
+  };
+
   const sidebarStyle = {
     minHeight: '100vh',
     width: '250px',
@@ -74,37 +93,13 @@ function DashboardTeamManager({ user, onLogout }) {
           <p>You're logged in as a Project Manager.</p>
 
           <Row className="mb-4">
-            {/* Create New Project Box */}
+            {/* Create New Project Section */}
             <Col xs={12} md={6} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
               <Card className="shadow-sm rounded" style={{ width: '600px' }}>
                 <Card.Header className="bg-primary text-white">Create New Project</Card.Header>
                 <Card.Body>
-                  <Form>
-                    <Form.Group controlId="formProjectName">
-                      <Form.Label>Project Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter project name"
-                        value={newProjectName}
-                        onChange={(e) => setNewProjectName(e.target.value)}
-                      />
-                    </Form.Group>
-
-                    <Form.Group controlId="formProjectDescription" className="mt-3">
-                      <Form.Label>Project Description</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        placeholder="Enter project description"
-                        value={newProjectDescription}
-                        onChange={(e) => setNewProjectDescription(e.target.value)}
-                      />
-                    </Form.Group>
-
-                    <Button variant="primary" className="mt-3" onClick={handleCreateProject}>
-                      Create Project
-                    </Button>
-                  </Form>
+                  <p>Welcome, Project Manager {user.username}! Do you want to create a new project?</p>
+                  <Button variant="primary" onClick={handleCreateProject}>Create New Project</Button>
                 </Card.Body>
               </Card>
             </Col>
@@ -117,7 +112,16 @@ function DashboardTeamManager({ user, onLogout }) {
                   <ul className="list-unstyled mb-0">
                     {projects.map((project) => (
                       <li key={project.id} className="py-1 border-bottom">
-                        {project.name}
+                        <span>{project.project_name}</span>
+                        <Button variant="link" className="p-0 ms-2" onClick={() => handleEditProject(project)}>
+                          Edit
+                        </Button>
+                        <Button variant="link" className="p-0 ms-2" onClick={() => handleDeleteProject(project.id)}>
+                          Delete
+                        </Button>
+                        <Button variant="link" className="p-0 ms-2" onClick={() => alert(JSON.stringify(project))}>
+                          View Details
+                        </Button>
                       </li>
                     ))}
                   </ul>
@@ -126,31 +130,17 @@ function DashboardTeamManager({ user, onLogout }) {
             </Col>
           </Row>
 
-          <Row className="mb-4">
-            {/* Assigned Tasks */}
-            <Col xs={12} md={6} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Card className="shadow-sm rounded" style={{ width: '600px' }}>
-                <Card.Header className="bg-info text-white">Assigned Tasks</Card.Header>
-                <Card.Body>
-                  <ul className="list-unstyled mb-0">
-                    {tasks.map((task) => (
-                      <li key={task.id} className="py-1 border-bottom">
-                        {task.name} 
-                        <small className="text-muted"> (Project ID: {task.projectId})</small>
-                        <div className="mt-2">
-                          <strong>Status:</strong> {task.status}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+          {/* Project Modal */}
+          <ProjectModal
+            show={showModal}
+            handleClose={() => setShowModal(false)}
+            project={selectedProject}
+            refreshProjects={refreshProjects}
+          />
         </Col>
       </Row>
     </Container>
   );
 }
 
-export default DashboardTeamManager;
+export default DashboardProjectManager;
