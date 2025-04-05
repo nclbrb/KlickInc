@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Button, ButtonGroup } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import ProjectModal from './ProjectModal';
 import axios from 'axios';
@@ -10,13 +10,22 @@ function DashboardProjectManager({ user, onLogout }) {
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [tasks, setTasks] = useState([]);
+
+  // Simulating sample projects for visualization
+  const sampleProjects = [
+    { id: 1, project_name: 'Project Alpha', description: 'A sample project' },
+    { id: 2, project_name: 'Project Beta', description: 'Another sample project' },
+  ];
 
   // Fetch projects when the component mounts
   useEffect(() => {
-    refreshProjects(); // Fetch initial list of projects
+    setProjects(sampleProjects); // Use sample projects
+    // If you had an API, you would call the API here, for example:
+    // refreshProjects(); 
   }, []);
 
-  // Fetch projects from the API
+  // Fetch projects from the API (if not using sample projects)
   const refreshProjects = () => {
     axios.get('/api/projects') // Assuming your API endpoint for projects is '/api/projects'
       .then(response => {
@@ -52,22 +61,33 @@ function DashboardProjectManager({ user, onLogout }) {
       });
   };
 
+  const handleViewTasks = (projectId) => {
+    // Simulating tasks fetching
+    const projectTasks = [
+      { taskId: 1, taskName: `Task for ${projectId} - 1` },
+      { taskId: 2, taskName: `Task for ${projectId} - 2` },
+    ];
+    setTasks(projectTasks);
+    alert(`Viewing tasks for Project ${projectId}`);
+    // Optionally, navigate to a tasks page:
+    // navigate(`/tasks/${projectId}`);
+  };
+
   const sidebarStyle = {
     minHeight: '100vh',
-    width: '250px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    padding: '20px'
+    padding: '20px',
   };
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row noGutters="true">
         {/* Sidebar */}
-        <Col md="auto" className="bg-dark text-white" style={sidebarStyle}>
+        <Col xs={12} md={3} lg={2} className="bg-dark text-white d-flex flex-column" style={sidebarStyle}>
           <div>
-            <h3 className="mb-4">My App</h3>
+            <h3 className="mb-4 text-center">My App</h3>
             <Nav className="flex-column">
               <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
                 <i className="material-icons me-2">dashboard</i> Dashboard
@@ -88,14 +108,14 @@ function DashboardProjectManager({ user, onLogout }) {
         </Col>
 
         {/* Main Content */}
-        <Col className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
           <h2>Welcome, {user.email}!</h2>
           <p>You're logged in as a Project Manager.</p>
 
           <Row className="mb-4">
             {/* Create New Project Section */}
-            <Col xs={12} md={6} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Card className="shadow-sm rounded" style={{ width: '600px' }}>
+            <Col xs={12} sm={6} lg={6} className="mb-3">
+              <Card className="shadow-sm rounded">
                 <Card.Header className="bg-primary text-white">Create New Project</Card.Header>
                 <Card.Body>
                   <p>Welcome, Project Manager {user.username}! Do you want to create a new project?</p>
@@ -105,23 +125,43 @@ function DashboardProjectManager({ user, onLogout }) {
             </Col>
 
             {/* My Projects Box */}
-            <Col xs={12} md={6} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Card className="shadow-sm rounded" style={{ width: '600px' }}>
+            <Col xs={12} sm={6} lg={6} className="mb-3">
+              <Card className="shadow-sm rounded">
                 <Card.Header className="bg-success text-white">My Projects</Card.Header>
                 <Card.Body>
                   <ul className="list-unstyled mb-0">
                     {projects.map((project) => (
-                      <li key={project.id} className="py-1 border-bottom">
-                        <span>{project.project_name}</span>
-                        <Button variant="link" className="p-0 ms-2" onClick={() => handleEditProject(project)}>
-                          Edit
-                        </Button>
-                        <Button variant="link" className="p-0 ms-2" onClick={() => handleDeleteProject(project.id)}>
-                          Delete
-                        </Button>
-                        <Button variant="link" className="p-0 ms-2" onClick={() => alert(JSON.stringify(project))}>
-                          View Details
-                        </Button>
+                      <li key={project.id} className="py-1 border-bottom d-flex justify-content-between align-items-center">
+                        <div>
+                          <span>{project.project_name}</span>
+                        </div>
+                        <div className="d-flex">
+                          <ButtonGroup>
+                            <Button
+                              variant="outline-info"
+                              size="sm"
+                              onClick={() => handleViewTasks(project.id)}
+                            >
+                              View Tasks
+                            </Button>
+                            <Button
+                              variant="outline-warning"
+                              size="sm"
+                              className="ms-2"
+                              onClick={() => handleEditProject(project)}
+                            >
+                              Update
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              className="ms-2"
+                              onClick={() => handleDeleteProject(project.id)}
+                            >
+                              Delete
+                            </Button>
+                          </ButtonGroup>
+                        </div>
                       </li>
                     ))}
                   </ul>

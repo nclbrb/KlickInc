@@ -72,8 +72,8 @@ function Login({ onLogin }) {
           <button type="submit" className="btn btn-primary w-100">Login</button>
         </form>
         <div className="mt-2 text-center">
-          <Link to="/register" className="text-decoration-none text-primary">
-            Don't have an account? Register
+          Don't have an account? <Link to="/register" className="text-decoration-none text-primary">
+           Register
           </Link>
         </div>
       </div>

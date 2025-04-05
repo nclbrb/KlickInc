@@ -6,6 +6,7 @@ import DashboardProjectManager from './components/Dashboard/DashboardProjectMana
 import DashboardTeamMember from './components/Dashboard/DashboardTeamMember';
 import api, { setAuthToken } from './api'; // Import your Axios instance and helper
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css'; 
 
 function App() {
   const [user, setUser] = useState(null);
