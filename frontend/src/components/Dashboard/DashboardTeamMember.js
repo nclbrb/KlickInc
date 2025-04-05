@@ -1,22 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Nav, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../../api'; // Uses your shared Axios instance with the Authorization header set
 
 function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
+  const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
 
-  // Dummy data for projects and tasks relevant to a team member
-  const projects = [
-    { id: 1, name: "Project Alpha" },
-    { id: 2, name: "Project Beta" }
-  ];
-  const tasks = [
-    { id: 1, name: "Task One", projectId: 1, status: "in_progress" },
-    { id: 2, name: "Task Two", projectId: 2, status: "pending" },
-    { id: 3, name: "Task Three", projectId: 1, status: "completed" }
-  ];
+  // Fetch projects and tasks when the component mounts
+  useEffect(() => {
+    fetchProjects();
+    fetchTasks();
+  }, []);
 
-  // Handle Logout and navigate to login
+  // Fetch projects assigned to the team member
+  const fetchProjects = () => {
+    api.get('/projects')
+      .then(response => {
+        setProjects(response.data);
+      })
+      .catch(error => {
+        console.error('There was an error fetching projects!', error);
+      });
+  };
+
+  // Fetch tasks assigned to the team member
+  const fetchTasks = () => {
+    api.get('/tasks')
+      .then(response => {
+        setTasks(response.data);
+      })
+      .catch(error => {
+        console.error('There was an error fetching tasks!', error);
+      });
+  };
+
+  // Handle logout and navigate to login
   const handleLogout = () => {
     onLogout();
     navigate('/login');
@@ -69,13 +89,17 @@ function DashboardTeamMember({ user, onLogout }) {
               <Card className="shadow-sm rounded" style={{ width: '600px' }}>
                 <Card.Header className="bg-primary text-white">Assigned Projects</Card.Header>
                 <Card.Body>
-                  <ul className="list-unstyled mb-0">
-                    {projects.map((project) => (
-                      <li key={project.id} className="py-1 border-bottom">
-                        {project.name}
-                      </li>
-                    ))}
-                  </ul>
+                  {projects.length > 0 ? (
+                    <ul className="list-unstyled mb-0">
+                      {projects.map((project) => (
+                        <li key={project.id} className="py-1 border-bottom">
+                          {project.project_name}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No projects assigned.</p>
+                  )}
                 </Card.Body>
               </Card>
             </Col>
@@ -85,17 +109,21 @@ function DashboardTeamMember({ user, onLogout }) {
               <Card className="shadow-sm rounded" style={{ width: '600px' }}>
                 <Card.Header className="bg-success text-white">Assigned Tasks</Card.Header>
                 <Card.Body>
-                  <ul className="list-unstyled mb-0">
-                    {tasks.map((task) => (
-                      <li key={task.id} className="py-1 border-bottom">
-                        {task.name} 
-                        <small className="text-muted"> (Project ID: {task.projectId})</small>
-                        <div className="mt-2">
-                          <strong>Status:</strong> {task.status}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  {tasks.length > 0 ? (
+                    <ul className="list-unstyled mb-0">
+                      {tasks.map((task) => (
+                        <li key={task.id} className="py-1 border-bottom">
+                          {task.title}
+                          <small className="text-muted"> (Project ID: {task.project_id})</small>
+                          <div className="mt-2">
+                            <strong>Status:</strong> {task.status}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No tasks assigned.</p>
+                  )}
                 </Card.Body>
               </Card>
             </Col>
