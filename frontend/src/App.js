@@ -6,18 +6,31 @@ import DashboardProjectManager from './components/Dashboard/DashboardProjectMana
 import DashboardTeamMember from './components/Dashboard/DashboardTeamMember';
 import api, { setAuthToken } from './api'; // Import your Axios instance and helper
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css'; 
+import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // On app load, check localStorage for persisted user data and token
+  // On app load, check localStorage for a persisted token and fetch user info if available
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('access_token');
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setAuthToken(storedToken); // Set the token for Axios
+    if (storedToken) {
+      setAuthToken(storedToken); // Set token for Axios
+      // Attempt to fetch the current user info from the API
+      api.get('/user')
+        .then(response => {
+          setUser(response.data);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('Error fetching user info:', error);
+          // If token is invalid, clear the stored credentials
+          handleLogout();
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -36,6 +49,10 @@ function App() {
     localStorage.removeItem('access_token');
     setAuthToken(null);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Router>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import axios from 'axios';
+import api from '../../api'; // Adjust the path based on your project structure
 
 function ProjectModal({ show, handleClose, project, refreshProjects }) {
   const [formData, setFormData] = useState({
@@ -12,35 +12,45 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
     status: 'To Do',
   });
 
-  // Effect to populate the form with project data when editing
+  // When editing, populate the form with the project data
   useEffect(() => {
     if (project) {
       setFormData(project);
+    } else {
+      // Reset form for new project creation
+      setFormData({
+        project_name: '',
+        project_code: '',
+        description: '',
+        start_date: '',
+        end_date: '',
+        status: 'To Do',
+      });
     }
   }, [project]);
 
-  // Handle form input changes
+  // Update form data on input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission (create or update project)
+  // Handle form submission to create or update a project
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (project) {
         // Update the existing project
-        await axios.put(`/api/projects/${project.id}`, formData);
+        await api.put(`/projects/${project.id}`, formData);
       } else {
         // Create a new project
-        await axios.post('/api/projects', formData);
+        await api.post('/projects', formData);
       }
-      refreshProjects(); // Refresh the list of projects after creating or updating
-      handleClose(); // Close the modal
-      alert('Project created successfully!'); // Success message
+      refreshProjects(); // Refresh the project list in the dashboard
+      handleClose();     // Close the modal
+      alert(project ? 'Project updated successfully!' : 'Project created successfully!');
     } catch (error) {
       console.error('Error saving project:', error);
-      alert('An error occurred while saving the project. Please try again.'); // Error message
+      alert('An error occurred while saving the project. Please try again.');
     }
   };
 
@@ -61,6 +71,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               required
             />
           </Form.Group>
+
           <Form.Group controlId="project_code">
             <Form.Label>Project Code</Form.Label>
             <Form.Control
@@ -71,6 +82,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               required
             />
           </Form.Group>
+
           <Form.Group controlId="description">
             <Form.Label>Description</Form.Label>
             <Form.Control
@@ -80,6 +92,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               onChange={handleChange}
             />
           </Form.Group>
+
           <Form.Group controlId="start_date">
             <Form.Label>Start Date</Form.Label>
             <Form.Control
@@ -90,6 +103,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               required
             />
           </Form.Group>
+
           <Form.Group controlId="end_date">
             <Form.Label>End Date</Form.Label>
             <Form.Control
@@ -99,6 +113,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               onChange={handleChange}
             />
           </Form.Group>
+
           <Form.Group controlId="status">
             <Form.Label>Status</Form.Label>
             <Form.Control
@@ -112,6 +127,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               <option value="Done">Done</option>
             </Form.Control>
           </Form.Group>
+
           <Button variant="primary" className="mt-3" type="submit">
             {project ? 'Update Project' : 'Create Project'}
           </Button>

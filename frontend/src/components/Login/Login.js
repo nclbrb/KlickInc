@@ -23,8 +23,8 @@ function Login({ onLogin }) {
       // Set the token for subsequent requests
       setAuthToken(access_token);
       
-      // Trigger any onLogin functionality passed down from props
-      onLogin(user);
+      // Trigger any onLogin functionality passed down from props, include access token
+      onLogin(user, access_token);
 
       // Redirect based on the user's role
       if (user.role === 'project_manager') {

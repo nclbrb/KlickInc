@@ -12,24 +12,23 @@ function DashboardProjectManager({ user, onLogout }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [tasks, setTasks] = useState([]);
 
-  // Simulating sample projects for visualization
-  const sampleProjects = [
-    { id: 1, project_name: 'Project Alpha', description: 'A sample project' },
-    { id: 2, project_name: 'Project Beta', description: 'Another sample project' },
-  ];
-
-  // Fetch projects when the component mounts
+  // Fetch projects from the API when the component mounts
   useEffect(() => {
-    setProjects(sampleProjects); // Use sample projects
-    // If you had an API, you would call the API here, for example:
-    // refreshProjects(); 
+    refreshProjects();
   }, []);
 
-  // Fetch projects from the API (if not using sample projects)
+  // Fetch projects from the API with Authorization header
   const refreshProjects = () => {
-    axios.get('/api/projects') // Assuming your API endpoint for projects is '/api/projects'
+    const token = localStorage.getItem('access_token');
+    axios
+      .get('http://127.0.0.1:8000/api/projects', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
       .then(response => {
-        setProjects(response.data); // Update state with fetched projects
+        setProjects(response.data);
       })
       .catch(error => {
         console.error('There was an error fetching projects!', error);
@@ -42,19 +41,26 @@ function DashboardProjectManager({ user, onLogout }) {
   };
 
   const handleCreateProject = () => {
-    setSelectedProject(null); // Clear selected project to create a new one
-    setShowModal(true); // Open the modal for creating a new project
+    setSelectedProject(null);
+    setShowModal(true);
   };
 
   const handleEditProject = (project) => {
-    setSelectedProject(project); // Set selected project for editing
-    setShowModal(true); // Open the modal for editing an existing project
+    setSelectedProject(project);
+    setShowModal(true);
   };
 
   const handleDeleteProject = (id) => {
-    axios.delete(`/api/projects/${id}`) // Delete the project from the backend
+    const token = localStorage.getItem('access_token');
+    axios
+      .delete(`http://127.0.0.1:8000/api/projects/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
       .then(() => {
-        refreshProjects(); // Refresh the list after deletion
+        refreshProjects();
       })
       .catch(error => {
         console.error('There was an error deleting the project!', error);
@@ -62,12 +68,7 @@ function DashboardProjectManager({ user, onLogout }) {
   };
 
   const handleViewTasks = (projectId) => {
-    // Simulating tasks fetching
-    const projectTasks = [
-      { taskId: 1, taskName: `Task for ${projectId} - 1` },
-      { taskId: 2, taskName: `Task for ${projectId} - 2` },
-    ];
-    setTasks(projectTasks);
+    // Here you can implement a call to fetch tasks for a specific project.
     alert(`Viewing tasks for Project ${projectId}`);
     // Optionally, navigate to a tasks page:
     // navigate(`/tasks/${projectId}`);
@@ -119,7 +120,9 @@ function DashboardProjectManager({ user, onLogout }) {
                 <Card.Header className="bg-primary text-white">Create New Project</Card.Header>
                 <Card.Body>
                   <p>Welcome, Project Manager {user.username}! Do you want to create a new project?</p>
-                  <Button variant="primary" onClick={handleCreateProject}>Create New Project</Button>
+                  <Button variant="primary" onClick={handleCreateProject}>
+                    Create New Project
+                  </Button>
                 </Card.Body>
               </Card>
             </Col>

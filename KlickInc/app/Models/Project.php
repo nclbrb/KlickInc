@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Task;
 
 class Project extends Model
 {
@@ -17,4 +18,12 @@ class Project extends Model
         'end_date',
         'status',
     ];
+
+    /**
+     * Relationship: A project can have many tasks.
+     */
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'project_id', 'id');
+    }
 }
