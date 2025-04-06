@@ -7,6 +7,7 @@ import DashboardTeamMember from './components/Dashboard/DashboardTeamMember';
 import api, { setAuthToken } from './api'; // Import your Axios instance and helper
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
+import TasksPage from './components/Dashboard/TasksPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -87,6 +88,12 @@ function App() {
         <Route 
           path="*"
           element={<Navigate to={user ? (user.role === 'project_manager' ? '/project-manager-dashboard' : '/team-member-dashboard') : '/login'} />}
+        />
+
+        {/* Tasks route */}
+        <Route
+          path="/tasks"
+          element={user ? <TasksPage user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>
