@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Button, ButtonGroup, Table } from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Button, ButtonGroup, Table, Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TaskModal from './TaskModal';
@@ -116,6 +116,28 @@ function TasksPage({ user, onLogout }) {
     padding: '20px',
   };
 
+  // Function to format deadline
+  const formatDeadline = (deadline) => {
+    if (!deadline) return 'No deadline';
+    const date = new Date(deadline);
+    return date.toLocaleDateString(); // Formats as 'MM/DD/YYYY'
+  };
+
+  // Handle status update
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(`http://127.0.0.1:8000/api/tasks/${taskId}`, 
+        { status: newStatus },
+        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }}
+      );
+      fetchTasks();  // Refresh task list after update
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      alert('Failed to update task status');
+    }
+  };
+
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row noGutters="true">
@@ -145,17 +167,17 @@ function TasksPage({ user, onLogout }) {
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
           {user.role === 'project_manager' && (
-            <Card className="mb-4 shadow-sm">
-              <Card.Header className="bg-primary text-white">
-                <h5 className="mb-0">Create New Task</h5>
-              </Card.Header>
-              <Card.Body>
-                <p>Welcome, Project Manager {user.username}! Do you want to create a new task?</p>
-                <Button variant="primary" onClick={handleCreateTask}>
-                  Create New Task
-                </Button>
-              </Card.Body>
-            </Card>
+           <Card className="mb-4 shadow-sm">
+           <Card.Header className="bg-primary text-white">
+             <h5 className="mb-0">Create New Task</h5>
+           </Card.Header>
+           <Card.Body>
+             <p>Welcome, Project Manager {user.username}! Do you want to create a new task?</p>
+             <Button variant="primary" onClick={handleCreateTask}>
+               Create New Task
+             </Button>
+           </Card.Body>
+         </Card>
           )}
 
           <Card className="shadow-sm">
@@ -172,7 +194,9 @@ function TasksPage({ user, onLogout }) {
                       <th>Status</th>
                       <th>Priority</th>
                       <th>Assigned To</th>
-                      {user.role === 'project_manager' && <th>Actions</th>}
+                      <th>Deadline</th> {/* New column for Deadline */}
+                      {user.role !== 'team_member' && <th>Actions</th>}
+                      {user.role === 'team_member' && <th>Update Status</th>} {/* Add new column for Update Status */}
                     </tr>
                   </thead>
                   <tbody>
@@ -205,6 +229,21 @@ function TasksPage({ user, onLogout }) {
                           </span>
                         </td>
                         <td>{task.user ? `${task.user.username}` : 'Unassigned'}</td>
+                        <td>{formatDeadline(task.deadline)}</td> {/* Display the formatted deadline */}
+                        {user.role === 'team_member' && task.user?.id === user.id && (
+                          <td>
+                            {/* Update Status Dropdown for Team Member */}
+                            <DropdownButton
+                              variant="outline-secondary"
+                              title="Update Status"
+                              onSelect={(status) => handleStatusChange(task.id, status)}
+                            >
+                              <Dropdown.Item eventKey="not_started">Not Started</Dropdown.Item>
+                              <Dropdown.Item eventKey="in_progress">In Progress</Dropdown.Item>
+                              <Dropdown.Item eventKey="completed">Completed</Dropdown.Item>
+                            </DropdownButton>
+                          </td>
+                        )}
                         {user.role === 'project_manager' && (
                           <td>
                             <ButtonGroup size="sm">

@@ -4,35 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Project;
-use App\Models\User;
 
 class Task extends Model
 {
     use HasFactory;
 
+    // Add 'deadline' to the fillable array
     protected $fillable = [
-        'project_id',
-        'assigned_to',
         'title',
         'description',
+        'assigned_to',
+        'project_id',
         'status',
         'priority',
+        'deadline', // Add this line
     ];
 
-    /**
-     * Relationship: Each task belongs to a project.
-     */
+    // Define relationships
     public function project()
     {
-        return $this->belongsTo(Project::class, 'project_id', 'id');
+        return $this->belongsTo(Project::class);
     }
 
-    /**
-     * Relationship: Each task is assigned to a user (team member).
-     */
     public function user()
     {
-        return $this->belongsTo(User::class, 'assigned_to', 'id');
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 }
