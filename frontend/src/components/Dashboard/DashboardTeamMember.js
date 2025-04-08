@@ -118,6 +118,11 @@ function DashboardTeamMember({ user, onLogout }) {
                           <div className="mt-2">
                             <strong>Status:</strong> {task.status}
                           </div>
+                          {task.deadline && (
+                            <div className="mt-2">
+                              <strong>Deadline:</strong> {new Date(task.deadline).toLocaleDateString()}
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>

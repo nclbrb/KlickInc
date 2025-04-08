@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -24,6 +23,7 @@ class TaskController extends Controller
             return response()->json(['message' => 'Unauthorized. Only project managers can create tasks.'], 403);
         }
 
+        // Validate the request including 'deadline'
         $validated = $request->validate([
             'title' => 'required|string',
             'description' => 'nullable|string',
@@ -31,20 +31,47 @@ class TaskController extends Controller
             'project_id' => 'required|exists:projects,id',
             'status' => 'required|string',
             'priority' => 'nullable|string',
+            'deadline' => 'nullable|date', // New validation for 'deadline'
         ]);
 
+        // Create the task with the validated data
         $task = Task::create($validated);
         return response()->json($task->load(['project', 'user']), 201);
     }
 
     public function update(Request $request, $id)
     {
-        if (Auth::user()->role !== 'project_manager') {
-            return response()->json(['message' => 'Unauthorized. Only project managers can update tasks.'], 403);
+        $task = Task::findOrFail($id);
+
+        $user = Auth::user();
+
+        // Project Manager can update any task
+        if ($user->role === 'project_manager') {
+            // Validate the updated request including 'deadline'
+            $validated = $request->validate([
+                'title' => 'required|string',
+                'description' => 'nullable|string',
+                'assigned_to' => 'required|exists:klick_users,id',
+                'project_id' => 'required|exists:projects,id',
+                'status' => 'required|string',
+                'priority' => 'nullable|string',
+                'deadline' => 'nullable|date', // New validation for 'deadline'
+            ]);
+        } 
+        // Team Member can only update tasks assigned to them
+        elseif ($user->role === 'team_member' && $task->assigned_to == $user->id) {
+            // Validate the request for team member (only allow status change and deadline)
+            $validated = $request->validate([
+                'status' => 'required|string|in:not_started,in_progress,completed',
+                'deadline' => 'nullable|date',
+            ]);
+        } else {
+            return response()->json(['message' => 'Unauthorized. You can only update your own tasks.'], 403);
         }
 
-        $task = Task::findOrFail($id);
-        $task->update($request->all());
+        // Update the task with the validated data
+        $task->update($validated);
+
         return response()->json($task->load(['project', 'user']));
     }
 

@@ -9,7 +9,8 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
     status: 'pending',
     priority: 'medium',
     project_id: '',
-    assigned_to: ''
+    assigned_to: '',
+    deadline: '' // Add the deadline field
   });
 
   useEffect(() => {
@@ -20,7 +21,8 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
         status: task.status || 'pending',
         priority: task.priority || 'medium',
         project_id: task.project_id || '',
-        assigned_to: task.assigned_to || ''
+        assigned_to: task.assigned_to || '',
+        deadline: task.deadline ? task.deadline.split('T')[0] : '' // Format date to yyyy-mm-dd
       });
     } else {
       setFormData({
@@ -29,7 +31,8 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
         status: 'pending',
         priority: 'medium',
         project_id: '',
-        assigned_to: ''
+        assigned_to: '',
+        deadline: '' // Clear deadline when creating a new task
       });
     }
   }, [task]);
@@ -49,7 +52,8 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
       const data = {
         ...formData,
         project_id: parseInt(formData.project_id, 10),
-        assigned_to: parseInt(formData.assigned_to, 10)
+        assigned_to: parseInt(formData.assigned_to, 10),
+        deadline: formData.deadline // Ensure deadline is passed to the backend
       };
 
       if (task) {
@@ -168,6 +172,17 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
                 </option>
               ))}
             </Form.Select>
+          </Form.Group>
+
+          {/* New Deadline Input */}
+          <Form.Group className="mb-3" controlId="deadline">
+            <Form.Label>Deadline</Form.Label>
+            <Form.Control
+              type="date"
+              name="deadline"
+              value={formData.deadline}
+              onChange={handleChange}
+            />
           </Form.Group>
 
           <div className="d-flex justify-content-end gap-2">
