@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Button, ButtonGroup } from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Button, ButtonGroup, Modal, Table } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import ProjectModal from './ProjectModal';
+import TaskModal from './TaskModal';
 import axios from 'axios';
 
 function DashboardProjectManager({ user, onLogout }) {
@@ -9,12 +10,28 @@ function DashboardProjectManager({ user, onLogout }) {
 
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showTasksModal, setShowTasksModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [users, setUsers] = useState([]);
 
   // Fetch projects from the API when the component mounts
   useEffect(() => {
     refreshProjects();
+    // Fetch users for task assignments
+    const token = localStorage.getItem('access_token');
+    axios.get('http://127.0.0.1:8000/api/users', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      setUsers(response.data);
+    })
+    .catch(error => {
+      console.error('Error fetching users:', error);
+    });
   }, []);
 
   // Fetch projects from the API with Authorization header
@@ -68,10 +85,30 @@ function DashboardProjectManager({ user, onLogout }) {
   };
 
   const handleViewTasks = (projectId) => {
-    // Here you can implement a call to fetch tasks for a specific project.
-    alert(`Viewing tasks for Project ${projectId}`);
-    // Optionally, navigate to a tasks page:
-    // navigate(`/tasks/${projectId}`);
+    const token = localStorage.getItem('access_token');
+    // Fetch tasks for the specific project
+    axios.get('http://127.0.0.1:8000/api/tasks', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      // Filter tasks for the specific project
+      const projectTasks = response.data.filter(task => task.project_id === projectId);
+      setTasks(projectTasks);
+      setSelectedProject(projects.find(p => p.id === projectId));
+      setShowTasksModal(true);
+    })
+    .catch(error => {
+      console.error('Error fetching tasks:', error);
+    });
+  };
+
+  const refreshTasks = () => {
+    if (selectedProject) {
+      handleViewTasks(selectedProject.id);
+    }
   };
 
   const sidebarStyle = {
@@ -180,6 +217,47 @@ function DashboardProjectManager({ user, onLogout }) {
             project={selectedProject}
             refreshProjects={refreshProjects}
           />
+
+          {/* Tasks Modal */}
+          <Modal show={showTasksModal} onHide={() => setShowTasksModal(false)} size="lg">
+            <Modal.Header closeButton>
+              <Modal.Title>
+                Tasks for {selectedProject?.project_name}
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Assigned To</th>
+                    <th>Deadline</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map(task => (
+                    <tr key={task.id}>
+                      <td>{task.title}</td>
+                      <td>
+                        <span className={`badge bg-${task.status === 'completed' ? 'success' : 
+                          task.status === 'in_progress' ? 'warning' : 'secondary'}`}>
+                          {task.status}
+                        </span>
+                      </td>
+                      <td>
+                        {task.priority === 'high' ? '🔴' : 
+                         task.priority === 'medium' ? '🟡' : '🔵'} {task.priority}
+                      </td>
+                      <td>{task.user?.username || 'Unassigned'}</td>
+                      <td>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Modal.Body>
+          </Modal>
         </Col>
       </Row>
     </Container>
