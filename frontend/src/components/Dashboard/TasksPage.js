@@ -1,21 +1,20 @@
-// TasksPage.js
-
 import React, { useState, useEffect } from 'react';
 import {
   Container,
   Row,
   Col,
   Card,
-  Nav,
   Button,
   Table,
   DropdownButton,
-  Dropdown
+  Dropdown,
+  Modal
 } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TaskModal from './TaskModal';
 import ProjectModal from './ProjectModal';
+import NavBar from './NavBar';
 
 function TasksPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -184,53 +183,20 @@ function TasksPage({ user, onLogout }) {
     );
   };
 
-  // Sidebar styles
-  const sidebarStyle = {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    padding: '20px'
-  };
+  // Sidebar styling (no longer used since we're using NavBar)
+  // const sidebarStyle = { ... };
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
-      <Row noGutters="true">
-        {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-dark text-white d-flex flex-column" style={sidebarStyle}>
-          <div>
-            <h3 className="mb-4 text-center">My App</h3>
-            <Nav className="flex-column">
-              <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">dashboard</i> Dashboard
-              </Nav.Link>
-              <Nav.Link as={Link} to="/projects" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">folder</i> Projects
-              </Nav.Link>
-              <Nav.Link as={Link} to="/tasks" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">assignment</i> Tasks
-              </Nav.Link>
-            </Nav>
-          </div>
-          <div>
-            <Button
-              variant="outline-light"
-              onClick={() => {
-                onLogout();
-                navigate('/login');
-              }}
-              className="d-flex align-items-center"
-            >
-              <i className="material-icons me-2">logout</i> Logout
-            </Button>
-          </div>
-        </Col>
+      <Row>
+        {/* Sidebar using NavBar */}
+        <Col xs={12} md={3} lg={2} className="p-0">
+  <NavBar user={user} onLogout={onLogout} navigate={navigate} />
+  </Col>
 
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-        <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>
-  Tasks
-</h2>
+          <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>Tasks</h2>
           {/* Only project managers can add new tasks */}
           {user.role !== 'team_member' && (
             <div className="mb-3 text-end">
@@ -244,10 +210,7 @@ function TasksPage({ user, onLogout }) {
               <h5 className="mb-0">My Tasks</h5>
             </Card.Header>
             <Card.Body>
-              <div
-                className="scrollable-list"
-                style={{ maxHeight: '60vh', overflowY: 'auto' }}
-              >
+              <div className="scrollable-list" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
                 <Table hover>
                   <thead>
                     <tr>
