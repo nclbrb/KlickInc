@@ -130,6 +130,34 @@ function ProjectsPage({ user, onLogout }) {
     return <span className={`badge bg-${badgeClass}`}>{status}</span>;
   };
 
+  // Helper to display task status as a badge
+  const getTaskStatusBadge = (status) => {
+    let badgeClass = 'secondary';
+    if (status === 'in_progress') {
+      badgeClass = 'warning';
+    } else if (status === 'completed') {
+      badgeClass = 'success';
+    }
+    return <span className={`badge bg-${badgeClass}`}>{status.replace('_', ' ').toUpperCase()}</span>;
+  };
+
+  // Helper to display task priority as a badge
+  const getTaskPriorityBadge = (priority) => {
+    let badgeClass = 'bg-info text-dark';
+    let icon = '';
+    if (priority === 'high') {
+      badgeClass = 'bg-danger';
+      icon = '🔴 ';
+    } else if (priority === 'medium') {
+      badgeClass = 'bg-warning text-dark';
+      icon = '🟡 ';
+    } else if (priority === 'low') {
+      badgeClass = 'bg-info text-dark';
+      icon = '🔵 ';
+    }
+    return <span className={`badge ${badgeClass}`}>{icon}{priority.toUpperCase()}</span>;
+  };
+
   // Sidebar styles
   const sidebarStyle = {
     minHeight: '100vh',
@@ -176,10 +204,7 @@ function ProjectsPage({ user, onLogout }) {
         
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-        <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>
-  Projects
-</h2>
-          {/* Only project managers can add new projects */}
+          <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>Projects</h2>
           {user.role === 'project_manager' && (
             <div className="mb-3 text-end">
               <Button variant="primary" onClick={handleCreateProject}>
@@ -193,10 +218,7 @@ function ProjectsPage({ user, onLogout }) {
             </Card.Header>
             <Card.Body>
               {filteredProjects.length > 0 ? (
-                <div
-                  className="scrollable-list"
-                  style={{ maxHeight: '60vh', overflowY: 'auto' }}
-                >
+                <div className="scrollable-list" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
                   <Table hover>
                     <thead>
                       <tr>
@@ -224,14 +246,12 @@ function ProjectsPage({ user, onLogout }) {
                           <td>{getProjectStatusBadge(project.status)}</td>
                           <td>
                             <div>
-                              {/* Both roles can view tasks */}
                               <Button
                                 className="btn-view me-2 mb-2"
                                 onClick={() => handleViewTasks(project)}
                               >
                                 View Tasks
                               </Button>
-                              {/* Only project managers can edit and delete */}
                               {user.role === 'project_manager' && (
                                 <>
                                   <Button
@@ -293,8 +313,8 @@ function ProjectsPage({ user, onLogout }) {
                 {projectTasks.map(task => (
                   <tr key={task.id}>
                     <td>{task.title}</td>
-                    <td>{task.status}</td>
-                    <td>{task.priority}</td>
+                    <td>{getTaskStatusBadge(task.status)}</td>
+                    <td>{getTaskPriorityBadge(task.priority)}</td>
                     <td>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}</td>
                   </tr>
                 ))}
