@@ -243,3 +243,8 @@ a:hover {
   background-color: #0056b3;
   text-decoration: none;
 }
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
