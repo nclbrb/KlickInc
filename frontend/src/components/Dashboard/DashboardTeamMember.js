@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { Nav } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-
+import NavBar from './NavBar'; // Adjust the relative path as needed
 
 function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
@@ -30,7 +28,6 @@ function DashboardTeamMember({ user, onLogout }) {
         const projectsMap = {};
         myTasks.forEach((task) => {
           if (task.project) {
-            // Check if project exists; update if task's project is more recent
             if (!projectsMap[task.project.id]) {
               projectsMap[task.project.id] = task.project;
             } else if (
@@ -87,48 +84,16 @@ function DashboardTeamMember({ user, onLogout }) {
     );
   };
 
-    // Sidebar style
-    const sidebarStyle = {
-      minHeight: '100vh',
-      width: '260px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      padding: '20px'
-    };
-
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
-        {/* Sidebar */}
-        <Col md="auto" className="bg-purp text-white" style={sidebarStyle}>
-          <div>
-            <h3 className="mb-4 text-center text-white">My App</h3>
-            <Nav className="flex-column">
-              <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">dashboard</i> Dashboard
-              </Nav.Link>
-              <Nav.Link as={Link} to="/projects" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">folder</i> Projects
-              </Nav.Link>
-              <Nav.Link as={Link} to="/tasks" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">assignment</i> Tasks
-              </Nav.Link>
-            </Nav>
-          </div>
-          <div>
-            <Button
-              variant="purp"
-              onClick={() => { onLogout(); navigate('/login'); }}
-              className="d-flex align-items-center"
-            >
-              <i className="material-icons me-2">logout</i> Logout
-            </Button>
-          </div>
+        {/* Sidebar via shared NavBar component */}
+        <Col xs={12} md={3} lg={2} className="p-0">
+          <NavBar user={user} onLogout={onLogout} navigate={navigate} />
         </Col>
 
         {/* Main Content */}
-        <Col className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
           <h2>Welcome, {user.username}!</h2>
           <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
           <Row className="mb-4">
@@ -170,7 +135,7 @@ function DashboardTeamMember({ user, onLogout }) {
             </Col>
             <Col md={6}>
               <Card className="shadow-sm mb-3">
-                <Card.Header className="bg-purp text-white">
+                <Card.Header className="bg-purp">
                   <h5 className="mb-0 text-white">Assigned Tasks</h5>
                 </Card.Header>
                 <Card.Body>

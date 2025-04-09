@@ -3,13 +3,13 @@ import { NavLink } from 'react-router-dom';
 import { Nav, Button } from 'react-bootstrap';
 
 const NavBar = ({ user, onLogout, navigate }) => {
-  // Function to apply the proper classes based on the active state.
+  // Apply active link styling
   const getLinkClass = ({ isActive }) =>
     isActive
       ? 'nav-link active text-white mb-2 d-flex align-items-center'
       : 'nav-link text-white mb-2 d-flex align-items-center';
 
-  // Determine the role text based on the user role.
+  // Determine role label based on the user role
   const roleText =
     user?.role === 'project_manager'
       ? 'Project Manager'
@@ -18,13 +18,11 @@ const NavBar = ({ user, onLogout, navigate }) => {
       : '';
 
   const displayName = user?.username;
-
-  // Create the composite label "Role, Name".
   const roleAndName = roleText && displayName ? `${roleText}: ${displayName}` : '';
 
   return (
     <div
-      className="sidebar bg-dark text-white"
+      className="sidebar bg-purp text-white"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -35,7 +33,6 @@ const NavBar = ({ user, onLogout, navigate }) => {
     >
       <div>
         <h3 className="mb-1 text-center">My App</h3>
-        {/* Display the role and name label */}
         {roleAndName && <p className="mb-4 text-center small">{roleAndName}</p>}
         <Nav className="flex-column">
           <Nav.Link as={NavLink} to="/dashboard" end className={getLinkClass}>

@@ -286,3 +286,44 @@ a:hover {
   background: var(--danger-color);
   color: #fff;
 }
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Optional: Change background on hover for non-active links */
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}

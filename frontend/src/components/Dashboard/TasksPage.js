@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Button, Table, DropdownButton, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Table, DropdownButton, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TaskModal from './TaskModal';
 import ProjectModal from './ProjectModal';
+import NavBar from './NavBar';  // Ensure the path is correct
 
 function TasksPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -172,58 +173,22 @@ function TasksPage({ user, onLogout }) {
     );
   };
 
-    // Sidebar style
-    const sidebarStyle = {
-      minHeight: '100vh',
-      width: '260px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      padding: '20px'
-    };
-
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
-      <Row noGutters="true">
-        {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-purp text-white d-flex flex-column" style={sidebarStyle}>
-          <div>
-            <h3 className="mb-4 text-center text-white">My App</h3>
-            <Nav className="flex-column">
-              <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">dashboard</i> Dashboard
-              </Nav.Link>
-              <Nav.Link as={Link} to="/projects" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">folder</i> Projects
-              </Nav.Link>
-              <Nav.Link as={Link} to="/tasks" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">assignment</i> Tasks
-              </Nav.Link>
-            </Nav>
-          </div>
-          <div>
-            <Button
-              variant="purp"
-              onClick={() => {
-                onLogout();
-                navigate('/login');
-              }}
-              className="d-flex align-items-center"
-            >
-              <i className="material-icons me-2">logout</i> Logout
-            </Button>
-          </div>
+      <Row>
+        {/* Sidebar using NavBar */}
+        <Col xs={12} md={3} lg={2} className="p-0">
+          <NavBar user={user} onLogout={onLogout} navigate={navigate} />
         </Col>
 
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-        <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>Tasks</h2>
-          {/* Only project managers can add new tasks */}
+          <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>Tasks</h2>
           {user.role !== 'team_member' && (
             <div className="mb-3 text-end">
-             <Button className="btn-purp" onClick={handleCreateTask}>
-              + New Task
-            </Button>
+              <Button className="btn-purp" onClick={handleCreateTask}>
+                + New Task
+              </Button>
             </div>
           )}
           <Card className="shadow-sm">
@@ -267,15 +232,21 @@ function TasksPage({ user, onLogout }) {
                             <div className="d-flex flex-row align-items-center mt-0">
                               <Button
                                 className="btn-view-outline me-2"
-                                onClick={() => handleViewProject(task.project)}>View
+                                onClick={() => handleViewProject(task.project)}
+                              >
+                                View
                               </Button>
                               <Button
                                 className="btn-edit-outline me-2"
-                                onClick={() => handleEditTask(task)}>Edit
+                                onClick={() => handleEditTask(task)}
+                              >
+                                Edit
                               </Button>
                               <Button
                                 className="btn-delete-outline"
-                                onClick={() => handleDeleteTask(task.id)}>Delete
+                                onClick={() => handleDeleteTask(task.id)}
+                              >
+                                Delete
                               </Button>
                             </div>
                           </td>
