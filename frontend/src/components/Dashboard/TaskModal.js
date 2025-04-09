@@ -1,48 +1,54 @@
+// TaskModal.js
+
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
 
 function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
-  const [formData, setFormData] = useState({
+  const emptyForm = {
     title: '',
     description: '',
     status: 'pending',
     priority: 'medium',
     project_id: '',
     assigned_to: '',
-    deadline: '' // Add the deadline field
-  });
+    deadline: ''
+  };
+
+  const [formData, setFormData] = useState(emptyForm);
 
   useEffect(() => {
-    if (task) {
-      setFormData({
-        title: task.title || '',
-        description: task.description || '',
-        status: task.status || 'pending',
-        priority: task.priority || 'medium',
-        project_id: task.project_id || '',
-        assigned_to: task.assigned_to || '',
-        deadline: task.deadline ? task.deadline.split('T')[0] : '' // Format date to yyyy-mm-dd
-      });
-    } else {
-      setFormData({
-        title: '',
-        description: '',
-        status: 'pending',
-        priority: 'medium',
-        project_id: '',
-        assigned_to: '',
-        deadline: '' // Clear deadline when creating a new task
-      });
+    if (show) {
+      if (task) {
+        setFormData({
+          title: task.title || '',
+          description: task.description || '',
+          status: task.status || 'pending',
+          priority: task.priority || 'medium',
+          project_id: task.project_id || '',
+          assigned_to: task.assigned_to || '',
+          deadline: task.deadline ? task.deadline.split('T')[0] : ''
+        });
+      } else {
+        setFormData(emptyForm);
+      }
     }
-  }, [task]);
+  }, [show, task]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'project_id' || name === 'assigned_to' ? parseInt(value, 10) || '' : value
+      [name]:
+        name === 'project_id' || name === 'assigned_to'
+          ? parseInt(value, 10) || ''
+          : value
     }));
+  };
+
+  const onClose = () => {
+    setFormData(emptyForm);
+    handleClose();
   };
 
   const handleSubmit = async (e) => {
@@ -53,42 +59,43 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
         ...formData,
         project_id: parseInt(formData.project_id, 10),
         assigned_to: parseInt(formData.assigned_to, 10),
-        deadline: formData.deadline // Ensure deadline is passed to the backend
+        deadline: formData.deadline
       };
 
       if (task) {
         await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, data, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
       } else {
         await axios.post('http://127.0.0.1:8000/api/tasks', data, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
       }
-
-      refreshTasks();
-      handleClose();
+      refreshTasks && refreshTasks();
+      onClose();
+      alert(task ? 'Task updated successfully!' : 'Task created successfully!');
     } catch (error) {
       console.error('Error saving task:', error);
-      const errorMessage = error.response?.data?.message || 
-                         error.response?.data?.errors?.assigned_to?.[0] ||
-                         'Error saving task';
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.errors?.assigned_to?.[0] ||
+        'Error saving task';
       alert(errorMessage);
     }
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
+    <Modal show={show} onHide={handleClose} centered>
+      <Modal.Header closeButton className="modal-header">
         <Modal.Title>{task ? 'Edit Task' : 'Create New Task'}</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="modal-body">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="project">
             <Form.Label>Project</Form.Label>
@@ -174,7 +181,6 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
             </Form.Select>
           </Form.Group>
 
-          {/* New Deadline Input */}
           <Form.Group className="mb-3" controlId="deadline">
             <Form.Label>Deadline</Form.Label>
             <Form.Control
@@ -185,7 +191,7 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
             />
           </Form.Group>
 
-          <div className="d-flex justify-content-end gap-2">
+          <div className="d-flex justify-content-end gap-2 mt-3">
             <Button variant="secondary" onClick={handleClose}>
               Cancel
             </Button>

@@ -1,42 +1,227 @@
+/* App.css */
+
+/* Theme Variables */
+:root {
+  --primary-color: #0d6efd;
+  --secondary-color: #6c757d;
+  --success-color: #198754;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+
+  --font-family-base: 'Outfit', sans-serif;
+  --font-size-base: 1rem;
+  --heading-font-size: 1.5rem;
+
+  /* Spacing */
+  --padding-base: 1rem;
+  --margin-base: 1rem;
+}
+
+/* Global Base */
 body {
-  font-family: 'Outfit';
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  background-color: var(--light-color);
+  margin: 0;
+  padding: 0;
+  color: var(--dark-color);
 }
 
-.App {
-  text-align: center;
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--dark-color);
+  margin-bottom: var(--margin-base);
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+
+
+p {
+  margin-bottom: var(--margin-base);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+a {
+  text-decoration: none;
+  color: var(--primary-color);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+a:hover {
+  color: var(--dark-color);
+}
+
+/* Global Container */
+.container-fluid {
+  padding: var(--padding-base);
+}
+
+/* Header Styles */
+.header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  justify-content: space-between;
+  background-color: var(--dark-color);
+  padding: var(--padding-base);
+  color: var(--light-color);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header .title {
+  font-size: var(--heading-font-size);
+  margin: 0;
+}
+
+.header .actions {
+  display: flex;
+  align-items: center;
+}
+
+.header .new-button {
+  background-color: var(--primary-color);
+  color: var(--light-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1rem;
+}
+
+.header .new-button:hover {
+  background-color: #0b5ed7;
+}
+
+/* Sidebar Styling */
+.sidebar {
+  background-color: var(--dark-color);
+  color: var(--light-color);
+  min-height: 100vh;
+  padding: var(--padding-base);
+}
+
+.sidebar .nav-link {
+  color: var(--light-color);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+  color: var(--primary-color);
+}
+
+/* Card Styling for Overview Pages */
+.card {
+  border: 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--margin-base);
+}
+
+.card-header {
+  background-color: var(--primary-color);
+  color: var(--light-color);
+  font-weight: 600;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.card-body {
+  background-color: var(--light-color);
+}
+
+/* Scrollable List Container */
+.scrollable-list .dropdown-menu {
+  position: absolute !important;
+  z-index: 1050; /* Adjust as needed */
+}
+
+/* Modal Enhancements */
+.modal-content {
+  border-radius: 0.5rem;
+}
+
+.modal-header {
+  background-color: var(--primary-color);
+  color: var(--light-color);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+/* Button Overrides */
+.btn {
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.mb-4.text-center {
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* Custom Button Styles */
+.btn-view {
+  background-color: var(--primary-color);
+  border: none;
+  margin-right: 0.5rem;
+  color: var(--light-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  transition: opacity 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.btn-edit {
+  background-color: var(--warning-color);
+  border: none;
+  margin-right: 0.5rem;
+  color: var(--light-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  transition: opacity 0.3s ease;
+}
+
+.btn-delete {
+  background-color: var(--danger-color);
+  border: none;
+  margin-right: 0.5rem;
+  color: var(--light-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  transition: opacity 0.3s ease;
+}
+
+/* Hover State Overrides */
+.btn-view:hover {
+  background-color: var(--primary-color);
+  filter: brightness(0.8);
+}
+
+.btn-edit:hover {
+  background-color: var(--warning-color);
+  filter: brightness(0.8);
+}
+
+.btn-delete:hover {
+  background-color: var(--danger-color);
+  filter: brightness(0.8);
+}
+
+.btn-view,
+.btn-edit,
+.btn-delete {
+  padding: 0.2rem 0.4rem; 
+  font-size: 0.8rem;      
+  border-radius: 0.25rem;   
+  margin-top: 0;
 }

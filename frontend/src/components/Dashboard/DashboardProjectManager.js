@@ -1,127 +1,163 @@
+// DashboardProjectManager.js
+
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Button, ButtonGroup, Modal, Table } from 'react-bootstrap';
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  Button,
+  Nav
+} from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import ProjectModal from './ProjectModal';
 import TaskModal from './TaskModal';
-import axios from 'axios';
 
 function DashboardProjectManager({ user, onLogout }) {
   const navigate = useNavigate();
-
   const [projects, setProjects] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [showTasksModal, setShowTasksModal] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
-  // Fetch projects from the API when the component mounts
   useEffect(() => {
-    refreshProjects();
-    // Fetch users for task assignments
-    const token = localStorage.getItem('access_token');
-    axios.get('http://127.0.0.1:8000/api/users', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(response => {
-      setUsers(response.data);
-    })
-    .catch(error => {
-      console.error('Error fetching users:', error);
-    });
+    fetchProjects();
+    fetchTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch projects from the API with Authorization header
-  const refreshProjects = () => {
+  const fetchProjects = () => {
     const token = localStorage.getItem('access_token');
     axios
       .get('http://127.0.0.1:8000/api/projects', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
       .then(response => {
-        setProjects(response.data);
+        // Sort projects by updated_at (descending)
+        const sorted = response.data.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        setProjects(sorted);
       })
-      .catch(error => {
-        console.error('There was an error fetching projects!', error);
-      });
+      .catch(error => console.error('Error fetching projects:', error));
   };
 
-  const handleLogout = () => {
-    onLogout();
-    navigate('/login');
-  };
-
-  const handleCreateProject = () => {
-    setSelectedProject(null);
-    setShowModal(true);
-  };
-
-  const handleEditProject = (project) => {
-    setSelectedProject(project);
-    setShowModal(true);
-  };
-
-  const handleDeleteProject = (id) => {
+  const fetchTasks = () => {
     const token = localStorage.getItem('access_token');
     axios
-      .delete(`http://127.0.0.1:8000/api/projects/${id}`, {
+      .get('http://127.0.0.1:8000/api/tasks', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
-      .then(() => {
-        refreshProjects();
+      .then(response => {
+        // Sort tasks by updated_at (descending)
+        const sorted = response.data.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        setTasks(sorted);
       })
-      .catch(error => {
-        console.error('There was an error deleting the project!', error);
-      });
+      .catch(error => console.error('Error fetching tasks:', error));
   };
 
-  const handleViewTasks = (projectId) => {
+  // Project actions
+  const handleEditProject = (project) => {
+    setSelectedProject(project);
+    setShowProjectModal(true);
+  };
+
+  const handleDeleteProject = (id) => {
+    if (!window.confirm('Are you sure you want to delete this project?')) return;
     const token = localStorage.getItem('access_token');
-    // Fetch tasks for the specific project
-    axios.get('http://127.0.0.1:8000/api/tasks', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+    axios.delete(`http://127.0.0.1:8000/api/projects/${id}`, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
     })
-    .then(response => {
-      // Filter tasks for the specific project
-      const projectTasks = response.data.filter(task => task.project_id === projectId);
-      setTasks(projectTasks);
-      setSelectedProject(projects.find(p => p.id === projectId));
-      setShowTasksModal(true);
-    })
-    .catch(error => {
-      console.error('Error fetching tasks:', error);
-    });
+      .then(() => fetchProjects())
+      .catch(error => console.error('Error deleting project:', error));
   };
 
-  const refreshTasks = () => {
-    if (selectedProject) {
-      handleViewTasks(selectedProject.id);
+  // Task actions
+  const handleEditTask = (task) => {
+    setSelectedTask(task);
+    setShowTaskModal(true);
+  };
+
+  const handleDeleteTask = (id) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    const token = localStorage.getItem('access_token');
+    axios.delete(`http://127.0.0.1:8000/api/tasks/${id}`, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+    })
+      .then(() => fetchTasks())
+      .catch(error => console.error('Error deleting task:', error));
+  };
+
+  // Badge helper for project status (example: "To Do", "In Progress", "Done")
+  const getProjectStatusBadge = (status) => {
+    let badgeClass = 'secondary';
+    if (status === 'In Progress') {
+      badgeClass = 'warning';
+    } else if (status === 'Done') {
+      badgeClass = 'success';
     }
+    return (
+      <span className={`badge bg-${badgeClass}`}>
+        {status}
+      </span>
+    );
   };
 
+  // Badge helpers for task status and priority
+  const getTaskStatusBadge = (status) => {
+    let badgeClass = 'secondary';
+    if (status === 'in_progress') {
+      badgeClass = 'warning';
+    } else if (status === 'completed') {
+      badgeClass = 'success';
+    }
+    return (
+      <span className={`badge bg-${badgeClass}`}>
+        {status.replace('_', ' ').toUpperCase()}
+      </span>
+    );
+  };
+
+  const getTaskPriorityBadge = (priority) => {
+    let badgeClass = 'bg-info text-dark';
+    let icon = '';
+    if (priority === 'high') {
+      badgeClass = 'bg-danger';
+      icon = '🔴 ';
+    } else if (priority === 'medium') {
+      badgeClass = 'bg-warning text-dark';
+      icon = '🟡 ';
+    } else if (priority === 'low') {
+      badgeClass = 'bg-info text-dark';
+      icon = '🔵 ';
+    }
+    return (
+      <span className={`badge ${badgeClass}`}>
+        {icon}{priority.toUpperCase()}
+      </span>
+    );
+  };
+
+  // Sidebar styles
   const sidebarStyle = {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    padding: '20px',
+    padding: '20px'
   };
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
-      <Row noGutters="true">
+      <Row>
         {/* Sidebar */}
         <Col xs={12} md={3} lg={2} className="bg-dark text-white d-flex flex-column" style={sidebarStyle}>
           <div>
@@ -139,7 +175,11 @@ function DashboardProjectManager({ user, onLogout }) {
             </Nav>
           </div>
           <div>
-            <Button variant="outline-light" onClick={handleLogout} className="d-flex align-items-center">
+            <Button
+              variant="outline-light"
+              onClick={() => { onLogout(); navigate('/login'); }}
+              className="d-flex align-items-center"
+            >
               <i className="material-icons me-2">logout</i> Logout
             </Button>
           </div>
@@ -147,119 +187,136 @@ function DashboardProjectManager({ user, onLogout }) {
 
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2>Welcome, {user.email}!</h2>
-          <p>You're logged in as a Project Manager.</p>
-
-          <Row className="mb-4">
-            {/* Create New Project Section */}
-            <Col xs={12} sm={6} lg={6} className="mb-3">
-              <Card className="shadow-sm rounded">
-                <Card.Header className="bg-primary text-white">Create New Project</Card.Header>
+        <h2 style={{ marginBottom: '5rem' }}>Welcome, {user.email}!</h2>
+          <Row className="mb-4 d-flex align-items-stretch">
+            <Col md={6} className="d-flex">
+              <Card className="shadow-sm mb-3 flex-fill">
+                <Card.Header className="bg-primary text-white">
+                  <h5 className="mb-0">Recent Projects</h5>
+                </Card.Header>
                 <Card.Body>
-                  <p>Welcome, Project Manager {user.username}! Do you want to create a new project?</p>
-                  <Button variant="primary" onClick={handleCreateProject}>
-                    Create New Project
-                  </Button>
+                  <div
+                    className="scrollable-list"
+                    style={{ maxHeight: '50vh', overflowY: 'auto' }}
+                  >
+                    <Table hover>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Code</th>
+                          <th>Status</th>
+                          <th style={{ width: '200px' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projects.map(project => (
+                          <tr key={project.id}>
+                            <td>{project.project_name}</td>
+                            <td>{project.project_code}</td>
+                            <td>{getProjectStatusBadge(project.status)}</td>
+                            <td>
+                              <div>
+                                <Button
+                                  className="btn-view me-2 mb-2"
+                                  onClick={() => {
+                                    // Optionally view tasks in modal
+                                    // (Implement similar to handleViewTasks if needed)
+                                    setSelectedProject(project);
+                                    setShowProjectModal(true);
+                                  }}
+                                >
+                                  View
+                                </Button>
+                                <Button
+                                  className="btn-edit me-2 mb-2"
+                                  onClick={() => handleEditProject(project)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  className="btn-delete mb-2"
+                                  onClick={() => handleDeleteProject(project.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
-
-            {/* My Projects Box */}
-            <Col xs={12} sm={6} lg={6} className="mb-3">
-              <Card className="shadow-sm rounded">
-                <Card.Header className="bg-success text-white">My Projects</Card.Header>
+            <Col md={6} className="d-flex">
+              <Card className="shadow-sm mb-3 flex-fill">
+                <Card.Header className="bg-primary text-white">
+                  <h5 className="mb-0">Recent Tasks</h5>
+                </Card.Header>
                 <Card.Body>
-                  <ul className="list-unstyled mb-0">
-                    {projects.map((project) => (
-                      <li key={project.id} className="py-1 border-bottom d-flex justify-content-between align-items-center">
-                        <div>
-                          <span>{project.project_name}</span>
-                        </div>
-                        <div className="d-flex">
-                          <ButtonGroup>
-                            <Button
-                              variant="outline-info"
-                              size="sm"
-                              onClick={() => handleViewTasks(project.id)}
-                            >
-                              View Tasks
-                            </Button>
-                            <Button
-                              variant="outline-warning"
-                              size="sm"
-                              className="ms-2"
-                              onClick={() => handleEditProject(project)}
-                            >
-                              Update
-                            </Button>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              className="ms-2"
-                              onClick={() => handleDeleteProject(project.id)}
-                            >
-                              Delete
-                            </Button>
-                          </ButtonGroup>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  <div
+                    className="scrollable-list"
+                    style={{ maxHeight: '50vh', overflowY: 'auto' }}
+                  >
+                    <Table hover>
+                      <thead>
+                        <tr>
+                          <th>Title</th>
+                          <th>Status</th>
+                          <th>Priority</th>
+                          <th style={{ width: '120px' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tasks.map(task => (
+                          <tr key={task.id}>
+                            <td>{task.title}</td>
+                            <td>{getTaskStatusBadge(task.status)}</td>
+                            <td>{getTaskPriorityBadge(task.priority)}</td>
+                            <td>
+                              <div>
+                                <Button
+                                  className="btn-edit me-2 mb-2"
+                                  onClick={() => handleEditTask(task)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  className="btn-delete mb-2"
+                                  onClick={() => handleDeleteTask(task.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
-
-          {/* Project Modal */}
-          <ProjectModal
-            show={showModal}
-            handleClose={() => setShowModal(false)}
-            project={selectedProject}
-            refreshProjects={refreshProjects}
-          />
-
-          {/* Tasks Modal */}
-          <Modal show={showTasksModal} onHide={() => setShowTasksModal(false)} size="lg">
-            <Modal.Header closeButton>
-              <Modal.Title>
-                Tasks for {selectedProject?.project_name}
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Table striped bordered hover>
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Status</th>
-                    <th>Priority</th>
-                    <th>Assigned To</th>
-                    <th>Deadline</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasks.map(task => (
-                    <tr key={task.id}>
-                      <td>{task.title}</td>
-                      <td>
-                        <span className={`badge bg-${task.status === 'completed' ? 'success' : 
-                          task.status === 'in_progress' ? 'warning' : 'secondary'}`}>
-                          {task.status}
-                        </span>
-                      </td>
-                      <td>
-                        {task.priority === 'high' ? '🔴' : 
-                         task.priority === 'medium' ? '🟡' : '🔵'} {task.priority}
-                      </td>
-                      <td>{task.user?.username || 'Unassigned'}</td>
-                      <td>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Modal.Body>
-          </Modal>
         </Col>
       </Row>
+
+      {/* Modals */}
+      <ProjectModal
+        show={showProjectModal}
+        handleClose={() => setShowProjectModal(false)}
+        project={selectedProject}
+        refreshProjects={fetchProjects}
+      />
+      <TaskModal
+        show={showTaskModal}
+        handleClose={() => setShowTaskModal(false)}
+        task={selectedTask}
+        refreshTasks={fetchTasks}
+        projects={projects}
+        users={[]} // Modify as needed
+      />
     </Container>
   );
 }

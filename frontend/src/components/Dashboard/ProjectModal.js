@@ -1,52 +1,63 @@
+// ProjectModal.js
+
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import api from '../../api'; // Adjust the path based on your project structure
+import api from '../../api';
 
-function ProjectModal({ show, handleClose, project, refreshProjects }) {
-  const [formData, setFormData] = useState({
+function ProjectModal({ show, handleClose, project, refreshProjects, readOnly }) {
+  const emptyForm = {
     project_name: '',
     project_code: '',
     description: '',
     start_date: '',
     end_date: '',
     status: 'To Do',
-  });
+  };
 
-  // When editing, populate the form with the project data
+  const [formData, setFormData] = useState(emptyForm);
+
   useEffect(() => {
-    if (project) {
-      setFormData(project);
-    } else {
-      // Reset form for new project creation
-      setFormData({
-        project_name: '',
-        project_code: '',
-        description: '',
-        start_date: '',
-        end_date: '',
-        status: 'To Do',
-      });
+    if (show) {
+      // If editing, load the project data; if creating, clear the form.
+      if (project) {
+        setFormData({
+          project_name: project.project_name || '',
+          project_code: project.project_code || '',
+          description: project.description || '',
+          start_date: project.start_date || '',
+          end_date: project.end_date || '',
+          status: project.status || 'To Do',
+        });
+      } else {
+        setFormData(emptyForm);
+      }
     }
-  }, [project]);
+  }, [show, project]); // This will initialize formData when the modal is shown
 
-  // Update form data on input change
+  // Clear form state on close
+  const onClose = () => {
+    setFormData(emptyForm);
+    handleClose();
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission to create or update a project
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (readOnly) {
+      onClose();
+      return;
+    }
     try {
       if (project) {
-        // Update the existing project
         await api.put(`/projects/${project.id}`, formData);
       } else {
-        // Create a new project
         await api.post('/projects', formData);
       }
-      refreshProjects(); // Refresh the project list in the dashboard
-      handleClose();     // Close the modal
+      refreshProjects && refreshProjects();
+      onClose();
       alert(project ? 'Project updated successfully!' : 'Project created successfully!');
     } catch (error) {
       console.error('Error saving project:', error);
@@ -54,14 +65,29 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
     }
   };
 
+  // Helper function to render project status as a badge
+  const getStatusBadge = (status) => {
+    let badgeClass = 'secondary';
+    if (status === 'In Progress') {
+      badgeClass = 'warning';
+    } else if (status === 'Done') {
+      badgeClass = 'success';
+    } else if (status === 'To Do') {
+      badgeClass = 'secondary';
+    }
+    return <span className={`badge bg-${badgeClass}`}>{status}</span>;
+  };
+
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>{project ? 'Edit Project' : 'Create Project'}</Modal.Title>
+    <Modal show={show} onHide={handleClose} centered>
+      <Modal.Header closeButton className="modal-header">
+        <Modal.Title>
+          {readOnly ? 'View Project' : project ? 'Edit Project' : 'Create Project'}
+        </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="modal-body">
         <Form onSubmit={handleSubmit}>
-          <Form.Group controlId="project_name">
+          <Form.Group controlId="project_name" className="mb-3">
             <Form.Label>Project Name</Form.Label>
             <Form.Control
               type="text"
@@ -69,10 +95,10 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               value={formData.project_name}
               onChange={handleChange}
               required
+              disabled={readOnly}
             />
           </Form.Group>
-
-          <Form.Group controlId="project_code">
+          <Form.Group controlId="project_code" className="mb-3">
             <Form.Label>Project Code</Form.Label>
             <Form.Control
               type="text"
@@ -80,20 +106,21 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               value={formData.project_code}
               onChange={handleChange}
               required
+              disabled={readOnly}
             />
           </Form.Group>
-
-          <Form.Group controlId="description">
+          <Form.Group controlId="description" className="mb-3">
             <Form.Label>Description</Form.Label>
             <Form.Control
               as="textarea"
               name="description"
+              rows={3}
               value={formData.description}
               onChange={handleChange}
+              disabled={readOnly}
             />
           </Form.Group>
-
-          <Form.Group controlId="start_date">
+          <Form.Group controlId="start_date" className="mb-3">
             <Form.Label>Start Date</Form.Label>
             <Form.Control
               type="date"
@@ -101,36 +128,47 @@ function ProjectModal({ show, handleClose, project, refreshProjects }) {
               value={formData.start_date}
               onChange={handleChange}
               required
+              disabled={readOnly}
             />
           </Form.Group>
-
-          <Form.Group controlId="end_date">
+          <Form.Group controlId="end_date" className="mb-3">
             <Form.Label>End Date</Form.Label>
             <Form.Control
               type="date"
               name="end_date"
               value={formData.end_date}
               onChange={handleChange}
+              disabled={readOnly}
             />
           </Form.Group>
-
-          <Form.Group controlId="status">
+          <Form.Group controlId="status" className="mb-3">
             <Form.Label>Status</Form.Label>
-            <Form.Control
-              as="select"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-            >
-              <option value="To Do">To Do</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Done">Done</option>
-            </Form.Control>
+            {readOnly ? (
+              <div>{getStatusBadge(formData.status)}</div>
+            ) : (
+              <Form.Control
+                as="select"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+              >
+                <option value="To Do">To Do</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Done">Done</option>
+              </Form.Control>
+            )}
           </Form.Group>
-
-          <Button variant="primary" className="mt-3" type="submit">
-            {project ? 'Update Project' : 'Create Project'}
-          </Button>
+          <div className="d-flex justify-content-end gap-2 mt-3">
+            {!readOnly ? (
+              <Button variant="primary" type="submit">
+                {project ? 'Update Project' : 'Create Project'}
+              </Button>
+            ) : (
+              <Button variant="secondary" onClick={handleClose}>
+                Close
+              </Button>
+            )}
+          </div>
         </Form>
       </Modal.Body>
     </Modal>

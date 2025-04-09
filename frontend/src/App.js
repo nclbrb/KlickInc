@@ -1,24 +1,32 @@
+// App.js
+
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate
+} from 'react-router-dom';
 import Login from './components/Login/Login';
 import Register from './components/Register/Register';
 import DashboardProjectManager from './components/Dashboard/DashboardProjectManager';
 import DashboardTeamMember from './components/Dashboard/DashboardTeamMember';
-import api, { setAuthToken } from './api'; // Import your Axios instance and helper
+import TasksPage from './components/Dashboard/TasksPage';
+import ProjectsPage from './components/Dashboard/ProjectsPage';
+import api, { setAuthToken } from './api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import TasksPage from './components/Dashboard/TasksPage';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // On app load, check localStorage for a persisted token and fetch user info if available
+  // On app load, check localStorage for persisted token and fetch user info if available
   useEffect(() => {
     const storedToken = localStorage.getItem('access_token');
     if (storedToken) {
       setAuthToken(storedToken); // Set token for Axios
-      // Attempt to fetch the current user info from the API
+      // Fetch current user info from the API
       api.get('/user')
         .then(response => {
           setUser(response.data);
@@ -26,7 +34,6 @@ function App() {
         })
         .catch(error => {
           console.error('Error fetching user info:', error);
-          // If token is invalid, clear the stored credentials
           handleLogout();
           setLoading(false);
         });
@@ -35,7 +42,7 @@ function App() {
     }
   }, []);
 
-  // Called after a successful login
+  // After a successful login
   const handleLogin = (userData, token) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
@@ -43,7 +50,7 @@ function App() {
     setAuthToken(token); // Set token for future API calls
   };
 
-  // Called when logging out
+  // On logout
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
@@ -58,42 +65,72 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Login route */}
+        {/* Public Routes */}
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
-
-        {/* Register route */}
         <Route path="/register" element={<Register />} />
 
-        {/* Project Manager Dashboard */}
+        {/* Dashboard for Project Manager */}
         <Route
           path="/project-manager-dashboard"
-          element={user?.role === 'project_manager' ? (
-            <DashboardProjectManager user={user} onLogout={handleLogout} />
-          ) : (
-            <Navigate to="/login" />
-          )}
+          element={
+            user?.role === 'project_manager' ? (
+              <DashboardProjectManager user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
 
-        {/* Team Member Dashboard */}
+        {/* Dashboard for Team Member */}
         <Route
           path="/team-member-dashboard"
-          element={user?.role === 'team_member' ? (
-            <DashboardTeamMember user={user} onLogout={handleLogout} />
-          ) : (
-            <Navigate to="/login" />
-          )}
+          element={
+            user?.role === 'team_member' ? (
+              <DashboardTeamMember user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
 
-        {/* Fallback route: Redirect based on authentication status */}
-        <Route 
-          path="*"
-          element={<Navigate to={user ? (user.role === 'project_manager' ? '/project-manager-dashboard' : '/team-member-dashboard') : '/login'} />}
+        {/* Projects Page */}
+        <Route
+          path="/projects"
+          element={
+            user ? (
+              <ProjectsPage user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
 
-        {/* Tasks route */}
+        {/* Tasks Page */}
         <Route
           path="/tasks"
-          element={user ? <TasksPage user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          element={
+            user ? (
+              <TasksPage user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        {/* Fallback Route: Redirect based on authentication */}
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to={
+                user
+                  ? user.role === 'project_manager'
+                    ? '/project-manager-dashboard'
+                    : '/team-member-dashboard'
+                  : '/login'
+              }
+            />
+          }
         />
       </Routes>
     </Router>

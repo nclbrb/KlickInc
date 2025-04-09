@@ -1,51 +1,89 @@
+// DashboardTeamMember.js
+
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Nav } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../../api'; // Uses your shared Axios instance with the Authorization header set
+import api from '../../api';
 
 function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [assignedProjects, setAssignedProjects] = useState([]);
 
-  // Fetch projects and tasks when the component mounts
   useEffect(() => {
-    fetchProjects();
     fetchTasks();
   }, []);
 
-  // Fetch projects assigned to the team member
-  const fetchProjects = () => {
-    api.get('/projects')
-      .then(response => {
-        setProjects(response.data);
-      })
-      .catch(error => {
-        console.error('There was an error fetching projects!', error);
-      });
-  };
-
-  // Fetch tasks assigned to the team member
   const fetchTasks = () => {
     api.get('/tasks')
       .then(response => {
-        setTasks(response.data);
+        // Filter tasks assigned to the current team member
+        const myTasks = response.data.filter(task => task.assigned_to === user.id);
+        // Sort tasks by updated_at descending
+        myTasks.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        setTasks(myTasks);
+
+        // Extract unique projects from these tasks and sort them by updated_at descending
+        const projectsMap = {};
+        myTasks.forEach(task => {
+          if (task.project) {
+            // If the project is already in our map, we compare dates
+            if (!projectsMap[task.project.id]) {
+              projectsMap[task.project.id] = task.project;
+            } else if (new Date(task.project.updated_at) > new Date(projectsMap[task.project.id].updated_at)) {
+              projectsMap[task.project.id] = task.project;
+            }
+          }
+        });
+        const projectsArray = Object.values(projectsMap);
+        projectsArray.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        setAssignedProjects(projectsArray);
       })
       .catch(error => {
-        console.error('There was an error fetching tasks!', error);
+        console.error('Error fetching tasks:', error);
       });
   };
 
-  // Handle logout and navigate to login
-  const handleLogout = () => {
-    onLogout();
-    navigate('/login');
+  // Helper to display task status as a badge
+  const getTaskStatusBadge = (status) => {
+    let badgeClass = 'secondary';
+    if (status === 'in_progress') {
+      badgeClass = 'warning';
+    } else if (status === 'completed') {
+      badgeClass = 'success';
+    }
+    return (
+      <span className={`badge bg-${badgeClass}`}>
+        {status.replace('_', ' ').toUpperCase()}
+      </span>
+    );
   };
 
-  // Sidebar style: fixed width, full height, flex layout with logout at bottom
+  // Helper to display task priority as a badge
+  const getTaskPriorityBadge = (priority) => {
+    let badgeClass = 'bg-info text-dark';
+    let icon = '';
+    if (priority === 'high') {
+      badgeClass = 'bg-danger';
+      icon = '🔴 ';
+    } else if (priority === 'medium') {
+      badgeClass = 'bg-warning text-dark';
+      icon = '🟡 ';
+    } else if (priority === 'low') {
+      badgeClass = 'bg-info text-dark';
+      icon = '🔵 ';
+    }
+    return (
+      <span className={`badge ${badgeClass}`}>
+        {icon}{priority.toUpperCase()}
+      </span>
+    );
+  };
+
+  // Sidebar style
   const sidebarStyle = {
     minHeight: '100vh',
-    width: '250px',
+    width: '270px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -54,11 +92,11 @@ function DashboardTeamMember({ user, onLogout }) {
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
-      <Row noGutters="true">
+      <Row>
         {/* Sidebar */}
         <Col md="auto" className="bg-dark text-white" style={sidebarStyle}>
           <div>
-            <h3 className="mb-4">My App</h3>
+            <h3 className="mb-4 text-center">My App</h3>
             <Nav className="flex-column">
               <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
                 <i className="material-icons me-2">dashboard</i> Dashboard
@@ -72,7 +110,11 @@ function DashboardTeamMember({ user, onLogout }) {
             </Nav>
           </div>
           <div>
-            <Button variant="outline-light" onClick={handleLogout} className="d-flex align-items-center">
+            <Button
+              variant="outline-light"
+              onClick={() => { onLogout(); navigate('/login'); }}
+              className="d-flex align-items-center"
+            >
               <i className="material-icons me-2">logout</i> Logout
             </Button>
           </div>
@@ -80,61 +122,83 @@ function DashboardTeamMember({ user, onLogout }) {
 
         {/* Main Content */}
         <Col className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2 className="mb-4">Team Member Dashboard</h2>
-          <p className="lead">Welcome, {user.email}!</p>
-          
+        <h2 style={{ marginBottom: '5rem' }}>Welcome, {user.email}!</h2>
           <Row className="mb-4">
-            {/* Assigned Projects */}
-            <Col xs={12} md={6} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Card className="shadow-sm rounded" style={{ width: '600px' }}>
-                <Card.Header className="bg-primary text-white">Assigned Projects</Card.Header>
+            <Col md={6}>
+              <Card className="shadow-sm mb-3">
+                <Card.Header className="bg-primary text-white">
+                  <h5 className="mb-0">Assigned Projects</h5>
+                </Card.Header>
                 <Card.Body>
-                  {projects.length > 0 ? (
-                    <ul className="list-unstyled mb-0">
-                      {projects.map((project) => (
-                        <li key={project.id} className="py-1 border-bottom">
-                          {project.project_name}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No projects assigned.</p>
-                  )}
+                  <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+                    <Table hover>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Code</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {assignedProjects.map(project => (
+                          <tr key={project.id}>
+                            <td>{project.project_name}</td>
+                            <td>{project.project_code}</td>
+                            <td>
+                              <span className="badge bg-secondary">
+                                {project.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                  <div className="mt-2 text-end">
+                    <Button variant="link" onClick={() => navigate('/projects')}>
+                      View All Projects
+                    </Button>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
-
-            {/* Assigned Tasks */}
-            <Col xs={12} md={6} style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Card className="shadow-sm rounded" style={{ width: '600px' }}>
-                <Card.Header className="bg-success text-white">Assigned Tasks</Card.Header>
+            <Col md={6}>
+              <Card className="shadow-sm mb-3">
+                <Card.Header className="bg-primary text-white">
+                  <h5 className="mb-0">Assigned Tasks</h5>
+                </Card.Header>
                 <Card.Body>
-                  {tasks.length > 0 ? (
-                    <ul className="list-unstyled mb-0">
-                      {tasks.map((task) => (
-                        <li key={task.id} className="py-1 border-bottom">
-                          {task.title}
-                          <small className="text-muted"> (Project ID: {task.project_id})</small>
-                          <div className="mt-2">
-                            <strong>Status:</strong> {task.status}
-                          </div>
-                          {task.deadline && (
-                            <div className="mt-2">
-                              <strong>Deadline:</strong> {new Date(task.deadline).toLocaleDateString()}
-                            </div>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No tasks assigned.</p>
-                  )}
+                  <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+                    <Table hover>
+                      <thead>
+                        <tr>
+                          <th>Title</th>
+                          <th>Status</th>
+                          <th>Priority</th>
+                          <th>Deadline</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tasks.map(task => (
+                          <tr key={task.id}>
+                            <td>{task.title}</td>
+                            <td>{getTaskStatusBadge(task.status)}</td>
+                            <td>{getTaskPriorityBadge(task.priority)}</td>
+                            <td>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                  <div className="mt-2 text-end">
+                    <Button variant="link" onClick={() => navigate('/tasks')}>
+                      View All Tasks
+                    </Button>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
-
-          {/* Additional main content for Team Member could go here */}
         </Col>
       </Row>
     </Container>
