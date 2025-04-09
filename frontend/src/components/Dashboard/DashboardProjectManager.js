@@ -11,18 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProjectModal from './ProjectModal';
 import TaskModal from './TaskModal';
-import { Nav } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-
-    // Sidebar style
-    const sidebarStyle = {
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      padding: '20px'
-    };
-
+import NavBar from './NavBar';
 
 function DashboardProjectManager({ user, onLogout }) {
   const navigate = useNavigate();
@@ -111,7 +100,7 @@ function DashboardProjectManager({ user, onLogout }) {
       .catch((error) => console.error('Error deleting task:', error));
   };
 
-  // Badge helper for project status (e.g., "To Do", "In Progress", "Done")
+  // Badge helpers for project status
   const getProjectStatusBadge = (status) => {
     let badgeClass = 'secondary';
     if (status === 'In Progress') {
@@ -160,54 +149,23 @@ function DashboardProjectManager({ user, onLogout }) {
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
-        {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-purp text-white d-flex flex-column" style={sidebarStyle}>
-          <div>
-            <h3 className="mb-4 text-center text-white">My App</h3>
-            <Nav className="flex-column">
-              <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">dashboard</i> Dashboard
-              </Nav.Link>
-              <Nav.Link as={Link} to="/projects" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">folder</i> Projects
-              </Nav.Link>
-              <Nav.Link as={Link} to="/tasks" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">assignment</i> Tasks
-              </Nav.Link>
-            </Nav>
-          </div>
-          <div>
-            <Button
-              variant="purp"
-              onClick={() => { onLogout(); navigate('/login'); }}
-              className="d-flex align-items-center"
-            >
-              <i className="material-icons me-2">logout</i> Logout
-            </Button>
-          </div>
+        {/* Sidebar using NavBar from old implementation with new purplish theme */}
+        <Col xs={12} md={3} lg={2} className="p-0">
+          <NavBar user={user} onLogout={onLogout} navigate={navigate} />
         </Col>
 
         {/* Main Content */}
-        <Col
-          xs={12}
-          md={9}
-          lg={10}
-          className="p-4"
-          style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}
-        >
+        <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
           <h2>Welcome, {user.username}!</h2>
           <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
           <Row className="mb-4 d-flex align-items-stretch">
             <Col md={6} className="d-flex">
               <Card className="shadow-sm mb-3 flex-fill">
                 <Card.Header className="bg-purp">
-                <h5 className="mb-0 text-white">Recent Projects</h5>
+                  <h5 className="mb-0 text-white">Recent Projects</h5>
                 </Card.Header>
                 <Card.Body>
-                  <div
-                    className="scrollable-list"
-                    style={{ maxHeight: '50vh', overflowY: 'auto' }}
-                  >
+                  <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
                     <Table hover>
                       <thead>
                         <tr>
@@ -230,15 +188,21 @@ function DashboardProjectManager({ user, onLogout }) {
                                   onClick={() => {
                                     setSelectedProject(project);
                                     setShowProjectModal(true);
-                                  }}>View
+                                  }}
+                                >
+                                  View
                                 </Button>
                                 <Button
                                   className="btn-edit-outline me-2 mb-2"
-                                  onClick={() => handleEditProject(project)}>Edit
+                                  onClick={() => handleEditProject(project)}
+                                >
+                                  Edit
                                 </Button>
                                 <Button
                                   className="btn-delete-outline mb-2"
-                                  onClick={() => handleDeleteProject(project.id)}>Delete
+                                  onClick={() => handleDeleteProject(project.id)}
+                                >
+                                  Delete
                                 </Button>
                               </div>
                             </td>
@@ -257,14 +221,11 @@ function DashboardProjectManager({ user, onLogout }) {
             </Col>
             <Col md={6} className="d-flex">
               <Card className="shadow-sm mb-3 flex-fill">
-                <Card.Header className="bg-purp text-white">
+                <Card.Header className="bg-purp">
                   <h5 className="mb-0 text-white">Recent Tasks</h5>
                 </Card.Header>
                 <Card.Body>
-                  <div
-                    className="scrollable-list"
-                    style={{ maxHeight: '50vh', overflowY: 'auto' }}
-                  >
+                  <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
                     <Table hover>
                       <thead>
                         <tr>
@@ -281,20 +242,20 @@ function DashboardProjectManager({ user, onLogout }) {
                             <td>{getTaskStatusBadge(task.status)}</td>
                             <td>{getTaskPriorityBadge(task.priority)}</td>
                             <td>
-                            <div className="d-flex flex-row align-items-center mt-0">
-                              <Button
-                                className="btn-edit-outline me-2"
-                                onClick={() => handleEditTask(task)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                className="btn-delete-outline"
-                                onClick={() => handleDeleteTask(task.id)}
-                              >
-                                Delete
-                              </Button>
-                            </div>
+                              <div className="d-flex flex-row align-items-center mt-0">
+                                <Button
+                                  className="btn-edit-outline me-2"
+                                  onClick={() => handleEditTask(task)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  className="btn-delete-outline"
+                                  onClick={() => handleDeleteTask(task.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         ))}

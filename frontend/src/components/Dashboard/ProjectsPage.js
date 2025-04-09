@@ -3,18 +3,7 @@ import { Container, Row, Col, Card, Button, Table, Modal } from 'react-bootstrap
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProjectModal from './ProjectModal';
-import { Nav } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-
-    // Sidebar style
-    const sidebarStyle = {
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      padding: '20px'
-    };
-
+import NavBar from './NavBar';
 
 function ProjectsPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -45,13 +34,13 @@ function ProjectsPage({ user, onLogout }) {
       .get('http://127.0.0.1:8000/api/projects', {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
-      .then(response => {
+      .then((response) => {
         setProjects(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching projects:', error);
       });
   };
@@ -62,15 +51,17 @@ function ProjectsPage({ user, onLogout }) {
       .get('http://127.0.0.1:8000/api/tasks', {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
-      .then(response => {
+      .then((response) => {
         // Filter tasks assigned to the current team member
-        const myTasks = response.data.filter(task => task.assigned_to === user.id);
+        const myTasks = response.data.filter(
+          (task) => task.assigned_to === user.id
+        );
         setTasks(myTasks);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching tasks for filtering projects:', error);
       });
   };
@@ -91,19 +82,20 @@ function ProjectsPage({ user, onLogout }) {
   };
 
   const handleDeleteProject = (id) => {
-    if (!window.confirm('Are you sure you want to delete this project?')) return;
+    if (!window.confirm('Are you sure you want to delete this project?'))
+      return;
     const token = localStorage.getItem('access_token');
     axios
       .delete(`http://127.0.0.1:8000/api/projects/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
       .then(() => {
         fetchProjects();
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error deleting project:', error);
         alert('Error deleting project');
       });
@@ -116,16 +108,18 @@ function ProjectsPage({ user, onLogout }) {
       .get('http://127.0.0.1:8000/api/tasks', {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
-      .then(response => {
-        const tasksForProject = response.data.filter(task => task.project_id === project.id);
+      .then((response) => {
+        const tasksForProject = response.data.filter(
+          (task) => task.project_id === project.id
+        );
         setProjectTasks(tasksForProject);
         setSelectedProjectForTasks(project);
         setShowTasksModal(true);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching tasks:', error);
       });
   };
@@ -149,7 +143,11 @@ function ProjectsPage({ user, onLogout }) {
     } else if (status === 'completed') {
       badgeClass = 'success';
     }
-    return <span className={`badge bg-${badgeClass}`}>{status.replace('_', ' ').toUpperCase()}</span>;
+    return (
+      <span className={`badge bg-${badgeClass}`}>
+        {status.replace('_', ' ').toUpperCase()}
+      </span>
+    );
   };
 
   // Helper to display task priority as a badge
@@ -166,47 +164,42 @@ function ProjectsPage({ user, onLogout }) {
       badgeClass = 'bg-info text-dark';
       icon = '🔵 ';
     }
-    return <span className={`badge ${badgeClass}`}>{icon}{priority.toUpperCase()}</span>;
+    return (
+      <span className={`badge ${badgeClass}`}>
+        {icon}
+        {priority.toUpperCase()}
+      </span>
+    );
   };
 
   // For team members, filter projects based on tasks assigned to them
   const filteredProjects =
     user.role === 'team_member'
-      ? projects.filter(project => {
-          const myProjectIds = new Set(tasks.map(task => task.project_id));
+      ? projects.filter((project) => {
+          const myProjectIds = new Set(tasks.map((task) => task.project_id));
           return myProjectIds.has(project.id);
         })
       : projects;
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
-      <Row noGutters="true">
-        {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-purp text-white d-flex flex-column" style={sidebarStyle}>
-          <div>
-            <h3 className="mb-4 text-center text-white">My App</h3>
-            <Nav className="flex-column">
-              <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">dashboard</i> Dashboard
-              </Nav.Link>
-              <Nav.Link as={Link} to="/projects" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">folder</i> Projects
-              </Nav.Link>
-              <Nav.Link as={Link} to="/tasks" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">assignment</i> Tasks
-              </Nav.Link>
-            </Nav>
-          </div>
-          <div>
-            <Button variant="purp" onClick={handleLogout} className="d-flex align-items-center">
-              <i className="material-icons me-2">logout</i> Logout
-            </Button>
-          </div>
+      <Row>
+        {/* Sidebar using NavBar */}
+        <Col xs={12} md={3} lg={2} className="p-0">
+          <NavBar user={user} onLogout={onLogout} navigate={navigate} />
         </Col>
-        
+
         {/* Main Content */}
-        <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem'}}>Projects</h2>
+        <Col
+          xs={12}
+          md={9}
+          lg={10}
+          className="p-4"
+          style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}
+        >
+          <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>
+            Projects
+          </h2>
           {user.role === 'project_manager' && (
             <div className="mb-3 text-end">
               <Button className="btn-purp" onClick={handleCreateProject}>
@@ -220,7 +213,10 @@ function ProjectsPage({ user, onLogout }) {
             </Card.Header>
             <Card.Body>
               {filteredProjects.length > 0 ? (
-                <div className="scrollable-list" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <div
+                  className="scrollable-list"
+                  style={{ maxHeight: '60vh', overflowY: 'auto' }}
+                >
                   <Table hover>
                     <thead>
                       <tr>
@@ -233,35 +229,48 @@ function ProjectsPage({ user, onLogout }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredProjects.map(project => (
+                      {filteredProjects.map((project) => (
                         <tr key={project.id}>
                           <td>{project.project_name}</td>
                           <td>{project.project_code}</td>
                           <td>
                             {project.description?.substring(0, 50)}
-                            {project.description && project.description.length > 50 ? '...' : ''}
+                            {project.description && project.description.length > 50
+                              ? '...'
+                              : ''}
                           </td>
                           <td>
                             {new Date(project.start_date).toLocaleDateString()} -{' '}
-                            {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'N/A'}
+                            {project.end_date
+                              ? new Date(project.end_date).toLocaleDateString()
+                              : 'N/A'}
                           </td>
                           <td>{getProjectStatusBadge(project.status)}</td>
                           <td>
-                          <div className="d-flex flex-row align-items-center mt-0 mb-2">
-
-                            <Button className="btn-view-outline me-2" onClick={() => handleViewTasks(project)}>
-                              Tasks
-                              </Button> {user.role === 'project_manager' && (
-                              <>
-                                <Button className="btn-edit-outline me-2" onClick={() => handleEditProject(project)}>
-                                  Edit
-                                </Button>
-                                <Button className="btn-delete-outline" onClick={() => handleDeleteProject(project.id)}>
-                                  Delete
-                                </Button>
-                              </>
-                            )}
-                          </div>
+                            <div className="d-flex flex-row align-items-center mt-0 mb-2">
+                              <Button
+                                className="btn-view-outline me-2"
+                                onClick={() => handleViewTasks(project)}
+                              >
+                                Tasks
+                              </Button>
+                              {user.role === 'project_manager' && (
+                                <>
+                                  <Button
+                                    className="btn-edit-outline me-2"
+                                    onClick={() => handleEditProject(project)}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    className="btn-delete-outline"
+                                    onClick={() => handleDeleteProject(project.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -269,7 +278,9 @@ function ProjectsPage({ user, onLogout }) {
                   </Table>
                 </div>
               ) : (
-                <div className="text-center text-muted p-4">No projects found.</div>
+                <div className="text-center text-muted p-4">
+                  No projects found.
+                </div>
               )}
             </Card.Body>
           </Card>
@@ -289,7 +300,9 @@ function ProjectsPage({ user, onLogout }) {
       {/* Modal for viewing tasks for a project (read-only) */}
       <Modal show={showTasksModal} onHide={() => setShowTasksModal(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Tasks for {selectedProjectForTasks?.project_name}</Modal.Title>
+          <Modal.Title>
+            Tasks for {selectedProjectForTasks?.project_name}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {projectTasks.length > 0 ? (
@@ -303,12 +316,16 @@ function ProjectsPage({ user, onLogout }) {
                 </tr>
               </thead>
               <tbody>
-                {projectTasks.map(task => (
+                {projectTasks.map((task) => (
                   <tr key={task.id}>
                     <td>{task.title}</td>
                     <td>{getTaskStatusBadge(task.status)}</td>
                     <td>{getTaskPriorityBadge(task.priority)}</td>
-                    <td>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                      {task.deadline
+                        ? new Date(task.deadline).toLocaleDateString()
+                        : 'N/A'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
