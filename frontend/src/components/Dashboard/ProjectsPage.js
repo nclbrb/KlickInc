@@ -180,7 +180,7 @@ function ProjectsPage({ user, onLogout }) {
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row noGutters="true">
         {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-dark text-white d-flex flex-column" style={sidebarStyle}>
+        <Col xs={12} md={3} lg={2} className="bg-purp text-white d-flex flex-column" style={sidebarStyle}>
           <div>
             <h3 className="mb-4 text-center">My App</h3>
             <Nav className="flex-column">
@@ -196,7 +196,7 @@ function ProjectsPage({ user, onLogout }) {
             </Nav>
           </div>
           <div>
-            <Button variant="outline-light" onClick={handleLogout} className="d-flex align-items-center">
+            <Button variant="purp" onClick={handleLogout} className="d-flex align-items-center">
               <i className="material-icons me-2">logout</i> Logout
             </Button>
           </div>
@@ -204,17 +204,17 @@ function ProjectsPage({ user, onLogout }) {
         
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>Projects</h2>
+          <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem'}}>Projects</h2>
           {user.role === 'project_manager' && (
             <div className="mb-3 text-end">
-              <Button variant="primary" onClick={handleCreateProject}>
+              <Button className="btn-purp" onClick={handleCreateProject}>
                 + New Project
               </Button>
             </div>
           )}
           <Card className="shadow-sm">
-            <Card.Header className="bg-success text-white">
-              <h5 className="mb-0">My Projects</h5>
+            <Card.Header className="bg-purp text-white">
+              <h5 className="mb-0 text-white">My Projects</h5>
             </Card.Header>
             <Card.Body>
               {filteredProjects.length > 0 ? (
@@ -245,30 +245,20 @@ function ProjectsPage({ user, onLogout }) {
                           </td>
                           <td>{getProjectStatusBadge(project.status)}</td>
                           <td>
-                            <div>
-                              <Button
-                                className="btn-view me-2 mb-2"
-                                onClick={() => handleViewTasks(project)}
-                              >
-                                View Tasks
-                              </Button>
-                              {user.role === 'project_manager' && (
-                                <>
-                                  <Button
-                                    className="btn-edit me-2 mb-2"
-                                    onClick={() => handleEditProject(project)}
-                                  >
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    className="btn-delete mb-2"
-                                    onClick={() => handleDeleteProject(project.id)}
-                                  >
-                                    Delete
-                                  </Button>
-                                </>
-                              )}
-                            </div>
+                          <div className="d-flex flex-row align-items-center mt-0">
+                            <Button className="btn-view-outline me-2" onClick={() => handleViewTasks(project)}>
+                              Tasks
+                              </Button> {user.role === 'project_manager' && (
+                              <>
+                                <Button className="btn-edit-outline me-2" onClick={() => handleEditProject(project)}>
+                                  Edit
+                                </Button>
+                                <Button className="btn-delete-outline" onClick={() => handleDeleteProject(project.id)}>
+                                  Delete
+                                </Button>
+                              </>
+                            )}
+                          </div>
                           </td>
                         </tr>
                       ))}

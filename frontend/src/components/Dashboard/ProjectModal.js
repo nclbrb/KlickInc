@@ -160,7 +160,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
           </Form.Group>
           <div className="d-flex justify-content-end gap-2 mt-3">
             {!readOnly ? (
-              <Button variant="primary" type="submit">
+              <Button variant="purp" type="submit">
                 {project ? 'Update Project' : 'Create Project'}
               </Button>
             ) : (

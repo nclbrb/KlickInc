@@ -192,10 +192,10 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
           </Form.Group>
 
           <div className="d-flex justify-content-end gap-2 mt-3">
-            <Button variant="secondary" onClick={handleClose}>
+            <Button variant="purp" onClick={handleClose}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant="purp" type="submit">
               {task ? 'Update Task' : 'Create Task'}
             </Button>
           </div>

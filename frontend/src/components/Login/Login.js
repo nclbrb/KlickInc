@@ -69,7 +69,7 @@ function Login({ onLogin }) {
               required 
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100">Login</button>
+          <button type="submit" className="btn btn-purp w-100">Login</button>
         </form>
         <div className="mt-2 text-center">
           Don't have an account? <Link to="/register" className="text-decoration-none text-primary">

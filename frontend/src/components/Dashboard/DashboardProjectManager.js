@@ -159,7 +159,7 @@ function DashboardProjectManager({ user, onLogout }) {
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
         {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-dark text-white d-flex flex-column" style={sidebarStyle}>
+        <Col xs={12} md={3} lg={2} className="bg-purp text-white d-flex flex-column" style={sidebarStyle}>
           <div>
             <h3 className="mb-4 text-center">My App</h3>
             <Nav className="flex-column">
@@ -176,7 +176,7 @@ function DashboardProjectManager({ user, onLogout }) {
           </div>
           <div>
             <Button
-              variant="outline-light"
+              variant="purp"
               onClick={() => { onLogout(); navigate('/login'); }}
               className="d-flex align-items-center"
             >
@@ -191,8 +191,8 @@ function DashboardProjectManager({ user, onLogout }) {
           <Row className="mb-4 d-flex align-items-stretch">
             <Col md={6} className="d-flex">
               <Card className="shadow-sm mb-3 flex-fill">
-                <Card.Header className="bg-primary text-white">
-                  <h5 className="mb-0">Recent Projects</h5>
+                <Card.Header className="bg-purp">
+                <h5 className="mb-0 text-white">Recent Projects</h5>
                 </Card.Header>
                 <Card.Body>
                   <div
@@ -217,27 +217,19 @@ function DashboardProjectManager({ user, onLogout }) {
                             <td>
                               <div>
                                 <Button
-                                  className="btn-view me-2 mb-2"
+                                  className="btn-view-outline me-2 mb-2"
                                   onClick={() => {
-                                    // Optionally view tasks in modal
-                                    // (Implement similar to handleViewTasks if needed)
                                     setSelectedProject(project);
                                     setShowProjectModal(true);
-                                  }}
-                                >
-                                  View
+                                  }}>View
                                 </Button>
                                 <Button
-                                  className="btn-edit me-2 mb-2"
-                                  onClick={() => handleEditProject(project)}
-                                >
-                                  Edit
+                                  className="btn-edit-outline me-2 mb-2"
+                                  onClick={() => handleEditProject(project)}>Edit
                                 </Button>
                                 <Button
-                                  className="btn-delete mb-2"
-                                  onClick={() => handleDeleteProject(project.id)}
-                                >
-                                  Delete
+                                  className="btn-delete-outline mb-2"
+                                  onClick={() => handleDeleteProject(project.id)}>Delete
                                 </Button>
                               </div>
                             </td>
@@ -251,8 +243,8 @@ function DashboardProjectManager({ user, onLogout }) {
             </Col>
             <Col md={6} className="d-flex">
               <Card className="shadow-sm mb-3 flex-fill">
-                <Card.Header className="bg-primary text-white">
-                  <h5 className="mb-0">Recent Tasks</h5>
+                <Card.Header className="bg-purp text-white">
+                  <h5 className="mb-0 text-white">Recent Tasks</h5>
                 </Card.Header>
                 <Card.Body>
                   <div
@@ -275,20 +267,20 @@ function DashboardProjectManager({ user, onLogout }) {
                             <td>{getTaskStatusBadge(task.status)}</td>
                             <td>{getTaskPriorityBadge(task.priority)}</td>
                             <td>
-                              <div>
-                                <Button
-                                  className="btn-edit me-2 mb-2"
-                                  onClick={() => handleEditTask(task)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  className="btn-delete mb-2"
-                                  onClick={() => handleDeleteTask(task.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
+                            <div className="d-flex flex-row align-items-center mt-0">
+                              <Button
+                                className="btn-edit-outline me-2"
+                                onClick={() => handleEditTask(task)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                className="btn-delete-outline"
+                                onClick={() => handleDeleteTask(task.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
                             </td>
                           </tr>
                         ))}

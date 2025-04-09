@@ -80,21 +80,21 @@ function DashboardTeamMember({ user, onLogout }) {
     );
   };
 
-  // Sidebar style
-  const sidebarStyle = {
-    minHeight: '100vh',
-    width: '270px',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    padding: '20px'
-  };
+    // Sidebar style
+    const sidebarStyle = {
+      minHeight: '100vh',
+      width: '260px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      padding: '20px'
+    };
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
         {/* Sidebar */}
-        <Col md="auto" className="bg-dark text-white" style={sidebarStyle}>
+        <Col md="auto" className="bg-purp text-white" style={sidebarStyle}>
           <div>
             <h3 className="mb-4 text-center">My App</h3>
             <Nav className="flex-column">
@@ -111,7 +111,7 @@ function DashboardTeamMember({ user, onLogout }) {
           </div>
           <div>
             <Button
-              variant="outline-light"
+              variant="purp"
               onClick={() => { onLogout(); navigate('/login'); }}
               className="d-flex align-items-center"
             >
@@ -126,8 +126,8 @@ function DashboardTeamMember({ user, onLogout }) {
           <Row className="mb-4">
             <Col md={6}>
               <Card className="shadow-sm mb-3">
-                <Card.Header className="bg-primary text-white">
-                  <h5 className="mb-0">Assigned Projects</h5>
+                <Card.Header className="bg-purp">
+                  <h5 className="mb-0 text-white">Assigned Projects</h5>
                 </Card.Header>
                 <Card.Body>
                   <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
@@ -164,8 +164,8 @@ function DashboardTeamMember({ user, onLogout }) {
             </Col>
             <Col md={6}>
               <Card className="shadow-sm mb-3">
-                <Card.Header className="bg-primary text-white">
-                  <h5 className="mb-0">Assigned Tasks</h5>
+                <Card.Header className="bg-purp text-white">
+                  <h5 className="mb-0 text-white">Assigned Tasks</h5>
                 </Card.Header>
                 <Card.Body>
                   <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>

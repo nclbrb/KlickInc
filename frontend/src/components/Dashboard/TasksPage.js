@@ -1,17 +1,7 @@
 // TasksPage.js
 
 import React, { useState, useEffect } from 'react';
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Nav,
-  Button,
-  Table,
-  DropdownButton,
-  Dropdown
-} from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Button, Table, DropdownButton, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TaskModal from './TaskModal';
@@ -197,7 +187,7 @@ function TasksPage({ user, onLogout }) {
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row noGutters="true">
         {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-dark text-white d-flex flex-column" style={sidebarStyle}>
+        <Col xs={12} md={3} lg={2} className="bg-purp text-white d-flex flex-column" style={sidebarStyle}>
           <div>
             <h3 className="mb-4 text-center">My App</h3>
             <Nav className="flex-column">
@@ -214,7 +204,7 @@ function TasksPage({ user, onLogout }) {
           </div>
           <div>
             <Button
-              variant="outline-light"
+              variant="purp"
               onClick={() => {
                 onLogout();
                 navigate('/login');
@@ -228,20 +218,18 @@ function TasksPage({ user, onLogout }) {
 
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-        <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>
-  Tasks
-</h2>
+        <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>Tasks</h2>
           {/* Only project managers can add new tasks */}
           {user.role !== 'team_member' && (
             <div className="mb-3 text-end">
-              <Button variant="primary" onClick={handleCreateTask}>
-                + New Task
-              </Button>
+             <Button className="btn-purp" onClick={handleCreateTask}>
+              + New Task
+            </Button>
             </div>
           )}
           <Card className="shadow-sm">
-            <Card.Header className="bg-success text-white d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">My Tasks</h5>
+            <Card.Header className="bg-purp text-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0 text-white">My Tasks</h5>
             </Card.Header>
             <Card.Body>
               <div
@@ -280,24 +268,18 @@ function TasksPage({ user, onLogout }) {
                         <td>{formatDeadline(task.deadline)}</td>
                         {user.role !== 'team_member' && (
                           <td>
-                            <div>
+                            <div className="d-flex flex-row align-items-center mt-0">
                               <Button
-                                className="btn-view me-2 mb-2"
-                                onClick={() => handleViewProject(task.project)}
-                              >
-                                View Project
+                                className="btn-view-outline me-2"
+                                onClick={() => handleViewProject(task.project)}>View
                               </Button>
                               <Button
-                                className="btn-edit me-2 mb-2"
-                                onClick={() => handleEditTask(task)}
-                              >
-                                Edit
+                                className="btn-edit-outline me-2"
+                                onClick={() => handleEditTask(task)}>Edit
                               </Button>
                               <Button
-                                className="btn-delete mb-2"
-                                onClick={() => handleDeleteTask(task.id)}
-                              >
-                                Delete
+                                className="btn-delete-outline"
+                                onClick={() => handleDeleteTask(task.id)}>Delete
                               </Button>
                             </div>
                           </td>

@@ -110,14 +110,14 @@ function Register() {
             </select>
           </div>
 
-          <button type="submit" className="btn btn-primary w-100">Register</button>
+          <button type="submit" className="btn btn-purp w-100">Register</button>
         </form>
 
         {/* New link added below the register button */}
         <div className="text-center mt-3">
-          <span>
-            Already Have an Account? <Link to="/login">Login</Link>
-          </span>
+        <div className="mt-2 text-center">
+          Already Have an Account? <Link to="/login" className="text-decoration-none text-primary">Login</Link>
+          </div>
         </div>
       </div>
     </div>

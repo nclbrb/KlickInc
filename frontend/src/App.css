@@ -9,6 +9,7 @@
   --danger-color: #dc3545;
   --light-color: #f8f9fa;
   --dark-color: #343a40;
+  --purp-color: #593384;
 
   --font-family-base: 'Outfit', sans-serif;
   --font-size-base: 1rem;
@@ -35,8 +36,6 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--dark-color);
   margin-bottom: var(--margin-base);
 }
-
-
 
 p {
   margin-bottom: var(--margin-base);
@@ -80,7 +79,7 @@ a:hover {
 }
 
 .header .new-button {
-  background-color: var(--primary-color);
+  background-color: var(--purp-color);
   color: var(--light-color);
   border: none;
   padding: 0.5rem 1rem;
@@ -88,10 +87,6 @@ a:hover {
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-size: 1rem;
-}
-
-.header .new-button:hover {
-  background-color: #0b5ed7;
 }
 
 /* Sidebar Styling */
@@ -111,7 +106,7 @@ a:hover {
 }
 
 .sidebar .nav-link:hover {
-  color: var(--primary-color);
+  color: var(--purp-color);
 }
 
 /* Card Styling for Overview Pages */
@@ -123,7 +118,7 @@ a:hover {
 }
 
 .card-header {
-  background-color: var(--primary-color);
+  background-color: var(--purp-color);
   color: var(--light-color);
   font-weight: 600;
   border-top-left-radius: 0.5rem;
@@ -146,13 +141,30 @@ a:hover {
 }
 
 .modal-header {
-  background-color: var(--primary-color);
+  background-color: var(--purp-color);
   color: var(--light-color);
 }
 
 .modal-body {
   padding: 1.5rem;
 }
+
+.bg-purp {
+  background-color: var(--purp-color) !important;
+}
+
+.btn-purp {
+  background-color: #593384;
+  border-color: #593384;
+  color: white;
+}
+
+.btn-purp:hover {
+  background-color: #512f77;
+  border-color: #512f77;
+  color: white;
+}
+
 
 /* Button Overrides */
 .btn {
@@ -168,7 +180,7 @@ a:hover {
 }
 
 /* Custom Button Styles */
-.btn-view {
+.btn-view{
   background-color: var(--primary-color);
   border: none;
   margin-right: 0.5rem;
@@ -224,4 +236,55 @@ a:hover {
   font-size: 0.8rem;      
   border-radius: 0.25rem;   
   margin-top: 0;
+}
+
+/* Outline Buttons with Fill on Hover */
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
 }
