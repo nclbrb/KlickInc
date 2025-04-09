@@ -95,7 +95,7 @@ function DashboardTeamMember({ user, onLogout }) {
 
         {/* Main Content */}
         <Col className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2>Welcome, {user.email}!</h2>
+          <h2>Welcome, {user.username}!</h2>
           <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
           <Row className="mb-4">
             <Col md={6}>

@@ -9,13 +9,18 @@ const NavBar = ({ user, onLogout, navigate }) => {
       ? 'nav-link active text-white mb-2 d-flex align-items-center'
       : 'nav-link text-white mb-2 d-flex align-items-center';
 
-  // Determine display role label
-  const roleLabel =
+  // Determine the role text based on the user role.
+  const roleText =
     user?.role === 'project_manager'
       ? 'Project Manager'
       : user?.role === 'team_member'
       ? 'Team Member'
       : '';
+
+  const displayName = user?.username;
+
+  // Create the composite label "Role, Name".
+  const roleAndName = roleText && displayName ? `${roleText}: ${displayName}` : '';
 
   return (
     <div
@@ -30,8 +35,8 @@ const NavBar = ({ user, onLogout, navigate }) => {
     >
       <div>
         <h3 className="mb-1 text-center">My App</h3>
-        {/* Display the user's role here */}
-        {roleLabel && <p className="mb-4 text-center small">{roleLabel}</p>}
+        {/* Display the role and name label */}
+        {roleAndName && <p className="mb-4 text-center small">{roleAndName}</p>}
         <Nav className="flex-column">
           <Nav.Link as={NavLink} to="/dashboard" end className={getLinkClass}>
             <i className="material-icons me-2">dashboard</i> Dashboard
