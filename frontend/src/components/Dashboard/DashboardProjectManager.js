@@ -1,5 +1,3 @@
-// DashboardProjectManager.js
-
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -8,12 +6,12 @@ import {
   Card,
   Table,
   Button,
-  Nav
 } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProjectModal from './ProjectModal';
 import TaskModal from './TaskModal';
+import NavBar from './NavBar';
 
 function DashboardProjectManager({ user, onLogout }) {
   const navigate = useNavigate();
@@ -36,15 +34,17 @@ function DashboardProjectManager({ user, onLogout }) {
       .get('http://127.0.0.1:8000/api/projects', {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
-      .then(response => {
+      .then((response) => {
         // Sort projects by updated_at (descending)
-        const sorted = response.data.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        const sorted = response.data.sort(
+          (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+        );
         setProjects(sorted);
       })
-      .catch(error => console.error('Error fetching projects:', error));
+      .catch((error) => console.error('Error fetching projects:', error));
   };
 
   const fetchTasks = () => {
@@ -53,15 +53,17 @@ function DashboardProjectManager({ user, onLogout }) {
       .get('http://127.0.0.1:8000/api/tasks', {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
-      .then(response => {
+      .then((response) => {
         // Sort tasks by updated_at (descending)
-        const sorted = response.data.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        const sorted = response.data.sort(
+          (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+        );
         setTasks(sorted);
       })
-      .catch(error => console.error('Error fetching tasks:', error));
+      .catch((error) => console.error('Error fetching tasks:', error));
   };
 
   // Project actions
@@ -73,11 +75,12 @@ function DashboardProjectManager({ user, onLogout }) {
   const handleDeleteProject = (id) => {
     if (!window.confirm('Are you sure you want to delete this project?')) return;
     const token = localStorage.getItem('access_token');
-    axios.delete(`http://127.0.0.1:8000/api/projects/${id}`, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-    })
+    axios
+      .delete(`http://127.0.0.1:8000/api/projects/${id}`, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      })
       .then(() => fetchProjects())
-      .catch(error => console.error('Error deleting project:', error));
+      .catch((error) => console.error('Error deleting project:', error));
   };
 
   // Task actions
@@ -89,14 +92,15 @@ function DashboardProjectManager({ user, onLogout }) {
   const handleDeleteTask = (id) => {
     if (!window.confirm('Are you sure you want to delete this task?')) return;
     const token = localStorage.getItem('access_token');
-    axios.delete(`http://127.0.0.1:8000/api/tasks/${id}`, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-    })
+    axios
+      .delete(`http://127.0.0.1:8000/api/tasks/${id}`, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      })
       .then(() => fetchTasks())
-      .catch(error => console.error('Error deleting task:', error));
+      .catch((error) => console.error('Error deleting task:', error));
   };
 
-  // Badge helper for project status (example: "To Do", "In Progress", "Done")
+  // Badge helper for project status (e.g., "To Do", "In Progress", "Done")
   const getProjectStatusBadge = (status) => {
     let badgeClass = 'secondary';
     if (status === 'In Progress') {
@@ -104,11 +108,7 @@ function DashboardProjectManager({ user, onLogout }) {
     } else if (status === 'Done') {
       badgeClass = 'success';
     }
-    return (
-      <span className={`badge bg-${badgeClass}`}>
-        {status}
-      </span>
-    );
+    return <span className={`badge bg-${badgeClass}`}>{status}</span>;
   };
 
   // Badge helpers for task status and priority
@@ -146,48 +146,24 @@ function DashboardProjectManager({ user, onLogout }) {
     );
   };
 
-  // Sidebar styles
-  const sidebarStyle = {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    padding: '20px'
-  };
-
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
-        {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-dark text-white d-flex flex-column" style={sidebarStyle}>
-          <div>
-            <h3 className="mb-4 text-center">My App</h3>
-            <Nav className="flex-column">
-              <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">dashboard</i> Dashboard
-              </Nav.Link>
-              <Nav.Link as={Link} to="/projects" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">folder</i> Projects
-              </Nav.Link>
-              <Nav.Link as={Link} to="/tasks" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">assignment</i> Tasks
-              </Nav.Link>
-            </Nav>
-          </div>
-          <div>
-            <Button
-              variant="outline-light"
-              onClick={() => { onLogout(); navigate('/login'); }}
-              className="d-flex align-items-center"
-            >
-              <i className="material-icons me-2">logout</i> Logout
-            </Button>
-          </div>
+        {/* Sidebar using NavBar */}
+        <Col xs={12} md={3} lg={2} className="p-0">
+        <NavBar user={user} onLogout={onLogout} navigate={navigate} />
         </Col>
 
         {/* Main Content */}
-        <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-        <h2 style={{ marginBottom: '5rem' }}>Welcome, {user.email}!</h2>
+        <Col
+          xs={12}
+          md={9}
+          lg={10}
+          className="p-4"
+          style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}
+        >
+          <h2>Welcome, {user.email}!</h2>
+          <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
           <Row className="mb-4 d-flex align-items-stretch">
             <Col md={6} className="d-flex">
               <Card className="shadow-sm mb-3 flex-fill">
@@ -209,7 +185,7 @@ function DashboardProjectManager({ user, onLogout }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {projects.map(project => (
+                        {projects.map((project) => (
                           <tr key={project.id}>
                             <td>{project.project_name}</td>
                             <td>{project.project_code}</td>
@@ -219,8 +195,6 @@ function DashboardProjectManager({ user, onLogout }) {
                                 <Button
                                   className="btn-view me-2 mb-2"
                                   onClick={() => {
-                                    // Optionally view tasks in modal
-                                    // (Implement similar to handleViewTasks if needed)
                                     setSelectedProject(project);
                                     setShowProjectModal(true);
                                   }}
@@ -246,6 +220,11 @@ function DashboardProjectManager({ user, onLogout }) {
                       </tbody>
                     </Table>
                   </div>
+                  <div className="mt-2 text-end">
+                    <Button variant="link" onClick={() => navigate('/projects')}>
+                      View All Projects
+                    </Button>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
@@ -269,7 +248,7 @@ function DashboardProjectManager({ user, onLogout }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {tasks.map(task => (
+                        {tasks.map((task) => (
                           <tr key={task.id}>
                             <td>{task.title}</td>
                             <td>{getTaskStatusBadge(task.status)}</td>
@@ -294,6 +273,11 @@ function DashboardProjectManager({ user, onLogout }) {
                         ))}
                       </tbody>
                     </Table>
+                  </div>
+                  <div className="mt-2 text-end">
+                    <Button variant="link" onClick={() => navigate('/tasks')}>
+                      View All Tasks
+                    </Button>
                   </div>
                 </Card.Body>
               </Card>

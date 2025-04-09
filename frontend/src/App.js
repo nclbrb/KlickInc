@@ -1,5 +1,3 @@
-// App.js
-
 import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -69,24 +67,16 @@ function App() {
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Dashboard for Project Manager */}
+        {/* Unified Dashboard Route */}
         <Route
-          path="/project-manager-dashboard"
+          path="/dashboard"
           element={
-            user?.role === 'project_manager' ? (
-              <DashboardProjectManager user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Dashboard for Team Member */}
-        <Route
-          path="/team-member-dashboard"
-          element={
-            user?.role === 'team_member' ? (
-              <DashboardTeamMember user={user} onLogout={handleLogout} />
+            user ? (
+              user.role === 'project_manager' ? (
+                <DashboardProjectManager user={user} onLogout={handleLogout} />
+              ) : (
+                <DashboardTeamMember user={user} onLogout={handleLogout} />
+              )
             ) : (
               <Navigate to="/login" />
             )
@@ -117,18 +107,12 @@ function App() {
           }
         />
 
-        {/* Fallback Route: Redirect based on authentication */}
+        {/* Fallback Route */}
         <Route
           path="*"
           element={
             <Navigate
-              to={
-                user
-                  ? user.role === 'project_manager'
-                    ? '/project-manager-dashboard'
-                    : '/team-member-dashboard'
-                  : '/login'
-              }
+              to={user ? '/dashboard' : '/login'}
             />
           }
         />

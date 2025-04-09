@@ -1,10 +1,9 @@
-// ProjectsPage.js
-
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Button, Table, Modal } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Button, Table, Modal } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProjectModal from './ProjectModal';
+import NavBar from './NavBar';
 
 function ProjectsPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -13,11 +12,11 @@ function ProjectsPage({ user, onLogout }) {
   const [showTasksModal, setShowTasksModal] = useState(false);
   const [projectTasks, setProjectTasks] = useState([]);
   const [selectedProjectForTasks, setSelectedProjectForTasks] = useState(null);
-  
+
   // For project modal (only for project managers)
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  
+
   // For team member filtering: fetch tasks assigned to the team member
   const [tasks, setTasks] = useState([]);
 
@@ -26,6 +25,7 @@ function ProjectsPage({ user, onLogout }) {
     if (user.role === 'team_member') {
       fetchMyTasks();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.role]);
 
   const fetchProjects = () => {
@@ -158,15 +158,6 @@ function ProjectsPage({ user, onLogout }) {
     return <span className={`badge ${badgeClass}`}>{icon}{priority.toUpperCase()}</span>;
   };
 
-  // Sidebar styles
-  const sidebarStyle = {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    padding: '20px'
-  };
-
   // For team members, filter projects based on tasks assigned to them
   const filteredProjects =
     user.role === 'team_member'
@@ -178,28 +169,10 @@ function ProjectsPage({ user, onLogout }) {
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
-      <Row noGutters="true">
-        {/* Sidebar */}
-        <Col xs={12} md={3} lg={2} className="bg-dark text-white d-flex flex-column" style={sidebarStyle}>
-          <div>
-            <h3 className="mb-4 text-center">My App</h3>
-            <Nav className="flex-column">
-              <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">dashboard</i> Dashboard
-              </Nav.Link>
-              <Nav.Link as={Link} to="/projects" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">folder</i> Projects
-              </Nav.Link>
-              <Nav.Link as={Link} to="/tasks" className="text-white mb-2 d-flex align-items-center">
-                <i className="material-icons me-2">assignment</i> Tasks
-              </Nav.Link>
-            </Nav>
-          </div>
-          <div>
-            <Button variant="outline-light" onClick={handleLogout} className="d-flex align-items-center">
-              <i className="material-icons me-2">logout</i> Logout
-            </Button>
-          </div>
+      <Row>
+        {/* Sidebar using NavBar */}
+        <Col xs={12} md={3} lg={2} className="p-0">
+        <NavBar user={user} onLogout={onLogout} navigate={navigate} />
         </Col>
         
         {/* Main Content */}
