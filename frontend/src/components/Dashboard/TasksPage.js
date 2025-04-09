@@ -1,5 +1,3 @@
-// TasksPage.js
-
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Nav, Button, Table, DropdownButton, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
@@ -174,14 +172,15 @@ function TasksPage({ user, onLogout }) {
     );
   };
 
-  // Sidebar styles
-  const sidebarStyle = {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    padding: '20px'
-  };
+    // Sidebar style
+    const sidebarStyle = {
+      minHeight: '100vh',
+      width: '260px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      padding: '20px'
+    };
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
@@ -189,7 +188,7 @@ function TasksPage({ user, onLogout }) {
         {/* Sidebar */}
         <Col xs={12} md={3} lg={2} className="bg-purp text-white d-flex flex-column" style={sidebarStyle}>
           <div>
-            <h3 className="mb-4 text-center">My App</h3>
+            <h3 className="mb-4 text-center text-white">My App</h3>
             <Nav className="flex-column">
               <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
                 <i className="material-icons me-2">dashboard</i> Dashboard
@@ -232,10 +231,7 @@ function TasksPage({ user, onLogout }) {
               <h5 className="mb-0 text-white">My Tasks</h5>
             </Card.Header>
             <Card.Body>
-              <div
-                className="scrollable-list"
-                style={{ maxHeight: '60vh', overflowY: 'auto' }}
-              >
+              <div className="scrollable-list" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
                 <Table hover>
                   <thead>
                     <tr>

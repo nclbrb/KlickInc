@@ -1,9 +1,10 @@
-// DashboardTeamMember.js
-
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Nav } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Table, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api';
+import { Nav } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+
 
 function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
@@ -12,25 +13,30 @@ function DashboardTeamMember({ user, onLogout }) {
 
   useEffect(() => {
     fetchTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchTasks = () => {
-    api.get('/tasks')
-      .then(response => {
+    api
+      .get('/tasks')
+      .then((response) => {
         // Filter tasks assigned to the current team member
-        const myTasks = response.data.filter(task => task.assigned_to === user.id);
+        const myTasks = response.data.filter((task) => task.assigned_to === user.id);
         // Sort tasks by updated_at descending
         myTasks.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         setTasks(myTasks);
 
-        // Extract unique projects from these tasks and sort them by updated_at descending
+        // Extract unique projects from these tasks
         const projectsMap = {};
-        myTasks.forEach(task => {
+        myTasks.forEach((task) => {
           if (task.project) {
-            // If the project is already in our map, we compare dates
+            // Check if project exists; update if task's project is more recent
             if (!projectsMap[task.project.id]) {
               projectsMap[task.project.id] = task.project;
-            } else if (new Date(task.project.updated_at) > new Date(projectsMap[task.project.id].updated_at)) {
+            } else if (
+              new Date(task.project.updated_at) >
+              new Date(projectsMap[task.project.id].updated_at)
+            ) {
               projectsMap[task.project.id] = task.project;
             }
           }
@@ -39,7 +45,7 @@ function DashboardTeamMember({ user, onLogout }) {
         projectsArray.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         setAssignedProjects(projectsArray);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching tasks:', error);
       });
   };
@@ -75,7 +81,8 @@ function DashboardTeamMember({ user, onLogout }) {
     }
     return (
       <span className={`badge ${badgeClass}`}>
-        {icon}{priority.toUpperCase()}
+        {icon}
+        {priority.toUpperCase()}
       </span>
     );
   };
@@ -96,7 +103,7 @@ function DashboardTeamMember({ user, onLogout }) {
         {/* Sidebar */}
         <Col md="auto" className="bg-purp text-white" style={sidebarStyle}>
           <div>
-            <h3 className="mb-4 text-center">My App</h3>
+            <h3 className="mb-4 text-center text-white">My App</h3>
             <Nav className="flex-column">
               <Nav.Link as={Link} to="/dashboard" className="text-white mb-2 d-flex align-items-center">
                 <i className="material-icons me-2">dashboard</i> Dashboard
@@ -122,7 +129,8 @@ function DashboardTeamMember({ user, onLogout }) {
 
         {/* Main Content */}
         <Col className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-        <h2 style={{ marginBottom: '5rem' }}>Welcome, {user.email}!</h2>
+          <h2>Welcome, {user.username}!</h2>
+          <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
           <Row className="mb-4">
             <Col md={6}>
               <Card className="shadow-sm mb-3">
@@ -140,14 +148,12 @@ function DashboardTeamMember({ user, onLogout }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {assignedProjects.map(project => (
+                        {assignedProjects.map((project) => (
                           <tr key={project.id}>
                             <td>{project.project_name}</td>
                             <td>{project.project_code}</td>
                             <td>
-                              <span className="badge bg-secondary">
-                                {project.status}
-                              </span>
+                              <span className="badge bg-secondary">{project.status}</span>
                             </td>
                           </tr>
                         ))}
@@ -179,12 +185,16 @@ function DashboardTeamMember({ user, onLogout }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {tasks.map(task => (
+                        {tasks.map((task) => (
                           <tr key={task.id}>
                             <td>{task.title}</td>
                             <td>{getTaskStatusBadge(task.status)}</td>
                             <td>{getTaskPriorityBadge(task.priority)}</td>
-                            <td>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}</td>
+                            <td>
+                              {task.deadline
+                                ? new Date(task.deadline).toLocaleDateString()
+                                : 'N/A'}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
