@@ -1,31 +1,47 @@
+// TasksPage.js
+
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Button, ButtonGroup, Table, Dropdown, DropdownButton } from 'react-bootstrap';
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Nav,
+  Button,
+  Table,
+  DropdownButton,
+  Dropdown
+} from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TaskModal from './TaskModal';
+import ProjectModal from './ProjectModal';
 
 function TasksPage({ user, onLogout }) {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
-  const [showModal, setShowModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  // For viewing project details in read-only mode
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [selectedProjectForView, setSelectedProjectForView] = useState(null);
 
   useEffect(() => {
     fetchTasks();
     fetchUsers();
-    if (user.role === 'project_manager') {
-      fetchProjects();
-    }
-  }, [user.role]);
+    fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchTasks = async () => {
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.get('http://127.0.0.1:8000/api/tasks', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -43,12 +59,12 @@ function TasksPage({ user, onLogout }) {
       const token = localStorage.getItem('access_token');
       const response = await axios.get('http://127.0.0.1:8000/api/users', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       if (user.role === 'project_manager') {
-        const teamMembers = response.data.filter(user => user.role === 'team_member');
+        const teamMembers = response.data.filter(u => u.role === 'team_member');
         setUsers(teamMembers);
       } else {
         setUsers(response.data);
@@ -63,7 +79,7 @@ function TasksPage({ user, onLogout }) {
       const token = localStorage.getItem('access_token');
       const response = await axios.get('http://127.0.0.1:8000/api/projects', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -75,24 +91,21 @@ function TasksPage({ user, onLogout }) {
 
   const handleCreateTask = () => {
     setSelectedTask(null);
-    setShowModal(true);
+    setShowTaskModal(true);
   };
 
   const handleEditTask = (task) => {
     setSelectedTask(task);
-    setShowModal(true);
+    setShowTaskModal(true);
   };
 
   const handleDeleteTask = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) {
-      return;
-    }
-
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
     try {
       const token = localStorage.getItem('access_token');
       await axios.delete(`http://127.0.0.1:8000/api/tasks/${id}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -103,39 +116,81 @@ function TasksPage({ user, onLogout }) {
     }
   };
 
-  const handleLogout = () => {
-    onLogout();
-    navigate('/login');
+  // For team member: updating task status
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(
+        `http://127.0.0.1:8000/api/tasks/${taskId}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      fetchTasks();
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      alert('Failed to update task status');
+    }
   };
 
+  // View project details in read-only mode
+  const handleViewProject = (project) => {
+    setSelectedProjectForView(project);
+    setShowProjectModal(true);
+  };
+
+  const formatDeadline = (deadline) => {
+    if (!deadline) return 'No deadline';
+    return new Date(deadline).toLocaleDateString();
+  };
+
+  // Helper to display task status as a badge
+  const getTaskStatusBadge = (status) => {
+    let badgeClass = 'secondary';
+    if (status === 'completed') {
+      badgeClass = 'success';
+    } else if (status === 'in_progress') {
+      badgeClass = 'warning';
+    }
+    return (
+      <span className={`badge bg-${badgeClass}`}>
+        {status.replace('_', ' ').toUpperCase()}
+      </span>
+    );
+  };
+
+  // Helper to display task priority as a badge
+  const getTaskPriorityBadge = (priority) => {
+    let badgeClass = 'bg-info text-dark';
+    let icon = '';
+    if (priority === 'high') {
+      badgeClass = 'bg-danger';
+      icon = '🔴 ';
+    } else if (priority === 'medium') {
+      badgeClass = 'bg-warning text-dark';
+      icon = '🟡 ';
+    } else if (priority === 'low') {
+      badgeClass = 'bg-info text-dark';
+      icon = '🔵 ';
+    }
+    return (
+      <span className={`badge ${badgeClass}`}>
+        {icon}{priority.toUpperCase()}
+      </span>
+    );
+  };
+
+  // Sidebar styles
   const sidebarStyle = {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    padding: '20px',
-  };
-
-  // Function to format deadline
-  const formatDeadline = (deadline) => {
-    if (!deadline) return 'No deadline';
-    const date = new Date(deadline);
-    return date.toLocaleDateString(); // Formats as 'MM/DD/YYYY'
-  };
-
-  // Handle status update
-  const handleStatusChange = async (taskId, newStatus) => {
-    try {
-      const token = localStorage.getItem('access_token');
-      await axios.put(`http://127.0.0.1:8000/api/tasks/${taskId}`, 
-        { status: newStatus },
-        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }}
-      );
-      fetchTasks();  // Refresh task list after update
-    } catch (error) {
-      console.error('Error updating task status:', error);
-      alert('Failed to update task status');
-    }
+    padding: '20px'
   };
 
   return (
@@ -158,7 +213,14 @@ function TasksPage({ user, onLogout }) {
             </Nav>
           </div>
           <div>
-            <Button variant="outline-light" onClick={handleLogout} className="d-flex align-items-center">
+            <Button
+              variant="outline-light"
+              onClick={() => {
+                onLogout();
+                navigate('/login');
+              }}
+              className="d-flex align-items-center"
+            >
               <i className="material-icons me-2">logout</i> Logout
             </Button>
           </div>
@@ -166,26 +228,26 @@ function TasksPage({ user, onLogout }) {
 
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          {user.role === 'project_manager' && (
-           <Card className="mb-4 shadow-sm">
-           <Card.Header className="bg-primary text-white">
-             <h5 className="mb-0">Create New Task</h5>
-           </Card.Header>
-           <Card.Body>
-             <p>Welcome, Project Manager {user.username}! Do you want to create a new task?</p>
-             <Button variant="primary" onClick={handleCreateTask}>
-               Create New Task
-             </Button>
-           </Card.Body>
-         </Card>
+        <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>
+  Tasks
+</h2>
+          {/* Only project managers can add new tasks */}
+          {user.role !== 'team_member' && (
+            <div className="mb-3 text-end">
+              <Button variant="primary" onClick={handleCreateTask}>
+                + New Task
+              </Button>
+            </div>
           )}
-
           <Card className="shadow-sm">
             <Card.Header className="bg-success text-white d-flex justify-content-between align-items-center">
               <h5 className="mb-0">My Tasks</h5>
             </Card.Header>
             <Card.Body>
-              <div className="table-responsive">
+              <div
+                className="scrollable-list"
+                style={{ maxHeight: '60vh', overflowY: 'auto' }}
+              >
                 <Table hover>
                   <thead>
                     <tr>
@@ -193,10 +255,9 @@ function TasksPage({ user, onLogout }) {
                       <th>Project</th>
                       <th>Status</th>
                       <th>Priority</th>
-                      <th>Assigned To</th>
-                      <th>Deadline</th> {/* New column for Deadline */}
-                      {user.role !== 'team_member' && <th>Actions</th>}
-                      {user.role === 'team_member' && <th>Update Status</th>} {/* Add new column for Update Status */}
+                      <th>Deadline</th>
+                      {user.role !== 'team_member' && <th style={{ width: '220px' }}>Actions</th>}
+                      {user.role === 'team_member' && <th>Update Status</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -205,37 +266,48 @@ function TasksPage({ user, onLogout }) {
                         <td>
                           <strong>{task.title}</strong>
                           {task.description && (
-                            <div className="text-muted small">{task.description}</div>
+                            <div className="text-muted small">
+                              {task.description.substring(0, 50)}
+                              {task.description.length > 50 ? '...' : ''}
+                            </div>
                           )}
                         </td>
-                        <td>{task.project?.project_name} ({task.project?.project_code})</td>
                         <td>
-                          <span className={`badge bg-${task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'secondary'}`}>
-                            {task.status.replace('_', ' ').toUpperCase()}
-                          </span>
+                          {task.project?.project_name} ({task.project?.project_code})
                         </td>
-                        <td>
-                          <span className={`badge ${
-                            task.priority === 'high' 
-                              ? 'bg-danger' 
-                              : task.priority === 'medium'
-                              ? 'bg-warning text-dark'
-                              : 'bg-info text-dark'
-                          }`}>
-                            {task.priority === 'high' && '🔴 '}
-                            {task.priority === 'medium' && '🟡 '}
-                            {task.priority === 'low' && '🔵 '}
-                            {task.priority.toUpperCase()}
-                          </span>
-                        </td>
-                        <td>{task.user ? `${task.user.username}` : 'Unassigned'}</td>
-                        <td>{formatDeadline(task.deadline)}</td> {/* Display the formatted deadline */}
-                        {user.role === 'team_member' && task.user?.id === user.id && (
+                        <td>{getTaskStatusBadge(task.status)}</td>
+                        <td>{getTaskPriorityBadge(task.priority)}</td>
+                        <td>{formatDeadline(task.deadline)}</td>
+                        {user.role !== 'team_member' && (
                           <td>
-                            {/* Update Status Dropdown for Team Member */}
+                            <div>
+                              <Button
+                                className="btn-view me-2 mb-2"
+                                onClick={() => handleViewProject(task.project)}
+                              >
+                                View Project
+                              </Button>
+                              <Button
+                                className="btn-edit me-2 mb-2"
+                                onClick={() => handleEditTask(task)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                className="btn-delete mb-2"
+                                onClick={() => handleDeleteTask(task.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </td>
+                        )}
+                        {user.role === 'team_member' && (
+                          <td>
                             <DropdownButton
                               variant="outline-secondary"
                               title="Update Status"
+                              size="sm"
                               onSelect={(status) => handleStatusChange(task.id, status)}
                             >
                               <Dropdown.Item eventKey="not_started">Not Started</Dropdown.Item>
@@ -244,47 +316,37 @@ function TasksPage({ user, onLogout }) {
                             </DropdownButton>
                           </td>
                         )}
-                        {user.role === 'project_manager' && (
-                          <td>
-                            <ButtonGroup size="sm">
-                              <Button
-                                variant="outline-warning"
-                                onClick={() => handleEditTask(task)}
-                              >
-                                Update
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                onClick={() => handleDeleteTask(task.id)}
-                              >
-                                Delete
-                              </Button>
-                            </ButtonGroup>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>
                 </Table>
-                {tasks.length === 0 && (
-                  <div className="text-center text-muted p-4">
-                    No tasks found
-                  </div>
-                )}
               </div>
+              {tasks.length === 0 && (
+                <div className="text-center text-muted p-4">No tasks found.</div>
+              )}
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
-      {/* Task Modal */}
-      <TaskModal
-        show={showModal}
-        handleClose={() => setShowModal(false)}
-        task={selectedTask}
-        refreshTasks={fetchTasks}
-        projects={projects}
-        users={users}
+      {/* Task Modal for creating/updating tasks (only for project managers) */}
+      {user.role !== 'team_member' && (
+        <TaskModal
+          show={showTaskModal}
+          handleClose={() => setShowTaskModal(false)}
+          task={selectedTask}
+          refreshTasks={fetchTasks}
+          projects={projects}
+          users={users}
+        />
+      )}
+
+      {/* Project Modal for viewing project details (read-only) */}
+      <ProjectModal
+        show={showProjectModal}
+        handleClose={() => setShowProjectModal(false)}
+        project={selectedProjectForView}
+        readOnly={true}
       />
     </Container>
   );
