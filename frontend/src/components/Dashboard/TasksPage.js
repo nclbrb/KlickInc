@@ -259,7 +259,6 @@ function TasksPage({ user, onLogout }) {
                               size="sm"
                               onSelect={(status) => handleStatusChange(task.id, status)}
                             >
-                              <Dropdown.Item eventKey="not_started">Not Started</Dropdown.Item>
                               <Dropdown.Item eventKey="in_progress">In Progress</Dropdown.Item>
                               <Dropdown.Item eventKey="completed">Completed</Dropdown.Item>
                             </DropdownButton>
