@@ -14,7 +14,7 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
   };
 
   const [formData, setFormData] = useState(emptyForm);
-  const [users, setUsers] = useState([]); 
+  const [users, setUsers] = useState([]); // State to hold the list of users
 
   useEffect(() => {
     if (show) {
@@ -32,6 +32,7 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
         setFormData(emptyForm);
       }
 
+      // Fetch users when the modal is shown
       fetchUsers();
     }
   }, [show, task]);
@@ -49,7 +50,7 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
 
       // Filter out users who are not team members
       const teamMembers = response.data.filter(user => user.role === 'team_member');
-      setUsers(teamMembers); 
+      setUsers(teamMembers); // Set only team members
     } catch (error) {
       console.error('Error fetching users:', error);
     }

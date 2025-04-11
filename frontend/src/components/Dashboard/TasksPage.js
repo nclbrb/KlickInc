@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TaskModal from './TaskModal';
 import ProjectModal from './ProjectModal';
-import NavBar from './NavBar';  
+import NavBar from './NavBar';  // Ensure the path is correct
 
 function TasksPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ function TasksPage({ user, onLogout }) {
     fetchTasks();
     fetchUsers();
     fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchTasks = async () => {
