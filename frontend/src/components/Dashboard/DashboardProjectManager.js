@@ -25,7 +25,6 @@ function DashboardProjectManager({ user, onLogout }) {
   useEffect(() => {
     fetchProjects();
     fetchTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProjects = () => {
@@ -149,7 +148,7 @@ function DashboardProjectManager({ user, onLogout }) {
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
-        {/* Sidebar using NavBar from old implementation with new purplish theme */}
+        {/* Sidebar using NavBar */}
         <Col xs={12} md={3} lg={2} className="p-0">
           <NavBar user={user} onLogout={onLogout} navigate={navigate} />
         </Col>
@@ -287,7 +286,7 @@ function DashboardProjectManager({ user, onLogout }) {
         task={selectedTask}
         refreshTasks={fetchTasks}
         projects={projects}
-        users={[]} // Modify as needed
+        users={[]} 
       />
     </Container>
   );

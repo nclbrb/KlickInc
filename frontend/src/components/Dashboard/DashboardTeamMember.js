@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
-import NavBar from './NavBar'; // Adjust the relative path as needed
+import NavBar from './NavBar'; 
 
 function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
@@ -11,16 +11,13 @@ function DashboardTeamMember({ user, onLogout }) {
 
   useEffect(() => {
     fetchTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchTasks = () => {
     api
       .get('/tasks')
       .then((response) => {
-        // Filter tasks assigned to the current team member
         const myTasks = response.data.filter((task) => task.assigned_to === user.id);
-        // Sort tasks by updated_at descending
         myTasks.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         setTasks(myTasks);
 

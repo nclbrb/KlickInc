@@ -52,7 +52,6 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Find user by email
         $user = User::where('email', $request->email)->first();
 
         // Check if the user exists and the provided password is correct

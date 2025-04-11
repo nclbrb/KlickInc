@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // DELETE /api/projects/{id} - Delete a project
     Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
 
+    // Task Endpoints:
     Route::get('/tasks', [TaskController::class, 'index']);
 
     // POST /api/tasks - Create a new task

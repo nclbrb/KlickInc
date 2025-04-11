@@ -130,7 +130,7 @@ a:hover {
 /* Scrollable List Container */
 .scrollable-list .dropdown-menu {
   position: absolute !important;
-  z-index: 1050; /* Adjust as needed */
+  z-index: 1050; 
 }
 
 /* Modal Enhancements */
@@ -236,7 +236,6 @@ a:hover {
   margin-top: 0;
 }
 
-/* Outline Buttons with Fill on Hover */
 /* Outline Buttons */
 .btn-view-outline {
   background: transparent;
@@ -302,7 +301,6 @@ a:hover {
   filter: brightness(1.5)
 }
 
-/* Optional: Change background on hover for non-active links */
 .sidebar .nav-link:hover {
   background-color: var(--purp-color);
   text-decoration: none;

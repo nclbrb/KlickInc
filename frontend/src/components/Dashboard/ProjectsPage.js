@@ -8,16 +8,11 @@ import NavBar from './NavBar';
 function ProjectsPage({ user, onLogout }) {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
-  // For viewing tasks within a project in a modal (read-only view)
   const [showTasksModal, setShowTasksModal] = useState(false);
   const [projectTasks, setProjectTasks] = useState([]);
   const [selectedProjectForTasks, setSelectedProjectForTasks] = useState(null);
-
-  // For project modal (only for project managers)
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-
-  // For team member filtering: fetch tasks assigned to the team member
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
@@ -25,7 +20,6 @@ function ProjectsPage({ user, onLogout }) {
     if (user.role === 'team_member') {
       fetchMyTasks();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.role]);
 
   const fetchProjects = () => {

@@ -7,15 +7,7 @@ use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of the projects.
-     *
-     * If the authenticated user is a team member, return only projects
-     * that have tasks assigned to that user. Otherwise, return all projects.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -33,12 +25,6 @@ class ProjectController extends Controller
         return response()->json($projects);
     }
 
-    /**
-     * Store a newly created project in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -62,12 +48,6 @@ class ProjectController extends Controller
         return response()->json($project, 201);
     }
 
-    /**
-     * Display the specified project.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function show($id)
     {
         $project = Project::find($id);
@@ -79,13 +59,6 @@ class ProjectController extends Controller
         return response()->json($project);
     }
 
-    /**
-     * Update the specified project in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function update(Request $request, $id)
     {
         $project = Project::find($id);
@@ -115,12 +88,6 @@ class ProjectController extends Controller
         return response()->json($project);
     }
 
-    /**
-     * Remove the specified project from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function destroy($id)
     {
         $project = Project::find($id);

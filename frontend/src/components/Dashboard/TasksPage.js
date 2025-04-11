@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TaskModal from './TaskModal';
 import ProjectModal from './ProjectModal';
-import NavBar from './NavBar';  // Ensure the path is correct
+import NavBar from './NavBar';  
 
 function TasksPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -22,7 +22,6 @@ function TasksPage({ user, onLogout }) {
     fetchTasks();
     fetchUsers();
     fetchProjects();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchTasks = async () => {
@@ -259,7 +258,6 @@ function TasksPage({ user, onLogout }) {
                               size="sm"
                               onSelect={(status) => handleStatusChange(task.id, status)}
                             >
-                              <Dropdown.Item eventKey="not_started">Not Started</Dropdown.Item>
                               <Dropdown.Item eventKey="in_progress">In Progress</Dropdown.Item>
                               <Dropdown.Item eventKey="completed">Completed</Dropdown.Item>
                             </DropdownButton>

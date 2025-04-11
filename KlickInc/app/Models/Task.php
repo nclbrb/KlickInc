@@ -9,7 +9,6 @@ class Task extends Model
 {
     use HasFactory;
 
-    // Add 'deadline' to the fillable array
     protected $fillable = [
         'title',
         'description',
@@ -17,10 +16,9 @@ class Task extends Model
         'project_id',
         'status',
         'priority',
-        'deadline', // Add this line
+        'deadline', 
     ];
 
-    // Define relationships
     public function project()
     {
         return $this->belongsTo(Project::class);

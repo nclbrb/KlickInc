@@ -30,7 +30,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
         setFormData(emptyForm);
       }
     }
-  }, [show, project]); // This will initialize formData when the modal is shown
+  }, [show, project]); 
 
   // Clear form state on close
   const onClose = () => {

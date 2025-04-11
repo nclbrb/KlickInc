@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// Create an Axios instance with your backend's base URL
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // Update if necessary
+  baseURL: 'http://127.0.0.1:8000/api', 
 });
 
 // Helper to set the Authorization header for Axios

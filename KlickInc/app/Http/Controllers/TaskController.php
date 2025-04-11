@@ -23,7 +23,7 @@ class TaskController extends Controller
             return response()->json(['message' => 'Unauthorized. Only project managers can create tasks.'], 403);
         }
 
-        // Validate the request including 'deadline'
+        // Validate 
         $validated = $request->validate([
             'title' => 'required|string',
             'description' => 'nullable|string',
@@ -31,7 +31,7 @@ class TaskController extends Controller
             'project_id' => 'required|exists:projects,id',
             'status' => 'required|string',
             'priority' => 'nullable|string',
-            'deadline' => 'nullable|date', // New validation for 'deadline'
+            'deadline' => 'nullable|date', 
         ]);
 
         // Create the task with the validated data
@@ -47,7 +47,6 @@ class TaskController extends Controller
 
         // Project Manager can update any task
         if ($user->role === 'project_manager') {
-            // Validate the updated request including 'deadline'
             $validated = $request->validate([
                 'title' => 'required|string',
                 'description' => 'nullable|string',
@@ -55,12 +54,12 @@ class TaskController extends Controller
                 'project_id' => 'required|exists:projects,id',
                 'status' => 'required|string',
                 'priority' => 'nullable|string',
-                'deadline' => 'nullable|date', // New validation for 'deadline'
+                'deadline' => 'nullable|date', 
             ]);
         } 
         // Team Member can only update tasks assigned to them
         elseif ($user->role === 'team_member' && $task->assigned_to == $user->id) {
-            // Validate the request for team member (only allow status change and deadline)
+            // Validate the request for team member 
             $validated = $request->validate([
                 'status' => 'required|string|in:not_started,in_progress,completed',
                 'deadline' => 'nullable|date',

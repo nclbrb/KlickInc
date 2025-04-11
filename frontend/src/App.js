@@ -19,11 +19,10 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // On app load, check localStorage for persisted token and fetch user info if available
   useEffect(() => {
     const storedToken = localStorage.getItem('access_token');
     if (storedToken) {
-      setAuthToken(storedToken); // Set token for Axios
+      setAuthToken(storedToken); 
       // Fetch current user info from the API
       api.get('/user')
         .then(response => {
@@ -45,7 +44,7 @@ function App() {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('access_token', token);
-    setAuthToken(token); // Set token for future API calls
+    setAuthToken(token); 
   };
 
   // On logout

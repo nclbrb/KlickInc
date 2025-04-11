@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api, { setAuthToken } from '../../api'; // Import the API instance and helper
+import api, { setAuthToken } from '../../api'; 
 import './Login.css';
 
 function Login({ onLogin }) {
@@ -32,7 +32,6 @@ function Login({ onLogin }) {
       } else if (user.role === 'team_member') {
         navigate('/team-member-dashboard');
       } else {
-        // Fallback or default route
         navigate('/dashboard');
       }
     } catch (err) {

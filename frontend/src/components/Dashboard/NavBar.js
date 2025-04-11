@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import { Nav, Button } from 'react-bootstrap';
 
 const NavBar = ({ user, onLogout, navigate }) => {
-  // Apply active link styling
   const getLinkClass = ({ isActive }) =>
     isActive
       ? 'nav-link active text-white mb-2 d-flex align-items-center'
