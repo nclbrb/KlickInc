@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
 
-function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
+function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
   const emptyForm = {
     title: '',
     description: '',
@@ -14,6 +14,7 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
   };
 
   const [formData, setFormData] = useState(emptyForm);
+  const [users, setUsers] = useState([]); // State to hold the list of users
 
   useEffect(() => {
     if (show) {
@@ -30,8 +31,30 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, users }) {
       } else {
         setFormData(emptyForm);
       }
+
+      // Fetch users when the modal is shown
+      fetchUsers();
     }
   }, [show, task]);
+
+  // Fetch users from the API
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get('http://127.0.0.1:8000/api/users', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // Filter out users who are not team members
+      const teamMembers = response.data.filter(user => user.role === 'team_member');
+      setUsers(teamMembers); // Set only team members
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
