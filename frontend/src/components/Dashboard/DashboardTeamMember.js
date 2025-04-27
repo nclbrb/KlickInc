@@ -82,14 +82,19 @@ function DashboardTeamMember({ user, onLogout }) {
   };
 
   // Helper to format the budget
-  const formatBudget = (budget) => {
-    if (budget === null || budget === undefined) {
-      return 'N/A';
-    }
-    const parsedBudget = parseFloat(budget);
-    //₱ 
-    return !isNaN(parsedBudget) ? `₱${parsedBudget.toFixed(2)}` : 'Invalid Budget';
-  };
+const formatBudget = (budget) => {
+  if (budget === null || budget === undefined || budget === '') {
+    return 'N/A';
+  }
+  
+  const parsedBudget = parseFloat(budget);
+  if (isNaN(parsedBudget)) {
+    return 'Invalid Budget';  // If the value can't be parsed into a number
+  }
+
+  return `₱${parsedBudget.toFixed(2)}`;
+};
+
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
@@ -156,6 +161,7 @@ function DashboardTeamMember({ user, onLogout }) {
                           <th>Status</th>
                           <th>Priority</th>
                           <th>Deadline</th>
+                          <th>Budget</th> 
                         </tr>
                       </thead>
                       <tbody>
@@ -169,6 +175,7 @@ function DashboardTeamMember({ user, onLogout }) {
                                 ? new Date(task.deadline).toLocaleDateString()
                                 : 'N/A'}
                             </td>
+                            <td>{formatBudget(task.budget)}</td> {/* Add Budget value */}
                           </tr>
                         ))}
                       </tbody>
