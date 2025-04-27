@@ -28,29 +28,18 @@ class ProjectController extends Controller
     // Store a new project (including budget and actual expenditure)
     public function store(Request $request)
     {
-        // Validate incoming request
-        $request->validate([
-            'project_name' => 'required|string|max:255',
-            'project_code' => 'required|string|max:255|unique:projects',
-            'description'  => 'nullable|string',
-            'start_date'   => 'required|date',
-            'end_date'     => 'nullable|date',
-            'status'       => 'required|string',
-            'budget'       => 'nullable|numeric|min:0', // New validation for budget
-            'actual_expenditure' => 'nullable|numeric|min:0', // New validation for actual expenditure
+        $validated = $request->validate([
+            'project_name'        => 'required|string|max:255',
+            'project_code'        => 'required|string|max:255|unique:projects',
+            'description'         => 'nullable|string',
+            'start_date'          => 'required|date',
+            'end_date'            => 'nullable|date',
+            'status'              => 'required|string',
+            'budget'              => 'nullable|numeric|min:0',
+            'actual_expenditure'  => 'nullable|numeric|min:0',
         ]);
 
-        // Create the project with the request data, including budget and actual_expenditure
-        $project = Project::create($request->only(
-            'project_name',
-            'project_code',
-            'description',
-            'start_date',
-            'end_date',
-            'status',
-            'budget',  // Store the budget
-            'actual_expenditure' // Store the actual expenditure
-        ));
+        $project = Project::create($validated);
 
         return response()->json($project, 201);
     }
@@ -67,7 +56,7 @@ class ProjectController extends Controller
         return response()->json($project);
     }
 
-    // Update an existing project (including budget and actual expenditure)
+    // Update an existing project
     public function update(Request $request, $id)
     {
         $project = Project::find($id);
@@ -76,31 +65,46 @@ class ProjectController extends Controller
             return response()->json(['message' => 'Project not found'], 404);
         }
 
-        // Validate the incoming request (including budget and actual expenditure)
-        $request->validate([
-            'project_name' => 'required|string|max:255',
-            'project_code' => 'required|string|max:255|unique:projects,project_code,' . $project->id,
-            'description'  => 'nullable|string',
-            'start_date'   => 'required|date',
-            'end_date'     => 'nullable|date',
-            'status'       => 'required|string',
-            'budget'       => 'nullable|numeric|min:0', // New validation for budget
-            'actual_expenditure' => 'nullable|numeric|min:0', // New validation for actual expenditure
+        $validated = $request->validate([
+            'project_name'        => 'required|string|max:255',
+            'project_code'        => 'required|string|max:255|unique:projects,project_code,' . $project->id,
+            'description'         => 'nullable|string',
+            'start_date'          => 'required|date',
+            'end_date'            => 'nullable|date',
+            'status'              => 'required|string',
+            'budget'              => 'nullable|numeric|min:0',
+            'actual_expenditure'  => 'nullable|numeric|min:0',
         ]);
 
-        // Update the project with the new data (including budget and actual_expenditure)
-        $project->update($request->only(
-            'project_name',
-            'project_code',
-            'description',
-            'start_date',
-            'end_date',
-            'status',
-            'budget',  // Update the budget
-            'actual_expenditure' // Update the actual expenditure
-        ));
+        $project->update($validated);
 
         return response()->json($project);
+    }
+
+    // Get totals for a project's tasks
+    public function projectTotals($projectId)
+    {
+        try {
+            $project = Project::with('tasks')->findOrFail($projectId);
+
+            $tasks = $project->tasks->map(function ($task) {
+                $budget = $task->budget ?? 0;
+                $amountUsed = $task->amount_used ?? 0;
+                $leftover = $budget - $amountUsed;
+
+                return [
+                    'task_id'     => $task->id,
+                    'title'       => $task->title,
+                    'budget'      => $budget,
+                    'amount_used' => $amountUsed,
+                    'leftover'    => $leftover,
+                ];
+            });
+
+            return response()->json(['tasks' => $tasks]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to fetch project totals', 'error' => $e->getMessage()], 500);
+        }
     }
 
     // Delete a project
