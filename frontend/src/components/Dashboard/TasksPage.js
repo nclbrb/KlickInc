@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Table, DropdownButton, Dropdown } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Button, Table, Form, Modal } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TaskModal from './TaskModal';
 import ProjectModal from './ProjectModal';
-import NavBar from './NavBar';  // Ensure the path is correct
+import NavBar from './NavBar';
 
 function TasksPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -13,6 +13,11 @@ function TasksPage({ user, onLogout }) {
   const [users, setUsers] = useState([]);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  // Modal state for recording amount used
+  const [showAmountModal, setShowAmountModal] = useState(false);
+  const [amountUsed, setAmountUsed] = useState('');
+  const [selectedTaskForAmount, setSelectedTaskForAmount] = useState(null);
 
   // For viewing project details in read-only mode
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -29,17 +34,12 @@ function TasksPage({ user, onLogout }) {
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.get('http://127.0.0.1:8000/api/tasks', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       setTasks(response.data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      if (error.response?.status === 403) {
-        alert('You do not have permission to view these tasks');
-      }
+      if (error.response?.status === 403) alert('You do not have permission to view these tasks');
     }
   };
 
@@ -47,14 +47,10 @@ function TasksPage({ user, onLogout }) {
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.get('http://127.0.0.1:8000/api/users', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       if (user.role === 'project_manager') {
-        const teamMembers = response.data.filter(u => u.role === 'team_member');
-        setUsers(teamMembers);
+        setUsers(response.data.filter(u => u.role === 'team_member'));
       } else {
         setUsers(response.data);
       }
@@ -67,10 +63,7 @@ function TasksPage({ user, onLogout }) {
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.get('http://127.0.0.1:8000/api/projects', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       setProjects(response.data);
     } catch (error) {
@@ -93,10 +86,7 @@ function TasksPage({ user, onLogout }) {
     try {
       const token = localStorage.getItem('access_token');
       await axios.delete(`http://127.0.0.1:8000/api/tasks/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       fetchTasks();
     } catch (error) {
@@ -105,19 +95,14 @@ function TasksPage({ user, onLogout }) {
     }
   };
 
-  // For team member: updating task status
-  const handleStatusChange = async (taskId, newStatus) => {
+  // Team member: change status via dropdown
+  const handleStatusChange = async (task, status) => {
     try {
       const token = localStorage.getItem('access_token');
       await axios.put(
-        `http://127.0.0.1:8000/api/tasks/${taskId}`,
-        { status: newStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        `http://127.0.0.1:8000/api/tasks/${task.id}`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
       fetchTasks();
     } catch (error) {
@@ -126,69 +111,86 @@ function TasksPage({ user, onLogout }) {
     }
   };
 
+  // Open modal to record amount used
+  const openAmountModal = (task) => {
+    setSelectedTaskForAmount(task);
+    setAmountUsed('');
+    setShowAmountModal(true);
+  };
+
+  const closeAmountModal = () => {
+    setShowAmountModal(false);
+    setSelectedTaskForAmount(null);
+    setAmountUsed('');
+  };
+
+  const handleAmountSubmit = async () => {
+    const used = parseFloat(amountUsed);
+    if (isNaN(used)) return alert('Please enter a valid amount.');
+    if (used > (selectedTaskForAmount.budget || 0)) return alert('Cannot exceed task budget.');
+  
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(
+        `http://127.0.0.1:8000/api/tasks/${selectedTaskForAmount.id}`,
+        {
+          title: selectedTaskForAmount.title,
+          description: selectedTaskForAmount.description,
+          project_id: selectedTaskForAmount.project_id,
+          assigned_to: selectedTaskForAmount.assigned_to,
+          priority: selectedTaskForAmount.priority,
+          deadline: selectedTaskForAmount.deadline,
+          budget: selectedTaskForAmount.budget,
+          status: selectedTaskForAmount.status,
+          amount_used: used, // only this field is changing
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      closeAmountModal();
+      fetchTasks();
+    } catch (error) {
+      console.error('Error updating amount used:', error);
+      alert(error.response?.data?.message || 'Failed to update amount.');
+    }
+  };
+  
   // View project details in read-only mode
   const handleViewProject = (project) => {
     setSelectedProjectForView(project);
     setShowProjectModal(true);
   };
 
-  const formatDeadline = (deadline) => {
-    if (!deadline) return 'No deadline';
-    return new Date(deadline).toLocaleDateString();
-  };
+  const formatDeadline = (deadline) => deadline ? new Date(deadline).toLocaleDateString() : 'No deadline';
 
-  // Helper to display task status as a badge
-  const getTaskStatusBadge = (status) => {
-    let badgeClass = 'secondary';
-    if (status === 'completed') {
-      badgeClass = 'success';
-    } else if (status === 'in_progress') {
-      badgeClass = 'warning';
-    }
-    return (
-      <span className={`badge bg-${badgeClass}`}>
-        {status.replace('_', ' ').toUpperCase()}
-      </span>
-    );
-  };
-
-  // Helper to display task priority as a badge
   const getTaskPriorityBadge = (priority) => {
-    let badgeClass = 'bg-info text-dark';
-    let icon = '';
-    if (priority === 'high') {
-      badgeClass = 'bg-danger';
-      icon = '🔴 ';
-    } else if (priority === 'medium') {
-      badgeClass = 'bg-warning text-dark';
-      icon = '🟡 ';
-    } else if (priority === 'low') {
-      badgeClass = 'bg-info text-dark';
-      icon = '🔵 ';
-    }
-    return (
-      <span className={`badge ${badgeClass}`}>
-        {icon}{priority.toUpperCase()}
-      </span>
-    );
+    let cls = 'bg-info text-dark';
+    let icon = '🔵 ';
+    if (priority === 'high') { cls = 'bg-danger'; icon = '🔴 '; }
+    else if (priority === 'medium') { cls = 'bg-warning text-dark'; icon = '🟡 '; }
+    return <span className={`badge ${cls}`}>{icon}{priority.toUpperCase()}</span>;
+  };
+
+  const getTaskStatusBadge = (status) => {
+    const map = { completed: 'success', in_progress: 'warning', pending: 'secondary' };
+    return <span className={`badge bg-${map[status]||'secondary'}`}>{status.replace('_',' ').toUpperCase()}</span>;
   };
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
-        {/* Sidebar using NavBar */}
         <Col xs={12} md={3} lg={2} className="p-0">
           <NavBar user={user} onLogout={onLogout} navigate={navigate} />
         </Col>
-
-        {/* Main Content */}
-        <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2 style={{ marginBottom: user.role === 'team_member' ? '5rem' : '1rem' }}>Tasks</h2>
+        <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor:'#f8f9fa', minHeight:'100vh' }}>
+          <h2>Tasks</h2>
           {user.role !== 'team_member' && (
             <div className="mb-3 text-end">
-              <Button className="btn-purp" onClick={handleCreateTask}>
-                + New Task
-              </Button>
+              <Button className="btn-purp" onClick={handleCreateTask}>+ New Task</Button>
             </div>
           )}
           <Card className="shadow-sm">
@@ -196,7 +198,7 @@ function TasksPage({ user, onLogout }) {
               <h5 className="mb-0 text-white">My Tasks</h5>
             </Card.Header>
             <Card.Body>
-              <div className="scrollable-list" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              <div className="scrollable-list" style={{ maxHeight:'60vh', overflowY:'auto' }}>
                 <Table hover>
                   <thead>
                     <tr>
@@ -205,8 +207,9 @@ function TasksPage({ user, onLogout }) {
                       <th>Status</th>
                       <th>Priority</th>
                       <th>Deadline</th>
-                      {user.role !== 'team_member' && <th style={{ width: '220px' }}>Actions</th>}
-                      {user.role === 'team_member' && <th>Update Status</th>}
+                      <th>Budget</th>
+                      <th>Total</th>  
+                      <th>Update</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -214,74 +217,78 @@ function TasksPage({ user, onLogout }) {
                       <tr key={task.id}>
                         <td>
                           <strong>{task.title}</strong>
-                          {task.description && (
-                            <div className="text-muted small">
-                              {task.description.substring(0, 50)}
-                              {task.description.length > 50 ? '...' : ''}
+                          {task.description && <div className="text-muted small">{task.description.slice(0,50)}{task.description.length>50?'...':''}</div>}
+                        </td>
+                        <td>{task.project?.project_name} ({task.project?.project_code})</td>
+                        <td>
+                          {user.role === 'team_member' ? (
+                            <Form.Select 
+                              size="sm" 
+                              value={task.status} 
+                              onChange={e => handleStatusChange(task, e.target.value)} 
+                              style={{ width: '150px' }} //Change width here
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="in_progress">In Progress</option>
+                              <option value="completed">Completed</option>
+                            </Form.Select>
+                          ) : getTaskStatusBadge(task.status)}
+                        </td>
+                        <td>{getTaskPriorityBadge(task.priority)}</td>
+                        <td>{formatDeadline(task.deadline)}</td>
+                        <td>{task.budget != null ? `₱${parseFloat(task.budget).toFixed(2)}` : 'N/A'}</td>
+                        <td>{task.amount_used != null ? `₱${parseFloat(task.amount_used).toFixed(2)}` : 'Not Set'}</td> {/* Total column */}
+                        <td>
+                          {user.role === 'team_member' ? (
+                            <Button size="sm" variant="outline-primary" onClick={() => openAmountModal(task)}>Update Amount</Button>
+                          ) : (
+                            <div className="d-flex gap-2">
+                              <Button size="sm" variant="outline-primary" onClick={() => handleViewProject(task.project)}>View</Button>
+                              <Button size="sm" variant="outline-secondary" onClick={() => handleEditTask(task)}>Edit</Button>
+                              <Button size="sm" variant="outline-danger" onClick={() => handleDeleteTask(task.id)}>Delete</Button>
                             </div>
                           )}
                         </td>
-                        <td>
-                          {task.project?.project_name} ({task.project?.project_code})
-                        </td>
-                        <td>{getTaskStatusBadge(task.status)}</td>
-                        <td>{getTaskPriorityBadge(task.priority)}</td>
-                        <td>{formatDeadline(task.deadline)}</td>
-                        {user.role !== 'team_member' && (
-                          <td>
-                            <div className="d-flex flex-row align-items-center mt-0">
-                              <Button
-                                className="btn-view-outline me-2"
-                                onClick={() => handleViewProject(task.project)}
-                              >
-                                View
-                              </Button>
-                              <Button
-                                className="btn-edit-outline me-2"
-                                onClick={() => handleEditTask(task)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                className="btn-delete-outline"
-                                onClick={() => handleDeleteTask(task.id)}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </td>
-                        )}
-                        {user.role === 'team_member' && (
-                          <td>
-                            <DropdownButton
-                              variant="outline-secondary"
-                              title="Update Status"
-                              size="sm"
-                              onSelect={(status) => handleStatusChange(task.id, status)}
-                            >
-                              <Dropdown.Item eventKey="in_progress">In Progress</Dropdown.Item>
-                              <Dropdown.Item eventKey="completed">Completed</Dropdown.Item>
-                            </DropdownButton>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>
                 </Table>
               </div>
-              {tasks.length === 0 && (
-                <div className="text-center text-muted p-4">No tasks found.</div>
-              )}
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
-      {/* Task Modal for creating/updating tasks (only for project managers) */}
-      {user.role !== 'team_member' && (
+      {/* Team Member Amount Modal */}
+      <Modal show={showAmountModal} onHide={closeAmountModal} centered>
+        <Modal.Header closeButton><Modal.Title>Record Amount Used</Modal.Title></Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>Amount Used (₱)</Form.Label>
+            <Form.Control
+              type="number"
+              value={amountUsed}
+              onChange={e=>setAmountUsed(e.target.value)}
+              min="0"
+              max={selectedTaskForAmount?.budget||0}
+            />
+            <small className="text-muted">Max: ₱{selectedTaskForAmount && selectedTaskForAmount.budget !== null
+              ? `${parseFloat(selectedTaskForAmount.budget).toFixed(2)}`
+              : 'N/A'}
+            </small>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeAmountModal}>Cancel</Button>
+          <Button variant="purp" onClick={handleAmountSubmit}>Save</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Task Modal for project managers */}
+      {user.role!=='team_member' && (
         <TaskModal
           show={showTaskModal}
-          handleClose={() => setShowTaskModal(false)}
+          handleClose={()=>setShowTaskModal(false)}
           task={selectedTask}
           refreshTasks={fetchTasks}
           projects={projects}
@@ -289,12 +296,12 @@ function TasksPage({ user, onLogout }) {
         />
       )}
 
-      {/* Project Modal for viewing project details (read-only) */}
+      {/* Project Modal for viewing project details */}
       <ProjectModal
         show={showProjectModal}
-        handleClose={() => setShowProjectModal(false)}
+        handleClose={()=>setShowProjectModal(false)}
         project={selectedProjectForView}
-        readOnly={true}
+        readOnly
       />
     </Container>
   );

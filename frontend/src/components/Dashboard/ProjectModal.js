@@ -178,18 +178,6 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
             />
             {budgetError && <div className="text-danger mt-2">{budgetError}</div>}
           </Form.Group>
-          <Form.Group controlId="actual_expenditure" className="mb-3">
-            <Form.Label>Actual Expenditure</Form.Label>
-            <Form.Control
-              type="number"
-              name="actual_expenditure"
-              value={formData.actual_expenditure}
-              onChange={handleChange}
-              disabled={readOnly}
-              min="0"
-              step="0.01"
-            />
-          </Form.Group>
           <Form.Group controlId="status" className="mb-3">
             <Form.Label>Status</Form.Label>
             {readOnly ? (
@@ -204,7 +192,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
           </Form.Group>
           <div className="d-flex justify-content-end gap-2 mt-3">
             {!readOnly ? (
-              <Button variant="primary" type="submit">
+              <Button variant="purp" type="submit">
                 {project ? 'Update Project' : 'Create Project'}
               </Button>
             ) : (

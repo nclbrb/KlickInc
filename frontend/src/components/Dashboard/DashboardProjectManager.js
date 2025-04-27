@@ -1,3 +1,4 @@
+//DashboardProjectManager.js
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -239,6 +240,7 @@ function DashboardProjectManager({ user, onLogout }) {
                           <th>Title</th>
                           <th>Status</th>
                           <th>Priority</th>
+                          <th>Budget</th>
                           <th style={{ width: '120px' }}>Actions</th>
                         </tr>
                       </thead>
@@ -253,6 +255,7 @@ function DashboardProjectManager({ user, onLogout }) {
                               <td>{task.title}</td>
                               <td>{getTaskStatusBadge(task.status)}</td>
                               <td>{getTaskPriorityBadge(task.priority)}</td>
+                              <td>{task.budget!=null?`₱${parseFloat(task.budget).toFixed(2)}`:'N/A'}</td>
                               <td>
                                 <div className="d-flex flex-row align-items-center">
                                   <Button

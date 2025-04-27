@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class TaskController extends Controller
             return response()->json(['message' => 'Unauthorized. Only project managers can create tasks.'], 403);
         }
 
-        // Validate 
+        // Validate the incoming request, including the budget field
         $validated = $request->validate([
             'title' => 'required|string',
             'description' => 'nullable|string',
@@ -31,7 +32,8 @@ class TaskController extends Controller
             'project_id' => 'required|exists:projects,id',
             'status' => 'required|string',
             'priority' => 'nullable|string',
-            'deadline' => 'nullable|date', 
+            'deadline' => 'nullable|date',
+            'budget' => 'nullable|numeric',  // Added budget validation
         ]);
 
         // Create the task with the validated data
@@ -42,9 +44,8 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         $task = Task::findOrFail($id);
-
         $user = Auth::user();
-
+    
         // Project Manager can update any task
         if ($user->role === 'project_manager') {
             $validated = $request->validate([
@@ -54,7 +55,9 @@ class TaskController extends Controller
                 'project_id' => 'required|exists:projects,id',
                 'status' => 'required|string',
                 'priority' => 'nullable|string',
-                'deadline' => 'nullable|date', 
+                'deadline' => 'nullable|date',
+                'budget' => 'nullable|numeric',  
+                'amount_used' => 'nullable|numeric',  // ADDING amount_used for project manager
             ]);
         } 
         // Team Member can only update tasks assigned to them
@@ -63,17 +66,19 @@ class TaskController extends Controller
             $validated = $request->validate([
                 'status' => 'required|string|in:not_started,in_progress,completed',
                 'deadline' => 'nullable|date',
+                'budget' => 'nullable|numeric',
+                'amount_used' => 'nullable|numeric', // ADDING amount_used for team member
             ]);
         } else {
             return response()->json(['message' => 'Unauthorized. You can only update your own tasks.'], 403);
         }
-
+    
         // Update the task with the validated data
         $task->update($validated);
-
+    
         return response()->json($task->load(['project', 'user']));
     }
-
+    
     public function destroy($id)
     {
         if (Auth::user()->role !== 'project_manager') {

@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, Table, Modal } from 'react-bootstrap
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProjectModal from './ProjectModal';
+import ProjectTotalModal from './ProjectTotalModal';
 import NavBar from './NavBar';
 
 function ProjectsPage({ user, onLogout }) {
@@ -14,6 +15,10 @@ function ProjectsPage({ user, onLogout }) {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [tasks, setTasks] = useState([]);
+
+  // New state for totals modal
+  const [showTotalsModal, setShowTotalsModal] = useState(false);
+  const [selectedProjectForTotals, setSelectedProjectForTotals] = useState(null);
 
   useEffect(() => {
     fetchProjects();
@@ -49,7 +54,6 @@ function ProjectsPage({ user, onLogout }) {
         },
       })
       .then((response) => {
-        // Filter tasks assigned to the current team member
         const myTasks = response.data.filter(
           (task) => task.assigned_to === user.id
         );
@@ -76,8 +80,7 @@ function ProjectsPage({ user, onLogout }) {
   };
 
   const handleDeleteProject = (id) => {
-    if (!window.confirm('Are you sure you want to delete this project?'))
-      return;
+    if (!window.confirm('Are you sure you want to delete this project?')) return;
     const token = localStorage.getItem('access_token');
     axios
       .delete(`http://127.0.0.1:8000/api/projects/${id}`, {
@@ -95,7 +98,6 @@ function ProjectsPage({ user, onLogout }) {
       });
   };
 
-  // Handle viewing tasks for a project (read-only display)
   const handleViewTasks = (project) => {
     const token = localStorage.getItem('access_token');
     axios
@@ -118,7 +120,12 @@ function ProjectsPage({ user, onLogout }) {
       });
   };
 
-  // Helper to display project status as a badge
+  // New handler for totals modal
+  const handleViewTotals = (project) => {
+    setSelectedProjectForTotals(project);
+    setShowTotalsModal(true);
+  };
+
   const getProjectStatusBadge = (status) => {
     let badgeClass = 'secondary';
     if (status === 'In Progress') {
@@ -129,7 +136,6 @@ function ProjectsPage({ user, onLogout }) {
     return <span className={`badge bg-${badgeClass}`}>{status}</span>;
   };
 
-  // Helper to display task status as a badge
   const getTaskStatusBadge = (status) => {
     let badgeClass = 'secondary';
     if (status === 'in_progress') {
@@ -144,7 +150,6 @@ function ProjectsPage({ user, onLogout }) {
     );
   };
 
-  // Helper to display task priority as a badge
   const getTaskPriorityBadge = (priority) => {
     let badgeClass = 'bg-info text-dark';
     let icon = '';
@@ -166,7 +171,6 @@ function ProjectsPage({ user, onLogout }) {
     );
   };
 
-  // For team members, filter projects based on tasks assigned to them
   const filteredProjects =
     user.role === 'team_member'
       ? projects.filter((project) => {
@@ -175,13 +179,11 @@ function ProjectsPage({ user, onLogout }) {
         })
       : projects;
 
-  // Helper to format the budget
   const formatBudget = (budget) => {
     if (budget === null || budget === undefined) {
       return 'N/A';
     }
     const parsedBudget = parseFloat(budget);
-      //₱
     return !isNaN(parsedBudget) ? `₱${parsedBudget.toFixed(2)}` : 'Invalid Budget';
   };
 
@@ -230,6 +232,7 @@ function ProjectsPage({ user, onLogout }) {
                         <th>Budget</th>
                         <th>Dates</th>
                         <th>Status</th>
+                        {user.role === 'project_manager' && <th>Total</th>}
                         <th style={{ width: '200px' }}>Actions</th>
                       </tr>
                     </thead>
@@ -252,6 +255,16 @@ function ProjectsPage({ user, onLogout }) {
                               : 'N/A'}
                           </td>
                           <td>{getProjectStatusBadge(project.status)}</td>
+                          {user.role === 'project_manager' && (
+                            <td>
+                              <Button
+                                className="btn-total-outline"
+                                onClick={() => handleViewTotals(project)}
+                              >
+                                View Totals
+                              </Button>
+                            </td>
+                          )}
                           <td>
                             <div className="d-flex flex-row align-items-center mt-0 mb-2">
                               <Button
@@ -269,7 +282,7 @@ function ProjectsPage({ user, onLogout }) {
                                     Edit
                                   </Button>
                                   <Button
-                                    className="btn-delete-outline"
+                                    className="btn-delete-outline me-2"
                                     onClick={() => handleDeleteProject(project.id)}
                                   >
                                     Delete
@@ -293,22 +306,27 @@ function ProjectsPage({ user, onLogout }) {
         </Col>
       </Row>
 
-      {/* Modal for creating/updating a project (only used by project managers) */}
+      {/* Modals */}
       {user.role === 'project_manager' && (
-        <ProjectModal
-          show={showProjectModal}
-          handleClose={() => setShowProjectModal(false)}
-          project={selectedProject}
-          refreshProjects={fetchProjects}
-        />
+        <>
+          <ProjectModal
+            show={showProjectModal}
+            handleClose={() => setShowProjectModal(false)}
+            project={selectedProject}
+            refreshProjects={fetchProjects}
+          />
+          <ProjectTotalModal
+            show={showTotalsModal}
+            handleClose={() => setShowTotalsModal(false)}
+            projectId={selectedProjectForTotals?.id}
+          />
+        </>
       )}
 
-      {/* Modal for viewing tasks for a project (read-only) */}
+      {/* Tasks Modal */}
       <Modal show={showTasksModal} onHide={() => setShowTasksModal(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>
-            Tasks for {selectedProjectForTasks?.project_name}
-          </Modal.Title>
+          <Modal.Title>Tasks for {selectedProjectForTasks?.project_name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {projectTasks.length > 0 ? (
@@ -319,6 +337,7 @@ function ProjectsPage({ user, onLogout }) {
                   <th>Status</th>
                   <th>Priority</th>
                   <th>Deadline</th>
+                  <th>Budget</th>
                 </tr>
               </thead>
               <tbody>
@@ -332,6 +351,7 @@ function ProjectsPage({ user, onLogout }) {
                         ? new Date(task.deadline).toLocaleDateString()
                         : 'N/A'}
                     </td>
+                    <td>{task.budget != null ? `₱${parseFloat(task.budget).toFixed(2)}` : 'N/A'}</td>
                   </tr>
                 ))}
               </tbody>
