@@ -81,6 +81,15 @@ function DashboardTeamMember({ user, onLogout }) {
     );
   };
 
+  // Helper to format the budget
+  const formatBudget = (budget) => {
+    if (budget === null || budget === undefined) {
+      return 'N/A';
+    }
+    const parsedBudget = parseFloat(budget);
+    return !isNaN(parsedBudget) ? `₱${parsedBudget.toFixed(2)}` : 'Invalid Budget';
+  };
+
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
@@ -106,6 +115,7 @@ function DashboardTeamMember({ user, onLogout }) {
                         <tr>
                           <th>Name</th>
                           <th>Code</th>
+                          <th>Budget</th>
                           <th>Status</th>
                         </tr>
                       </thead>
@@ -114,6 +124,7 @@ function DashboardTeamMember({ user, onLogout }) {
                           <tr key={project.id}>
                             <td>{project.project_name}</td>
                             <td>{project.project_code}</td>
+                            <td>{formatBudget(project.budget)}</td>
                             <td>
                               <span className="badge bg-secondary">{project.status}</span>
                             </td>
