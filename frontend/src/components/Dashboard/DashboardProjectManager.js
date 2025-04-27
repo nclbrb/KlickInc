@@ -179,6 +179,7 @@ function DashboardProjectManager({ user, onLogout }) {
                               <td>
                                 {project.budget !== null && project.budget !== undefined
                                   ? !isNaN(parseFloat(project.budget))
+                                    //₱
                                     ? `₱${parseFloat(project.budget).toFixed(2)}`
                                     : 'Invalid Budget'
                                   : 'N/A'}
