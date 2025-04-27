@@ -181,6 +181,7 @@ function ProjectsPage({ user, onLogout }) {
       return 'N/A';
     }
     const parsedBudget = parseFloat(budget);
+      //₱
     return !isNaN(parsedBudget) ? `₱${parsedBudget.toFixed(2)}` : 'Invalid Budget';
   };
 
