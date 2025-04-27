@@ -10,11 +10,13 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
     priority: 'medium',
     project_id: '',
     assigned_to: '',
-    deadline: ''
+    deadline: '',
+    budget: '' // Added task budget field
   };
 
   const [formData, setFormData] = useState(emptyForm);
   const [users, setUsers] = useState([]); // State to hold the list of users
+  const [budgetError, setBudgetError] = useState(''); // State to hold the budget error
 
   useEffect(() => {
     if (show) {
@@ -26,7 +28,8 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
           priority: task.priority || 'medium',
           project_id: task.project_id || '',
           assigned_to: task.assigned_to || '',
-          deadline: task.deadline ? task.deadline.split('T')[0] : ''
+          deadline: task.deadline ? task.deadline.split('T')[0] : '',
+          budget: task.budget || '' // Populate budget when editing
         });
       } else {
         setFormData(emptyForm);
@@ -56,6 +59,7 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
     }
   };
 
+  // Handle form field change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -67,50 +71,74 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
     }));
   };
 
+  // Close the modal and reset the form
   const onClose = () => {
     setFormData(emptyForm);
+    setBudgetError(''); // Reset budget error
     handleClose();
+  };
+
+  // Validate the task budget
+  const validateBudget = () => {
+    const project = projects.find(p => p.id === formData.project_id);
+    const taskBudget = parseFloat(formData.budget);
+
+    if (project && taskBudget > parseFloat(project.budget)) {
+      setBudgetError('Task budget cannot exceed project budget.');
+      return false;
+    }
+
+    setBudgetError('');
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Validate budget before submitting
+    if (!validateBudget()) {
+      return; // If validation fails, stop the form submission
+    }
+  
     try {
       const token = localStorage.getItem('access_token');
-      const data = {
-        ...formData,
-        project_id: parseInt(formData.project_id, 10),
-        assigned_to: parseInt(formData.assigned_to, 10),
-        deadline: formData.deadline
+      const taskData = {
+        title: formData.title, // Use formData for title
+        description: formData.description, // Use formData for description
+        project_id: formData.project_id, // Use formData for project_id
+        assigned_to: formData.assigned_to, // Use formData for assigned_to
+        priority: formData.priority, // Use formData for priority
+        status: formData.status, // Use formData for status
+        budget: parseFloat(formData.budget), // Ensure the budget is a number
+        deadline: formData.deadline, // Use formData for deadline
       };
-
+  
       if (task) {
-        await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, data, {
+        // Update task
+        await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, taskData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         });
       } else {
-        await axios.post('http://127.0.0.1:8000/api/tasks', data, {
+        // Create new task
+        await axios.post('http://127.0.0.1:8000/api/tasks', taskData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         });
       }
-      refreshTasks && refreshTasks();
-      onClose();
-      alert(task ? 'Task updated successfully!' : 'Task created successfully!');
+  
+      refreshTasks(); // Refresh task list
+      handleClose(); // Close modal
     } catch (error) {
       console.error('Error saving task:', error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.errors?.assigned_to?.[0] ||
-        'Error saving task';
-      alert(errorMessage);
+      alert('Error saving task');
     }
   };
-
+  
   return (
     <Modal show={show} onHide={handleClose} centered>
       <Modal.Header closeButton className="modal-header">
@@ -212,8 +240,23 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
             />
           </Form.Group>
 
+          {/* Task Budget Field */}
+          <Form.Group className="mb-3" controlId="budget">
+            <Form.Label>Task Budget</Form.Label>
+            <Form.Control
+              type="number"
+              name="budget"
+              value={formData.budget}
+              onChange={handleChange}
+              required
+              min="0"
+              step="0.01"
+            />
+            {budgetError && <div className="text-danger mt-2">{budgetError}</div>}
+          </Form.Group>
+
           <div className="d-flex justify-content-end gap-2 mt-3">
-            <Button variant="purp" onClick={handleClose}>
+            <Button variant="secondary" onClick={onClose}>
               Cancel
             </Button>
             <Button variant="purp" type="submit">
