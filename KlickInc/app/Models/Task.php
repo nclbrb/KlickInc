@@ -16,7 +16,10 @@ class Task extends Model
         'project_id',
         'status',
         'priority',
-        'deadline', 
+        'deadline',
+        'budget',      
+        'actual_expenditure',
+        'amount_used',
     ];
 
     public function project()
