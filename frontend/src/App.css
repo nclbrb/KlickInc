@@ -253,6 +253,23 @@ a:hover {
   color: #fff;
 }
 
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
 /* Similarly for edit & delete */
 .btn-edit-outline {
   background: transparent;
