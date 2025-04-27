@@ -10,13 +10,15 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
     start_date: '',
     end_date: '',
     status: 'To Do',
+    budget: '',  // Added budget field
+    actual_expenditure: '',  // Optional: you can handle actual_expenditure as needed
   };
 
   const [formData, setFormData] = useState(emptyForm);
+  const [budgetError, setBudgetError] = useState('');
 
   useEffect(() => {
     if (show) {
-      // If editing, load the project data; if creating, clear the form.
       if (project) {
         setFormData({
           project_name: project.project_name || '',
@@ -25,16 +27,18 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
           start_date: project.start_date || '',
           end_date: project.end_date || '',
           status: project.status || 'To Do',
+          budget: project.budget || '',  // Populate budget when editing
+          actual_expenditure: project.actual_expenditure || '',  // Optional: handle actual_expenditure if needed
         });
       } else {
         setFormData(emptyForm);
       }
     }
-  }, [show, project]); 
+  }, [show, project]);
 
-  // Clear form state on close
   const onClose = () => {
     setFormData(emptyForm);
+    setBudgetError(''); // Reset any errors on close
     handleClose();
   };
 
@@ -42,17 +46,43 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    // Ensure budget is a valid number and greater than 0
+    const budgetValue = parseFloat(formData.budget);
+    if (isNaN(budgetValue) || budgetValue <= 0) {
+      setBudgetError('Please enter a valid budget greater than 0.');
+      return false;
+    }
+    setBudgetError('');  // Clear error if valid
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate the form before submitting
+    if (!validateForm()) {
+      return;
+    }
+
+    const projectData = {
+      ...formData,
+      budget: parseFloat(formData.budget) || 0, // Ensure budget is a number
+      actual_expenditure: parseFloat(formData.actual_expenditure) || 0, // Optional: Ensure actual_expenditure is a number if provided
+    };
+
     if (readOnly) {
       onClose();
       return;
     }
+
     try {
       if (project) {
-        await api.put(`/projects/${project.id}`, formData);
+        // Update existing project
+        await api.put(`/projects/${project.id}`, projectData);
       } else {
-        await api.post('/projects', formData);
+        // Create new project
+        await api.post('/projects', projectData);
       }
       refreshProjects && refreshProjects();
       onClose();
@@ -63,27 +93,22 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
     }
   };
 
-  // Helper function to render project status as a badge
   const getStatusBadge = (status) => {
     let badgeClass = 'secondary';
     if (status === 'In Progress') {
       badgeClass = 'warning';
     } else if (status === 'Done') {
       badgeClass = 'success';
-    } else if (status === 'To Do') {
-      badgeClass = 'secondary';
     }
     return <span className={`badge bg-${badgeClass}`}>{status}</span>;
   };
 
   return (
     <Modal show={show} onHide={handleClose} centered>
-      <Modal.Header closeButton className="modal-header">
-        <Modal.Title>
-          {readOnly ? 'View Project' : project ? 'Edit Project' : 'Create Project'}
-        </Modal.Title>
+      <Modal.Header closeButton>
+        <Modal.Title>{readOnly ? 'View Project' : project ? 'Edit Project' : 'Create Project'}</Modal.Title>
       </Modal.Header>
-      <Modal.Body className="modal-body">
+      <Modal.Body>
         <Form onSubmit={handleSubmit}>
           <Form.Group controlId="project_name" className="mb-3">
             <Form.Label>Project Name</Form.Label>
@@ -139,17 +164,38 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
               disabled={readOnly}
             />
           </Form.Group>
+          <Form.Group controlId="budget" className="mb-3">
+            <Form.Label>Budget</Form.Label>
+            <Form.Control
+              type="number"
+              name="budget"
+              value={formData.budget}
+              onChange={handleChange}
+              required={!readOnly}
+              disabled={readOnly}
+              min="0"
+              step="0.01"
+            />
+            {budgetError && <div className="text-danger mt-2">{budgetError}</div>}
+          </Form.Group>
+          <Form.Group controlId="actual_expenditure" className="mb-3">
+            <Form.Label>Actual Expenditure</Form.Label>
+            <Form.Control
+              type="number"
+              name="actual_expenditure"
+              value={formData.actual_expenditure}
+              onChange={handleChange}
+              disabled={readOnly}
+              min="0"
+              step="0.01"
+            />
+          </Form.Group>
           <Form.Group controlId="status" className="mb-3">
             <Form.Label>Status</Form.Label>
             {readOnly ? (
               <div>{getStatusBadge(formData.status)}</div>
             ) : (
-              <Form.Control
-                as="select"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-              >
+              <Form.Control as="select" name="status" value={formData.status} onChange={handleChange}>
                 <option value="To Do">To Do</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Done">Done</option>
@@ -158,7 +204,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
           </Form.Group>
           <div className="d-flex justify-content-end gap-2 mt-3">
             {!readOnly ? (
-              <Button variant="purp" type="submit">
+              <Button variant="primary" type="submit">
                 {project ? 'Update Project' : 'Create Project'}
               </Button>
             ) : (

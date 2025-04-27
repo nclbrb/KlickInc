@@ -37,11 +37,11 @@ function DashboardProjectManager({ user, onLogout }) {
         },
       })
       .then((response) => {
-        // Sort projects by updated_at (descending)
         const sorted = response.data.sort(
           (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
         );
         setProjects(sorted);
+        console.log("Fetched Projects:", sorted);
       })
       .catch((error) => console.error('Error fetching projects:', error));
   };
@@ -56,7 +56,6 @@ function DashboardProjectManager({ user, onLogout }) {
         },
       })
       .then((response) => {
-        // Sort tasks by updated_at (descending)
         const sorted = response.data.sort(
           (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
         );
@@ -65,7 +64,6 @@ function DashboardProjectManager({ user, onLogout }) {
       .catch((error) => console.error('Error fetching tasks:', error));
   };
 
-  // Project actions
   const handleEditProject = (project) => {
     setSelectedProject(project);
     setShowProjectModal(true);
@@ -82,7 +80,6 @@ function DashboardProjectManager({ user, onLogout }) {
       .catch((error) => console.error('Error deleting project:', error));
   };
 
-  // Task actions
   const handleEditTask = (task) => {
     setSelectedTask(task);
     setShowTaskModal(true);
@@ -99,25 +96,23 @@ function DashboardProjectManager({ user, onLogout }) {
       .catch((error) => console.error('Error deleting task:', error));
   };
 
-  // Badge helpers for project status
   const getProjectStatusBadge = (status) => {
-    let badgeClass = 'secondary';
-    if (status === 'In Progress') {
-      badgeClass = 'warning';
-    } else if (status === 'Done') {
-      badgeClass = 'success';
-    }
+    const statusMap = {
+      'In Progress': 'warning',
+      'Done': 'success',
+      'Not Started': 'secondary',
+    };
+    const badgeClass = statusMap[status] || 'secondary';
     return <span className={`badge bg-${badgeClass}`}>{status}</span>;
   };
 
-  // Badge helpers for task status and priority
   const getTaskStatusBadge = (status) => {
-    let badgeClass = 'secondary';
-    if (status === 'in_progress') {
-      badgeClass = 'warning';
-    } else if (status === 'completed') {
-      badgeClass = 'success';
-    }
+    const statusMap = {
+      in_progress: 'warning',
+      completed: 'success',
+      not_started: 'secondary',
+    };
+    const badgeClass = statusMap[status] || 'secondary';
     return (
       <span className={`badge bg-${badgeClass}`}>
         {status.replace('_', ' ').toUpperCase()}
@@ -126,18 +121,13 @@ function DashboardProjectManager({ user, onLogout }) {
   };
 
   const getTaskPriorityBadge = (priority) => {
-    let badgeClass = 'bg-info text-dark';
-    let icon = '';
-    if (priority === 'high') {
-      badgeClass = 'bg-danger';
-      icon = '🔴 ';
-    } else if (priority === 'medium') {
-      badgeClass = 'bg-warning text-dark';
-      icon = '🟡 ';
-    } else if (priority === 'low') {
-      badgeClass = 'bg-info text-dark';
-      icon = '🔵 ';
-    }
+    const priorityMap = {
+      high: 'bg-danger',
+      medium: 'bg-warning text-dark',
+      low: 'bg-info text-dark',
+    };
+    const badgeClass = priorityMap[priority] || 'bg-info text-dark';
+    const icon = priority === 'high' ? '🔴 ' : priority === 'medium' ? '🟡 ' : '🔵 ';
     return (
       <span className={`badge ${badgeClass}`}>
         {icon}{priority.toUpperCase()}
@@ -156,61 +146,77 @@ function DashboardProjectManager({ user, onLogout }) {
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
           <h2>Welcome, {user.username}!</h2>
-          <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
-          <Row className="mb-4 d-flex align-items-stretch">
-            <Col md={6} className="d-flex">
-              <Card className="shadow-sm mb-3 flex-fill">
+          <h3 className="mt-4 mb-4">Dashboard</h3>
+          <Row className="mb-5">
+            {/* Project Section */}
+            <Col md={6} className="d-flex mb-4">
+              <Card className="shadow-sm flex-fill">
                 <Card.Header className="bg-purp">
                   <h5 className="mb-0 text-white">Recent Projects</h5>
                 </Card.Header>
-                <Card.Body>
+                <Card.Body className="p-4">
                   <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                    <Table hover>
+                    <Table hover className="table-striped">
                       <thead>
                         <tr>
                           <th>Name</th>
                           <th>Code</th>
+                          <th>Budget</th>
                           <th>Status</th>
                           <th style={{ width: '200px' }}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {projects.map((project) => (
-                          <tr key={project.id}>
-                            <td>{project.project_name}</td>
-                            <td>{project.project_code}</td>
-                            <td>{getProjectStatusBadge(project.status)}</td>
-                            <td>
-                              <div>
-                                <Button
-                                  className="btn-view-outline me-2 mb-2"
-                                  onClick={() => {
-                                    setSelectedProject(project);
-                                    setShowProjectModal(true);
-                                  }}
-                                >
-                                  View
-                                </Button>
-                                <Button
-                                  className="btn-edit-outline me-2 mb-2"
-                                  onClick={() => handleEditProject(project)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  className="btn-delete-outline mb-2"
-                                  onClick={() => handleDeleteProject(project.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
-                            </td>
+                        {projects.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="text-center">No Projects Available</td>
                           </tr>
-                        ))}
+                        ) : (
+                          projects.map((project) => (
+                            <tr key={project.id}>
+                              <td>{project.project_name}</td>
+                              <td>{project.project_code}</td>
+                              <td>
+                                {project.budget !== null && project.budget !== undefined
+                                  ? !isNaN(parseFloat(project.budget))
+                                    //₱
+                                    ? `₱${parseFloat(project.budget).toFixed(2)}`
+                                    : 'Invalid Budget'
+                                  : 'N/A'}
+                              </td>
+                              <td>{getProjectStatusBadge(project.status)}</td>
+                              <td>
+                                <div>
+                                  <Button
+                                    className="btn-view-outline me-2 mb-2"
+                                    onClick={() => {
+                                      setSelectedProject(project);
+                                      setShowProjectModal(true);
+                                    }}
+                                  >
+                                    View
+                                  </Button>
+                                  <Button
+                                    className="btn-edit-outline me-2 mb-2"
+                                    onClick={() => handleEditProject(project)}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    className="btn-delete-outline mb-2"
+                                    onClick={() => handleDeleteProject(project.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </Table>
                   </div>
-                  <div className="mt-2 text-end">
+                  <div className="mt-3 text-end">
                     <Button variant="link" onClick={() => navigate('/projects')}>
                       View All Projects
                     </Button>
@@ -218,14 +224,16 @@ function DashboardProjectManager({ user, onLogout }) {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={6} className="d-flex">
-              <Card className="shadow-sm mb-3 flex-fill">
+
+            {/* Task Section */}
+            <Col md={6} className="d-flex mb-4">
+              <Card className="shadow-sm flex-fill">
                 <Card.Header className="bg-purp">
                   <h5 className="mb-0 text-white">Recent Tasks</h5>
                 </Card.Header>
-                <Card.Body>
+                <Card.Body className="p-4">
                   <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                    <Table hover>
+                    <Table hover className="table-striped">
                       <thead>
                         <tr>
                           <th>Title</th>
@@ -235,33 +243,39 @@ function DashboardProjectManager({ user, onLogout }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {tasks.map((task) => (
-                          <tr key={task.id}>
-                            <td>{task.title}</td>
-                            <td>{getTaskStatusBadge(task.status)}</td>
-                            <td>{getTaskPriorityBadge(task.priority)}</td>
-                            <td>
-                              <div className="d-flex flex-row align-items-center mt-0">
-                                <Button
-                                  className="btn-edit-outline me-2"
-                                  onClick={() => handleEditTask(task)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  className="btn-delete-outline"
-                                  onClick={() => handleDeleteTask(task.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
-                            </td>
+                        {tasks.length === 0 ? (
+                          <tr>
+                            <td colSpan="4" className="text-center">No Tasks Available</td>
                           </tr>
-                        ))}
+                        ) : (
+                          tasks.map((task) => (
+                            <tr key={task.id}>
+                              <td>{task.title}</td>
+                              <td>{getTaskStatusBadge(task.status)}</td>
+                              <td>{getTaskPriorityBadge(task.priority)}</td>
+                              <td>
+                                <div className="d-flex flex-row align-items-center">
+                                  <Button
+                                    className="btn-edit-outline me-2"
+                                    onClick={() => handleEditTask(task)}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    className="btn-delete-outline"
+                                    onClick={() => handleDeleteTask(task.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </Table>
                   </div>
-                  <div className="mt-2 text-end">
+                  <div className="mt-3 text-end">
                     <Button variant="link" onClick={() => navigate('/tasks')}>
                       View All Tasks
                     </Button>

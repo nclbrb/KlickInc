@@ -175,6 +175,16 @@ function ProjectsPage({ user, onLogout }) {
         })
       : projects;
 
+  // Helper to format the budget
+  const formatBudget = (budget) => {
+    if (budget === null || budget === undefined) {
+      return 'N/A';
+    }
+    const parsedBudget = parseFloat(budget);
+      //₱
+    return !isNaN(parsedBudget) ? `₱${parsedBudget.toFixed(2)}` : 'Invalid Budget';
+  };
+
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
@@ -217,6 +227,7 @@ function ProjectsPage({ user, onLogout }) {
                         <th>Project Name</th>
                         <th>Project Code</th>
                         <th>Description</th>
+                        <th>Budget</th>
                         <th>Dates</th>
                         <th>Status</th>
                         <th style={{ width: '200px' }}>Actions</th>
@@ -233,6 +244,7 @@ function ProjectsPage({ user, onLogout }) {
                               ? '...'
                               : ''}
                           </td>
+                          <td>{formatBudget(project.budget)}</td>
                           <td>
                             {new Date(project.start_date).toLocaleDateString()} -{' '}
                             {project.end_date
