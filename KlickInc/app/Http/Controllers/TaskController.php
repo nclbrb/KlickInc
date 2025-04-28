@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TaskController extends Controller
 {
@@ -24,7 +25,6 @@ class TaskController extends Controller
             return response()->json(['message' => 'Unauthorized. Only project managers can create tasks.'], 403);
         }
 
-        // Validate the incoming request, including the budget field
         $validated = $request->validate([
             'title' => 'required|string',
             'description' => 'nullable|string',
@@ -33,52 +33,75 @@ class TaskController extends Controller
             'status' => 'required|string',
             'priority' => 'nullable|string',
             'deadline' => 'nullable|date',
-            'budget' => 'nullable|numeric',  // Added budget validation
+            'budget' => 'nullable|numeric',
+            'start_time' => 'nullable|date',
         ]);
+        
 
-        // Create the task with the validated data
         $task = Task::create($validated);
         return response()->json($task->load(['project', 'user']), 201);
     }
 
     public function update(Request $request, $id)
-    {
-        $task = Task::findOrFail($id);
-        $user = Auth::user();
-    
-        // Project Manager can update any task
-        if ($user->role === 'project_manager') {
-            $validated = $request->validate([
-                'title' => 'required|string',
-                'description' => 'nullable|string',
-                'assigned_to' => 'required|exists:klick_users,id',
-                'project_id' => 'required|exists:projects,id',
-                'status' => 'required|string',
-                'priority' => 'nullable|string',
-                'deadline' => 'nullable|date',
-                'budget' => 'nullable|numeric',  
-                'amount_used' => 'nullable|numeric',  // ADDING amount_used for project manager
-            ]);
-        } 
-        // Team Member can only update tasks assigned to them
-        elseif ($user->role === 'team_member' && $task->assigned_to == $user->id) {
-            // Validate the request for team member 
-            $validated = $request->validate([
-                'status' => 'required|string|in:not_started,in_progress,completed',
-                'deadline' => 'nullable|date',
-                'budget' => 'nullable|numeric',
-                'amount_used' => 'nullable|numeric', // ADDING amount_used for team member
-            ]);
-        } else {
-            return response()->json(['message' => 'Unauthorized. You can only update your own tasks.'], 403);
-        }
-    
-        // Update the task with the validated data
-        $task->update($validated);
-    
-        return response()->json($task->load(['project', 'user']));
+{
+    $task = Task::findOrFail($id);
+    $user = Auth::user();
+
+    if ($user->role === 'project_manager') {
+        $validated = $request->validate([
+            'title' => 'required|string',
+            'description' => 'nullable|string',
+            'assigned_to' => 'required|exists:klick_users,id',
+            'project_id' => 'required|exists:projects,id',
+            'status' => 'required|string',
+            'priority' => 'nullable|string',
+            'deadline' => 'nullable|date',
+            'budget' => 'nullable|numeric',
+            'start_time' => 'nullable|date',
+            'end_time' => 'nullable|date',
+            'time_spent' => 'nullable|numeric',
+        ]);
+    } elseif ($user->role === 'team_member' && $task->assigned_to == $user->id) {
+        $validated = $request->validate([
+            'status' => 'required|string|in:pending,in_progress,completed',
+            'deadline' => 'nullable|date',
+            'budget' => 'nullable|numeric',
+            'amount_used' => 'nullable|numeric',
+            'start_time' => 'nullable|date',
+            'end_time' => 'nullable|date',
+            'time_spent' => 'nullable|numeric',
+        ]);
+    } else {
+        return response()->json(['message' => 'Unauthorized. You can only update your own tasks.'], 403);
     }
-    
+
+    // ✨ Important: Reset if status is pending
+    if ($validated['status'] === 'pending') {
+        $validated['start_time'] = null;
+        $validated['end_time'] = null;
+        $validated['time_spent'] = null;
+    } 
+    // ✨ If completing task, set end_time if missing
+    elseif ($validated['status'] === 'completed' && !$task->end_time) {
+        $validated['end_time'] = Carbon::now();
+    }
+
+    // ✨ Calculate time_spent if both start and end are present
+    if (!empty($validated['start_time']) && !empty($validated['end_time'])) {
+        $startTime = Carbon::parse($validated['start_time']);
+        $endTime = Carbon::parse($validated['end_time']);
+        $validated['time_spent'] = $startTime->diffInSeconds($endTime);
+    }
+
+    $task->update($validated);
+
+    return response()->json([
+        'task' => $task->load(['project', 'user']),
+        'total_time_spent' => $task->time_spent ? $task->time_spent . ' seconds' : null,
+    ]);
+}
+
+
     public function destroy($id)
     {
         if (Auth::user()->role !== 'project_manager') {
