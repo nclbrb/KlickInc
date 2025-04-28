@@ -230,6 +230,23 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     );
   };
 
+  // Helper function to get the first and last day of a week
+  const getWeekDateRange = (date) => {
+    const day = date.getDay();
+    const firstDay = new Date(date);
+    // Set to Sunday (first day of the week)
+    firstDay.setDate(date.getDate() - day);
+    
+    const lastDay = new Date(firstDay);
+    // Set to Saturday (last day of the week)
+    lastDay.setDate(firstDay.getDate() + 6);
+    
+    return {
+      firstDay,
+      lastDay
+    };
+  };
+
   // Render Gantt chart using D3
   const renderGanttChart = () => {
     if (!chartData.length) {
@@ -271,8 +288,24 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       switch(timeScale) {
         case 'days':
           return tick.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        case 'weeks':
-          return `Week ${d3.timeFormat("%U")(tick)}`;
+        case 'weeks': {
+          // Get the start and end date of the week
+          const { firstDay, lastDay } = getWeekDateRange(tick);
+          
+          const firstMonth = firstDay.toLocaleDateString(undefined, { month: 'short' });
+          const lastMonth = lastDay.toLocaleDateString(undefined, { month: 'short' });
+          
+          const firstDate = firstDay.getDate();
+          const lastDate = lastDay.getDate();
+          
+          // If the week spans two months
+          if (firstMonth !== lastMonth) {
+            return `${firstMonth} ${firstDate} - ${lastMonth} ${lastDate}`;
+          } else {
+            // Same month
+            return `${firstMonth} ${firstDate}-${lastDate}`;
+          }
+        }
         case 'quarters': {
           const quarter = Math.floor(tick.getMonth() / 3) + 1;
           return `Q${quarter} ${tick.getFullYear()}`;
