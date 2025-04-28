@@ -17,6 +17,7 @@ function TasksPage({ user, onLogout }) {
   const [amountUsed, setAmountUsed] = useState('');
   const [selectedTaskForAmount, setSelectedTaskForAmount] = useState(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
+
   const [selectedProjectForView, setSelectedProjectForView] = useState(null);
   const [showTaskDetailsModal, setShowTaskDetailsModal] = useState(false);
   const [selectedTaskForView, setSelectedTaskForView] = useState(null);
@@ -285,7 +286,6 @@ function TasksPage({ user, onLogout }) {
         </Col>
       </Row>
 
-      {/* Modals */}
       <TaskModal show={showTaskModal} handleClose={() => setShowTaskModal(false)} task={selectedTask} refreshTasks={fetchTasks} projects={projects} users={users} />
 
       <Modal show={showAmountModal} onHide={closeAmountModal}>
