@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProjectModal from './ProjectModal';
 import ProjectTotalModal from './ProjectTotalModal';
+import GanttChartModal from './GanttChartModal';
 import NavBar from './NavBar';
 
 function ProjectsPage({ user, onLogout }) {
@@ -19,6 +20,7 @@ function ProjectsPage({ user, onLogout }) {
   // New state for totals modal
   const [showTotalsModal, setShowTotalsModal] = useState(false);
   const [selectedProjectForTotals, setSelectedProjectForTotals] = useState(null);
+  const [showGanttChart, setShowGanttChart] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -124,6 +126,27 @@ function ProjectsPage({ user, onLogout }) {
   const handleViewTotals = (project) => {
     setSelectedProjectForTotals(project);
     setShowTotalsModal(true);
+  };
+
+  const handleViewGanttChart = (project) => {
+    const token = localStorage.getItem('access_token');
+    axios.get('http://127.0.0.1:8000/api/tasks', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) => {
+      const tasksForProject = response.data.filter(
+        (task) => task.project_id === project.id
+      );
+      setProjectTasks(tasksForProject);
+      setSelectedProject(project);
+      setShowGanttChart(true);
+    })
+    .catch((error) => {
+      console.error('Error fetching tasks:', error);
+    });
   };
 
   const getProjectStatusBadge = (status) => {
@@ -258,7 +281,8 @@ function ProjectsPage({ user, onLogout }) {
                           {user.role === 'project_manager' && (
                             <td>
                               <Button
-                                className="btn-total-outline"
+                                variant="outline-primary"
+                                size="sm"
                                 onClick={() => handleViewTotals(project)}
                               >
                                 View Totals
@@ -266,30 +290,20 @@ function ProjectsPage({ user, onLogout }) {
                             </td>
                           )}
                           <td>
-                            <div className="d-flex flex-row align-items-center mt-0 mb-2">
-                              <Button
-                                className="btn-view-outline me-2"
-                                onClick={() => handleViewTasks(project)}
-                              >
-                                Tasks
-                              </Button>
-                              {user.role === 'project_manager' && (
-                                <>
-                                  <Button
-                                    className="btn-edit-outline me-2"
-                                    onClick={() => handleEditProject(project)}
-                                  >
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    className="btn-delete-outline me-2"
-                                    onClick={() => handleDeleteProject(project.id)}
-                                  >
-                                    Delete
-                                  </Button>
-                                </>
-                              )}
-                            </div>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => handleViewTasks(project)}
+                            >
+                              View Tasks
+                            </Button>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={() => handleViewGanttChart(project)}
+                            >
+                              View Chart
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -297,34 +311,17 @@ function ProjectsPage({ user, onLogout }) {
                   </Table>
                 </div>
               ) : (
-                <div className="text-center text-muted p-4">
-                  No projects found.
-                </div>
+                <p>No projects found.</p>
               )}
             </Card.Body>
           </Card>
         </Col>
       </Row>
-
-      {/* Modals */}
-      {user.role === 'project_manager' && (
-        <>
-          <ProjectModal
-            show={showProjectModal}
-            handleClose={() => setShowProjectModal(false)}
-            project={selectedProject}
-            refreshProjects={fetchProjects}
-          />
-          <ProjectTotalModal
-            show={showTotalsModal}
-            handleClose={() => setShowTotalsModal(false)}
-            projectId={selectedProjectForTotals?.id}
-          />
-        </>
-      )}
-
-      {/* Tasks Modal */}
-      <Modal show={showTasksModal} onHide={() => setShowTasksModal(false)} size="lg">
+      <Modal
+        show={showTasksModal}
+        onHide={() => setShowTasksModal(false)}
+        size="lg"
+      >
         <Modal.Header closeButton>
           <Modal.Title>Tasks for {selectedProjectForTasks?.project_name}</Modal.Title>
         </Modal.Header>
@@ -361,6 +358,26 @@ function ProjectsPage({ user, onLogout }) {
           )}
         </Modal.Body>
       </Modal>
+
+      <GanttChartModal
+        show={showGanttChart}
+        handleClose={() => setShowGanttChart(false)}
+        tasks={projectTasks}
+        projectName={selectedProject?.project_name || ''}
+      />
+
+      <ProjectTotalModal
+        show={showTotalsModal}
+        handleClose={() => setShowTotalsModal(false)}
+        projectId={selectedProjectForTotals?.id}
+      />
+
+      <ProjectModal
+        show={showProjectModal}
+        handleClose={() => setShowProjectModal(false)}
+        project={selectedProject}
+        refreshProjects={fetchProjects}
+      />
     </Container>
   );
 }
