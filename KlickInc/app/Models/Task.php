@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,6 +8,7 @@ class Task extends Model
 {
     use HasFactory;
 
+    // Add 'start_time' to the fillable array
     protected $fillable = [
         'title',
         'description',
@@ -17,10 +17,14 @@ class Task extends Model
         'status',
         'priority',
         'deadline',
-        'budget',      
+        'budget',
         'actual_expenditure',
         'amount_used',
+        'start_time',
+        'end_time', 
+        'time_spent',
     ];
+    
 
     public function project()
     {
