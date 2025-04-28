@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Row, Col, Badge } from 'react-bootstrap';
 import * as d3 from 'd3';
-import './GanttChartModal.css';
+import './GanttChart.css'; // We'll create this file separately
 
 const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -114,6 +114,15 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     }
   };
 
+  // Format date to readable string
+  const formatDate = (date) => {
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   // Render Gantt chart using D3
   const renderGanttChart = () => {
     if (!chartData.length) {
@@ -131,7 +140,8 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     const endDate = new Date(maxDate);
     endDate.setDate(endDate.getDate() + 2);
     
-    const chartWidth = 800;
+    // Increased chart width for better visibility
+    const chartWidth = 1200;
     const barHeight = 40;
     const chartHeight = chartData.length * (barHeight + 10);
     
@@ -144,7 +154,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     
     const xScale = d3.scaleTime()
       .domain([startDate, endDate])
-      .range([0, chartWidth - 200]);
+      .range([0, chartWidth - 400]); // Increased space for timeline
     
     const ticks = timeScaleMap[timeScale].range(startDate, endDate);
     
@@ -152,9 +162,9 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       <div className="gantt-chart-container">
         <div className="gantt-header">
           <div className="gantt-task-labels">
-            <div className="gantt-label-cell">Task</div>
-            <div className="gantt-label-cell">Status</div>
-            <div className="gantt-label-cell">Priority</div>
+            <div className="gantt-label-cell task-name">Task</div>
+            <div className="gantt-label-cell status">Status</div>
+            <div className="gantt-label-cell priority">Priority</div>
           </div>
           <div className="gantt-timeline">
             {ticks.map((tick, i) => (
@@ -170,7 +180,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
                   {timeScale === 'days' 
                     ? tick.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
                     : timeScale === 'weeks'
-                      ? `W${d3.timeFormat("%U")(tick)}`
+                      ? `Week ${d3.timeFormat("%U")(tick)}`
                       : d3.timeFormat("%b %Y")(tick)
                   }
                 </div>
@@ -182,22 +192,22 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
         <div className="gantt-body">
           {chartData.map((task, index) => {
             const taskStart = xScale(task.startDate);
-            const taskWidth = Math.max(5, xScale(task.endDate) - taskStart);
+            const taskWidth = Math.max(20, xScale(task.endDate) - taskStart); // Minimum width increased
             
             return (
               <div key={task.id} className="gantt-task-row">
                 <div className="gantt-task-labels">
-                  <div className="gantt-label-cell" title={task.title}>
-                    {task.title.length > 20 ? `${task.title.substring(0, 20)}...` : task.title}
+                  <div className="gantt-label-cell task-name" title={task.title}>
+                    {task.title}
                   </div>
-                  <div className="gantt-label-cell">
+                  <div className="gantt-label-cell status">
                     <Badge bg={getStatusColor(task.status)}>
-                      {task.status.replace('_', ' ')}
+                      {task.status.replace('_', ' ').toUpperCase()}
                     </Badge>
                   </div>
-                  <div className="gantt-label-cell">
+                  <div className="gantt-label-cell priority">
                     <Badge bg={getPriorityColor(task.priority)}>
-                      {task.priority}
+                      {task.priority.toUpperCase()}
                     </Badge>
                   </div>
                 </div>
@@ -208,14 +218,16 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
                       left: `${taskStart}px`,
                       width: `${taskWidth}px`,
                     }}
+                    title={`${task.title}: ${formatDate(task.startDate)} to ${formatDate(task.endDate)}`}
                   >
                     <div 
                       className="gantt-progress"
                       style={{ width: `${task.percentComplete}%` }}
                     ></div>
                     <div className="gantt-task-info">
+                      <span className="task-title">{task.title}</span>
                       <span className="task-dates">
-                        {task.startDate.toLocaleDateString()} - {task.endDate.toLocaleDateString()}
+                        {formatDate(task.startDate)} - {formatDate(task.endDate)}
                       </span>
                     </div>
                   </div>
@@ -282,6 +294,12 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
           {renderGanttChart()}
         </div>
         
+        <div className="mt-3">
+          <p className="text-muted small">
+            <strong>Note:</strong> Scroll horizontally to view the full timeline. Hover over task bars for more details.
+          </p>
+        </div>
+        
         {filteredTasks.length === 0 && (
           <div className="alert alert-info mt-3">
             No tasks match the selected filters.
@@ -291,6 +309,9 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>
           Close
+        </Button>
+        <Button variant="primary" onClick={() => window.print()}>
+          Print Chart
         </Button>
       </Modal.Footer>
     </Modal>
