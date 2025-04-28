@@ -1,0 +1,252 @@
+.gantt-modal .modal-dialog {
+  max-width: 95% !important;
+}
+
+.gantt-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 600px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.gantt-chart-container {
+  position: relative;
+  min-width: 1200px;
+  font-size: 14px;
+}
+
+.gantt-header {
+  display: flex;
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.gantt-task-labels {
+  display: flex;
+  min-width: 400px;
+  border-right: 1px solid #dee2e6;
+}
+
+.gantt-label-cell {
+  padding: 8px;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.gantt-label-cell.task-name {
+  flex: 2;
+  width: 250px;
+  text-overflow: ellipsis;
+}
+
+.gantt-label-cell.status {
+  flex: 1;
+  width: 75px;
+  text-align: center;
+}
+
+.gantt-label-cell.priority {
+  flex: 1;
+  width: 75px;
+  text-align: center;
+}
+
+.gantt-timeline {
+  position: relative;
+  flex: 1;
+  min-height: 40px;
+}
+
+.gantt-time-marker {
+  position: absolute;
+  height: 100%;
+  border-left: 1px solid #dee2e6;
+  top: 0;
+}
+
+.gantt-time-label {
+  padding: 8px 4px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.gantt-body {
+  position: relative;
+}
+
+.gantt-task-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  min-height: 60px;
+}
+
+.gantt-task-row:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.gantt-bar {
+  position: absolute;
+  height: 40px;
+  border-radius: 4px;
+  margin-top: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.gantt-bar:hover {
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.gantt-bar-pending {
+  background-color: #e9ecef;
+  border: 1px solid #6c757d;
+}
+
+.gantt-bar-in_progress {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+}
+
+.gantt-bar-completed {
+  background-color: #d4edda;
+  border: 1px solid #28a745;
+}
+
+.gantt-progress {
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 3px 0 0 3px;
+}
+
+.gantt-task-info {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.task-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.task-dates {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.badge {
+  font-weight: normal;
+  font-size: 12px;
+  padding: 5px 8px;
+}
+
+.gantt-custom-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  max-width: 350px;
+  pointer-events: none;
+}
+
+.gantt-tooltip {
+  padding: 12px;
+}
+
+.tooltip-title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.tooltip-description {
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #555;
+}
+
+.tooltip-info-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  grid-gap: 6px;
+  font-size: 13px;
+}
+
+.tooltip-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.task-progress, .budget-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-progress .progress, .budget-progress .progress {
+  flex: 1;
+}
+
+.task-progress span, .budget-progress span {
+  min-width: 40px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.gantt-custom-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  margin-left: -10px;
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: white transparent transparent;
+}
+
+[title] {
+  position: relative;
+}
+
+.gantt-wrapper::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.gantt-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.gantt-wrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.gantt-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.gantt-time-marker[data-scale="quarters"] {
+  background-color: rgba(0, 123, 255, 0.05);
+}
