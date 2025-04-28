@@ -1,0 +1,134 @@
+.gantt-modal .modal-dialog {
+    max-width: 95% !important;
+  }
+  
+  .gantt-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 600px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: #fff;
+  }
+  
+  .gantt-chart-container {
+    position: relative;
+    min-width: 1000px;
+    font-size: 14px;
+  }
+  
+  .gantt-header {
+    display: flex;
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .gantt-task-labels {
+    display: flex;
+    min-width: 200px;
+    border-right: 1px solid #dee2e6;
+  }
+  
+  .gantt-label-cell {
+    padding: 8px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    flex: 1;
+  }
+  
+  .gantt-timeline {
+    position: relative;
+    flex: 1;
+    min-height: 40px;
+  }
+  
+  .gantt-time-marker {
+    position: absolute;
+    height: 100%;
+    border-left: 1px solid #dee2e6;
+    top: 0;
+  }
+  
+  .gantt-time-label {
+    padding: 8px 4px;
+    font-size: 12px;
+    text-align: center;
+  }
+  
+  .gantt-body {
+    position: relative;
+  }
+  
+  .gantt-task-row {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    min-height: 50px;
+  }
+  
+  .gantt-task-row:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+  }
+  
+  .gantt-bar {
+    position: absolute;
+    height: 30px;
+    border-radius: 3px;
+    margin-top: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    cursor: pointer;
+  }
+  
+  .gantt-bar-pending {
+    background-color: #adb5bd;
+    border: 1px solid #6c757d;
+  }
+  
+  .gantt-bar-in_progress {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+  }
+  
+  .gantt-bar-completed {
+    background-color: #d4edda;
+    border: 1px solid #28a745;
+  }
+  
+  .gantt-progress {
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 2px 0 0 2px;
+  }
+  
+  .gantt-task-info {
+    position: absolute;
+    font-size: 10px;
+    width: 100%;
+    text-align: center;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 4px;
+  }
+  
+  .task-dates {
+    font-size: 10px;
+  }
+  
+  /* Tooltip for longer text */
+  [title] {
+    position: relative;
+    cursor: help;
+  }
+  
+  /* Make badge text more visible */
+  .badge {
+    font-weight: normal;
+    font-size: 12px;
+  }
