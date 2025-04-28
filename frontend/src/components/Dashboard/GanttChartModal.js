@@ -14,7 +14,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
   const tooltipRef = useRef(null);
 
   useEffect(() => {
-    // Apply filters
+
     let taskList = [...tasks];
     
     if (filters.status !== 'all') {
@@ -27,7 +27,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     
     setFilteredTasks(taskList);
     
-    // Process tasks data for Gantt chart
     processTasksForGantt(taskList);
   }, [tasks, filters]);
 
@@ -37,13 +36,10 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       return;
     }
 
-    // Calculate dates for tasks that are missing them
     const processed = taskList.map(task => {
-      // Set default dates if not present
+
       const startDate = task.start_time ? new Date(task.start_time) : 
                         (task.start_date ? new Date(task.start_date) : new Date(task.created_at));
-      
-      // For tasks not completed yet, use current date as end
       let endDate;
       if (task.end_time) {
         endDate = new Date(task.end_time);
@@ -52,16 +48,14 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       } else if (task.deadline) {
         endDate = new Date(task.deadline);
       } else {
-        // Default end date: start date + 1 day
+
         endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + 1);
       }
       
-      // Calculate duration in days
       const durationMs = endDate - startDate;
       const durationDays = Math.max(1, Math.ceil(durationMs / (1000 * 60 * 60 * 24)));
       
-      // Calculate percent complete based on status
       let percentComplete = 0;
       if (task.status === 'completed') {
         percentComplete = 100;
@@ -69,7 +63,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
         percentComplete = 50;
       }
 
-      // Calculate budget utilization if available
       const budgetUtilization = task.amount_used && task.budget ? 
         Math.round((parseFloat(task.amount_used) / parseFloat(task.budget)) * 100) : null;
       
@@ -83,7 +76,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       };
     });
     
-    // Sort by start date
     processed.sort((a, b) => a.startDate - b.startDate);
     
     setChartData(processed);
@@ -100,7 +92,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     setTimeScale(scale);
   };
   
-  // Priority badge color
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'danger';
@@ -110,7 +101,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     }
   };
   
-  // Status badge color
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed': return 'success';
@@ -120,7 +110,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     }
   };
 
-  // Format date to readable string
   const formatDate = (date) => {
     return date.toLocaleDateString(undefined, {
       year: 'numeric',
@@ -129,13 +118,11 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     });
   };
 
-  // Format currency
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined) return 'N/A';
     return `₱${parseFloat(amount).toFixed(2)}`;
   };
 
-  // Calculate time elapsed between two dates in readable format
   const calculateTimeElapsed = (startDate, endDate) => {
     if (!startDate || !endDate) return 'N/A';
     
@@ -150,7 +137,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     }
   };
 
-  // Render detailed tooltip content for a task
   const renderTooltipContent = (task) => {
     return (
       <div className="gantt-tooltip">
@@ -230,15 +216,14 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     );
   };
 
-  // Helper function to get the first and last day of a week
   const getWeekDateRange = (date) => {
     const day = date.getDay();
     const firstDay = new Date(date);
-    // Set to Sunday (first day of the week)
+
     firstDay.setDate(date.getDate() - day);
     
     const lastDay = new Date(firstDay);
-    // Set to Saturday (last day of the week)
+
     lastDay.setDate(firstDay.getDate() + 6);
     
     return {
@@ -247,49 +232,43 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     };
   };
 
-  // Render Gantt chart using D3
   const renderGanttChart = () => {
     if (!chartData.length) {
       return <div className="text-center p-5">No tasks to display</div>;
     }
 
-    // Find earliest and latest dates for scaling
     const minDate = d3.min(chartData, d => d.startDate);
     const maxDate = d3.max(chartData, d => d.endDate);
     
-    // Add padding to date range
     const startDate = new Date(minDate);
     startDate.setDate(startDate.getDate() - 2);
     
     const endDate = new Date(maxDate);
     endDate.setDate(endDate.getDate() + 2);
     
-    // Increased chart width for better visibility
     const chartWidth = 1200;
     const barHeight = 40;
     const chartHeight = chartData.length * (barHeight + 10);
     
-    // Create time scale based on selected timeScale
     const timeScaleMap = {
       days: d3.timeDay,
       weeks: d3.timeWeek,
       months: d3.timeMonth,
-      quarters: d3.timeMonth.every(3) // New quarterly view
+      quarters: d3.timeMonth.every(3)
     };
     
     const xScale = d3.scaleTime()
       .domain([startDate, endDate])
-      .range([0, chartWidth - 400]); // Increased space for timeline
+      .range([0, chartWidth - 400]);
     
     const ticks = timeScaleMap[timeScale].range(startDate, endDate);
     
-    // Format tick labels based on selected timeScale
     const formatTick = (tick) => {
       switch(timeScale) {
         case 'days':
           return tick.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
         case 'weeks': {
-          // Get the start and end date of the week
+
           const { firstDay, lastDay } = getWeekDateRange(tick);
           
           const firstMonth = firstDay.toLocaleDateString(undefined, { month: 'short' });
@@ -298,11 +277,10 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
           const firstDate = firstDay.getDate();
           const lastDate = lastDay.getDate();
           
-          // If the week spans two months
           if (firstMonth !== lastMonth) {
             return `${firstMonth} ${firstDate} - ${lastMonth} ${lastDate}`;
           } else {
-            // Same month
+
             return `${firstMonth} ${firstDate}-${lastDate}`;
           }
         }
@@ -345,7 +323,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
         <div className="gantt-body">
           {chartData.map((task, index) => {
             const taskStart = xScale(task.startDate);
-            const taskWidth = Math.max(20, xScale(task.endDate) - taskStart); // Minimum width increased
+            const taskWidth = Math.max(20, xScale(task.endDate) - taskStart);
             
             return (
               <div key={task.id} className="gantt-task-row">
@@ -393,7 +371,8 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
           })}
         </div>
         
-        {/* Custom Tooltip */}
+        {
+        }
         <div 
           ref={tooltipRef} 
           className="gantt-custom-tooltip"
@@ -403,37 +382,30 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     );
   };
 
-  // Show detailed tooltip when hovering over a task bar
   const showTaskTooltip = (event, task) => {
     const tooltip = tooltipRef.current;
     if (!tooltip) return;
     
-    // Render tooltip content
     tooltip.innerHTML = '';
     const tooltipContent = document.createElement('div');
     tooltipContent.className = 'gantt-tooltip';
     
-    // Create tooltip title
     const title = document.createElement('h6');
     title.className = 'tooltip-title';
     title.textContent = task.title;
     tooltipContent.appendChild(title);
     
-    // Create tooltip content container
     const content = document.createElement('div');
     content.className = 'tooltip-content';
     
-    // Add description
     const description = document.createElement('p');
     description.className = 'tooltip-description';
     description.textContent = task.description || 'No description';
     content.appendChild(description);
     
-    // Create info grid
     const infoGrid = document.createElement('div');
     infoGrid.className = 'tooltip-info-grid';
     
-    // Add status
     infoGrid.innerHTML += `
       <div class="tooltip-label">Status:</div>
       <div><span class="badge bg-${getStatusColor(task.status)}">${task.status.replace('_', ' ').toUpperCase()}</span></div>
@@ -448,7 +420,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       <div>${task.durationDays} day${task.durationDays !== 1 ? 's' : ''}</div>
     `;
     
-    // Add time spent if available
     if (task.start_time && task.end_time) {
       infoGrid.innerHTML += `
         <div class="tooltip-label">Time Spent:</div>
@@ -456,7 +427,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       `;
     }
     
-    // Add budget info if available
     if (task.budget !== null) {
       infoGrid.innerHTML += `
         <div class="tooltip-label">Budget:</div>
@@ -484,7 +454,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       `;
     }
     
-    // Add progress bar
     infoGrid.innerHTML += `
       <div class="tooltip-label">Progress:</div>
       <div class="task-progress">
@@ -499,13 +468,11 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     tooltipContent.appendChild(content);
     tooltip.appendChild(tooltipContent);
     
-    // Position the tooltip
     const rect = event.currentTarget.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
     const modalBody = event.currentTarget.closest('.modal-body');
     const modalBodyRect = modalBody.getBoundingClientRect();
     
-    // Calculate tooltip position
     let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
     left = Math.max(modalBodyRect.left + 10, Math.min(left, modalBodyRect.right - tooltipRect.width - 10));
     
@@ -514,13 +481,11 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       top = rect.bottom + 10;
     }
     
-    // Set tooltip position
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
     tooltip.style.display = 'block';
   };
   
-  // Hide tooltip
   const hideTaskTooltip = () => {
     if (tooltipRef.current) {
       tooltipRef.current.style.display = 'none';
@@ -605,9 +570,6 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>
           Close
-        </Button>
-        <Button variant="primary" onClick={() => window.print()}>
-          Print Chart
         </Button>
       </Modal.Footer>
     </Modal>

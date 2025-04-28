@@ -28,11 +28,10 @@
 
 .gantt-task-labels {
   display: flex;
-  min-width: 400px; /* Widened from 200px */
+  min-width: 400px;
   border-right: 1px solid #dee2e6;
 }
 
-/* Adjusted cell widths */
 .gantt-label-cell {
   padding: 8px;
   font-weight: 600;
@@ -84,7 +83,7 @@
 .gantt-task-row {
   display: flex;
   border-bottom: 1px solid #eee;
-  min-height: 60px; /* Increased height */
+  min-height: 60px;
 }
 
 .gantt-task-row:hover {
@@ -93,7 +92,7 @@
 
 .gantt-bar {
   position: absolute;
-  height: 40px; /* Increased height */
+  height: 40px;
   border-radius: 4px;
   margin-top: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -151,14 +150,12 @@
   opacity: 0.8;
 }
 
-/* Make badge text more visible */
 .badge {
   font-weight: normal;
   font-size: 12px;
   padding: 5px 8px;
 }
 
-/* Custom tooltip styles */
 .gantt-custom-tooltip {
   position: fixed;
   z-index: 9999;
@@ -216,7 +213,6 @@
   font-weight: 600;
 }
 
-/* Tooltip arrow */
 .gantt-custom-tooltip::after {
   content: '';
   position: absolute;
@@ -228,43 +224,10 @@
   border-color: white transparent transparent;
 }
 
-/* Print styles */
-@media print {
-  .gantt-wrapper {
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
-  }
-  
-  .gantt-chart-container {
-    width: 100% !important;
-    min-width: 100% !important;
-  }
-  
-  .modal-header, .modal-footer, .row {
-    display: none !important;
-  }
-  
-  .modal-body {
-    padding: 0 !important;
-  }
-  
-  .modal-content {
-    border: none !important;
-  }
-  
-  /* Hide tooltips when printing */
-  .gantt-custom-tooltip {
-    display: none !important;
-  }
-}
-
-/* For tooltip functionality */
 [title] {
   position: relative;
 }
 
-/* Scrollbar styling for better user experience */
 .gantt-wrapper::-webkit-scrollbar {
   height: 10px;
   width: 10px;
@@ -284,7 +247,6 @@
   background: #555;
 }
 
-/* Quarters time scale */
 .gantt-time-marker[data-scale="quarters"] {
   background-color: rgba(0, 123, 255, 0.05);
 }
