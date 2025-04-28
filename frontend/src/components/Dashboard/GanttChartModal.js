@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Row, Col, Badge } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from 'react';
+import { Modal, Button, Form, Row, Col, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import * as d3 from 'd3';
-import './GanttChart.css'; // We'll create this file separately
+import './GanttChartModal.css';
 
 const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -11,6 +11,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
   });
   const [chartData, setChartData] = useState([]);
   const [timeScale, setTimeScale] = useState('weeks');
+  const tooltipRef = useRef(null);
 
   useEffect(() => {
     // Apply filters
@@ -67,13 +68,18 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       } else if (task.status === 'in_progress') {
         percentComplete = 50;
       }
+
+      // Calculate budget utilization if available
+      const budgetUtilization = task.amount_used && task.budget ? 
+        Math.round((parseFloat(task.amount_used) / parseFloat(task.budget)) * 100) : null;
       
       return {
         ...task,
         startDate,
         endDate,
         durationDays,
-        percentComplete
+        percentComplete,
+        budgetUtilization
       };
     });
     
@@ -123,6 +129,107 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     });
   };
 
+  // Format currency
+  const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) return 'N/A';
+    return `₱${parseFloat(amount).toFixed(2)}`;
+  };
+
+  // Calculate time elapsed between two dates in readable format
+  const calculateTimeElapsed = (startDate, endDate) => {
+    if (!startDate || !endDate) return 'N/A';
+    
+    const diffMs = new Date(endDate) - new Date(startDate);
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+    } else {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+    }
+  };
+
+  // Render detailed tooltip content for a task
+  const renderTooltipContent = (task) => {
+    return (
+      <div className="gantt-tooltip">
+        <h6 className="tooltip-title">{task.title}</h6>
+        <div className="tooltip-content">
+          <p className="tooltip-description">{task.description || 'No description'}</p>
+          <div className="tooltip-info-grid">
+            <div className="tooltip-label">Status:</div>
+            <div>
+              <Badge bg={getStatusColor(task.status)}>
+                {task.status.replace('_', ' ').toUpperCase()}
+              </Badge>
+            </div>
+            
+            <div className="tooltip-label">Priority:</div>
+            <div>
+              <Badge bg={getPriorityColor(task.priority)}>
+                {task.priority.toUpperCase()}
+              </Badge>
+            </div>
+            
+            <div className="tooltip-label">Timeline:</div>
+            <div>{formatDate(task.startDate)} - {formatDate(task.endDate)}</div>
+            
+            <div className="tooltip-label">Duration:</div>
+            <div>{task.durationDays} day{task.durationDays !== 1 ? 's' : ''}</div>
+
+            {task.start_time && task.end_time && (
+              <>
+                <div className="tooltip-label">Time Spent:</div>
+                <div>{calculateTimeElapsed(task.start_time, task.end_time)}</div>
+              </>
+            )}
+            
+            {task.budget !== null && (
+              <>
+                <div className="tooltip-label">Budget:</div>
+                <div>{formatCurrency(task.budget)}</div>
+              </>
+            )}
+            
+            {task.amount_used !== null && (
+              <>
+                <div className="tooltip-label">Used:</div>
+                <div>{formatCurrency(task.amount_used)}</div>
+              </>
+            )}
+            
+            {task.budgetUtilization !== null && (
+              <>
+                <div className="tooltip-label">Budget Utilization:</div>
+                <div className="budget-progress">
+                  <div className="progress" style={{ height: '8px' }}>
+                    <div 
+                      className={`progress-bar ${task.budgetUtilization > 90 ? 'bg-danger' : 'bg-success'}`}
+                      style={{ width: `${Math.min(100, task.budgetUtilization)}%` }}
+                    ></div>
+                  </div>
+                  <span>{task.budgetUtilization}%</span>
+                </div>
+              </>
+            )}
+            
+            <div className="tooltip-label">Progress:</div>
+            <div className="task-progress">
+              <div className="progress" style={{ height: '8px' }}>
+                <div 
+                  className="progress-bar bg-success"
+                  style={{ width: `${task.percentComplete}%` }}
+                ></div>
+              </div>
+              <span>{task.percentComplete}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Render Gantt chart using D3
   const renderGanttChart = () => {
     if (!chartData.length) {
@@ -145,11 +252,12 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
     const barHeight = 40;
     const chartHeight = chartData.length * (barHeight + 10);
     
-    // Create time scale
+    // Create time scale based on selected timeScale
     const timeScaleMap = {
       days: d3.timeDay,
       weeks: d3.timeWeek,
-      months: d3.timeMonth
+      months: d3.timeMonth,
+      quarters: d3.timeMonth.every(3) // New quarterly view
     };
     
     const xScale = d3.scaleTime()
@@ -157,6 +265,23 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       .range([0, chartWidth - 400]); // Increased space for timeline
     
     const ticks = timeScaleMap[timeScale].range(startDate, endDate);
+    
+    // Format tick labels based on selected timeScale
+    const formatTick = (tick) => {
+      switch(timeScale) {
+        case 'days':
+          return tick.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        case 'weeks':
+          return `Week ${d3.timeFormat("%U")(tick)}`;
+        case 'quarters': {
+          const quarter = Math.floor(tick.getMonth() / 3) + 1;
+          return `Q${quarter} ${tick.getFullYear()}`;
+        }
+        case 'months':
+        default:
+          return d3.timeFormat("%b %Y")(tick);
+      }
+    };
     
     return (
       <div className="gantt-chart-container">
@@ -177,12 +302,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
                 }}
               >
                 <div className="gantt-time-label">
-                  {timeScale === 'days' 
-                    ? tick.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-                    : timeScale === 'weeks'
-                      ? `Week ${d3.timeFormat("%U")(tick)}`
-                      : d3.timeFormat("%b %Y")(tick)
-                  }
+                  {formatTick(tick)}
                 </div>
               </div>
             ))}
@@ -218,7 +338,10 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
                       left: `${taskStart}px`,
                       width: `${taskWidth}px`,
                     }}
-                    title={`${task.title}: ${formatDate(task.startDate)} to ${formatDate(task.endDate)}`}
+                    data-task-id={task.id}
+                    data-tooltip-content={JSON.stringify(task)}
+                    onMouseEnter={(e) => showTaskTooltip(e, task)}
+                    onMouseLeave={hideTaskTooltip}
                   >
                     <div 
                       className="gantt-progress"
@@ -236,8 +359,139 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
             );
           })}
         </div>
+        
+        {/* Custom Tooltip */}
+        <div 
+          ref={tooltipRef} 
+          className="gantt-custom-tooltip"
+          style={{ display: 'none' }}
+        ></div>
       </div>
     );
+  };
+
+  // Show detailed tooltip when hovering over a task bar
+  const showTaskTooltip = (event, task) => {
+    const tooltip = tooltipRef.current;
+    if (!tooltip) return;
+    
+    // Render tooltip content
+    tooltip.innerHTML = '';
+    const tooltipContent = document.createElement('div');
+    tooltipContent.className = 'gantt-tooltip';
+    
+    // Create tooltip title
+    const title = document.createElement('h6');
+    title.className = 'tooltip-title';
+    title.textContent = task.title;
+    tooltipContent.appendChild(title);
+    
+    // Create tooltip content container
+    const content = document.createElement('div');
+    content.className = 'tooltip-content';
+    
+    // Add description
+    const description = document.createElement('p');
+    description.className = 'tooltip-description';
+    description.textContent = task.description || 'No description';
+    content.appendChild(description);
+    
+    // Create info grid
+    const infoGrid = document.createElement('div');
+    infoGrid.className = 'tooltip-info-grid';
+    
+    // Add status
+    infoGrid.innerHTML += `
+      <div class="tooltip-label">Status:</div>
+      <div><span class="badge bg-${getStatusColor(task.status)}">${task.status.replace('_', ' ').toUpperCase()}</span></div>
+      
+      <div class="tooltip-label">Priority:</div>
+      <div><span class="badge bg-${getPriorityColor(task.priority)}">${task.priority.toUpperCase()}</span></div>
+      
+      <div class="tooltip-label">Timeline:</div>
+      <div>${formatDate(task.startDate)} - ${formatDate(task.endDate)}</div>
+      
+      <div class="tooltip-label">Duration:</div>
+      <div>${task.durationDays} day${task.durationDays !== 1 ? 's' : ''}</div>
+    `;
+    
+    // Add time spent if available
+    if (task.start_time && task.end_time) {
+      infoGrid.innerHTML += `
+        <div class="tooltip-label">Time Spent:</div>
+        <div>${calculateTimeElapsed(task.start_time, task.end_time)}</div>
+      `;
+    }
+    
+    // Add budget info if available
+    if (task.budget !== null) {
+      infoGrid.innerHTML += `
+        <div class="tooltip-label">Budget:</div>
+        <div>${formatCurrency(task.budget)}</div>
+      `;
+    }
+    
+    if (task.amount_used !== null) {
+      infoGrid.innerHTML += `
+        <div class="tooltip-label">Used:</div>
+        <div>${formatCurrency(task.amount_used)}</div>
+      `;
+    }
+    
+    if (task.budgetUtilization !== null) {
+      const budgetBarColor = task.budgetUtilization > 90 ? 'bg-danger' : 'bg-success';
+      infoGrid.innerHTML += `
+        <div class="tooltip-label">Budget Utilization:</div>
+        <div class="budget-progress">
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar ${budgetBarColor}" style="width: ${Math.min(100, task.budgetUtilization)}%;"></div>
+          </div>
+          <span>${task.budgetUtilization}%</span>
+        </div>
+      `;
+    }
+    
+    // Add progress bar
+    infoGrid.innerHTML += `
+      <div class="tooltip-label">Progress:</div>
+      <div class="task-progress">
+        <div class="progress" style="height: 8px;">
+          <div class="progress-bar bg-success" style="width: ${task.percentComplete}%;"></div>
+        </div>
+        <span>${task.percentComplete}%</span>
+      </div>
+    `;
+    
+    content.appendChild(infoGrid);
+    tooltipContent.appendChild(content);
+    tooltip.appendChild(tooltipContent);
+    
+    // Position the tooltip
+    const rect = event.currentTarget.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const modalBody = event.currentTarget.closest('.modal-body');
+    const modalBodyRect = modalBody.getBoundingClientRect();
+    
+    // Calculate tooltip position
+    let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+    left = Math.max(modalBodyRect.left + 10, Math.min(left, modalBodyRect.right - tooltipRect.width - 10));
+    
+    let top = rect.top - tooltipRect.height - 10;
+    if (top < modalBodyRect.top) {
+      top = rect.bottom + 10;
+    }
+    
+    // Set tooltip position
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.style.display = 'block';
+  };
+  
+  // Hide tooltip
+  const hideTaskTooltip = () => {
+    if (tooltipRef.current) {
+      tooltipRef.current.style.display = 'none';
+    }
   };
 
   return (
@@ -247,7 +501,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
       </Modal.Header>
       <Modal.Body>
         <Row className="mb-3">
-          <Col md={4}>
+          <Col md={3}>
             <Form.Group>
               <Form.Label>Filter by Status</Form.Label>
               <Form.Select 
@@ -261,7 +515,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
               </Form.Select>
             </Form.Group>
           </Col>
-          <Col md={4}>
+          <Col md={3}>
             <Form.Group>
               <Form.Label>Filter by Priority</Form.Label>
               <Form.Select 
@@ -275,7 +529,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
               </Form.Select>
             </Form.Group>
           </Col>
-          <Col md={4}>
+          <Col md={3}>
             <Form.Group>
               <Form.Label>Time Scale</Form.Label>
               <Form.Select 
@@ -285,7 +539,16 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
                 <option value="days">Days</option>
                 <option value="weeks">Weeks</option>
                 <option value="months">Months</option>
+                <option value="quarters">Quarters</option>
               </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Total Tasks</Form.Label>
+              <div className="form-control bg-light">
+                <strong>{filteredTasks.length}</strong> task{filteredTasks.length !== 1 ? 's' : ''}
+              </div>
             </Form.Group>
           </Col>
         </Row>
@@ -296,7 +559,7 @@ const GanttChartModal = ({ show, handleClose, tasks, projectName }) => {
         
         <div className="mt-3">
           <p className="text-muted small">
-            <strong>Note:</strong> Scroll horizontally to view the full timeline. Hover over task bars for more details.
+            <strong>Note:</strong> Scroll horizontally to view the full timeline. Hover over task bars for detailed information.
           </p>
         </div>
         

@@ -158,6 +158,76 @@
   padding: 5px 8px;
 }
 
+/* Custom tooltip styles */
+.gantt-custom-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  max-width: 350px;
+  pointer-events: none;
+}
+
+.gantt-tooltip {
+  padding: 12px;
+}
+
+.tooltip-title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.tooltip-description {
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #555;
+}
+
+.tooltip-info-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  grid-gap: 6px;
+  font-size: 13px;
+}
+
+.tooltip-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.task-progress, .budget-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-progress .progress, .budget-progress .progress {
+  flex: 1;
+}
+
+.task-progress span, .budget-progress span {
+  min-width: 40px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* Tooltip arrow */
+.gantt-custom-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  margin-left: -10px;
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: white transparent transparent;
+}
+
 /* Print styles */
 @media print {
   .gantt-wrapper {
@@ -181,6 +251,11 @@
   
   .modal-content {
     border: none !important;
+  }
+  
+  /* Hide tooltips when printing */
+  .gantt-custom-tooltip {
+    display: none !important;
   }
 }
 
@@ -207,4 +282,9 @@
 
 .gantt-wrapper::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Quarters time scale */
+.gantt-time-marker[data-scale="quarters"] {
+  background-color: rgba(0, 123, 255, 0.05);
 }
