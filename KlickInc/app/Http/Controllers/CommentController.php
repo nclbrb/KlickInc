@@ -155,20 +155,34 @@ class CommentController extends Controller
                 if ($recipientId) {
                     $message = "New comment on task '{$task->title}' by " . $commenter->username;
                     
-                    NotificationService::createNotification(
+                    // DIRECT APPROACH: Create the notification explicitly
+                    $notification = new \App\Models\Notification([
+                        'message' => $message,
+                        'type' => 'new_comment',
+                        'notifiable_type' => 'App\Models\User', // Use consistent string format
+                        'notifiable_id' => $recipientId,
+                        'read_at' => null // Explicitly set to ensure it's unread
+                    ]);
+                    
+                    $notification->save();
+                    
+                    // Also try using the service as a backup
+                    $serviceNotification = NotificationService::createNotification(
                         $recipientId,
                         $message,
                         'new_comment',
-                        get_class($comment),
+                        'App\Models\Comment',  // Use consistent string format
                         $comment->id
                     );
                     
-                    \Log::info('Comment notification sent', [
+                    \Log::info('Comment notification processing complete', [
                         'comment_id' => $comment->id,
                         'task_id' => $task->id,
                         'sender_id' => $commenter->id,
                         'recipient_id' => $recipientId,
-                        'message' => $message
+                        'message' => $message,
+                        'direct_notification_id' => $notification->id ?? null,
+                        'service_notification_id' => $serviceNotification->id ?? null
                     ]);
                 }
             } catch (\Exception $e) {

@@ -109,24 +109,52 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
     try {
       const token = localStorage.getItem('access_token');
       const taskData = {
-        title: formData.title, // Use formData for title
-        description: formData.description, // Use formData for description
-        project_id: formData.project_id, // Use formData for project_id
-        assigned_to: formData.assigned_to, // Use formData for assigned_to
-        priority: formData.priority, // Use formData for priority
-        status: formData.status, // Use formData for status
-        budget: parseFloat(formData.budget), // Ensure the budget is a number
-        deadline: formData.deadline, // Use formData for deadline
+        title: formData.title, 
+        description: formData.description, 
+        project_id: formData.project_id, 
+        assigned_to: formData.assigned_to, 
+        priority: formData.priority, 
+        status: formData.status, 
+        budget: parseFloat(formData.budget), 
+        deadline: formData.deadline, 
       };
+      
+      // Check if we're updating a task status to 'completed'
+      const isCompletingTask = task && 
+                               task.status !== 'completed' && 
+                               formData.status === 'completed';
+      
+      if (isCompletingTask) {
+        console.log('Task being marked as completed, notifications should be generated', {
+          taskId: task.id,
+          oldStatus: task.status,
+          newStatus: formData.status
+        });
+      }
   
       if (task) {
         // Update task
-        await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, taskData, {
+        const response = await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, taskData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
+        
+        // If we just completed a task, force refresh notifications
+        if (isCompletingTask) {
+          // Force refresh notifications in the system by polling the notification endpoint
+          setTimeout(() => {
+            console.log('Forcing notification refresh after task completion');
+            // Call notification endpoint directly to ensure it's refreshed
+            axios.get('http://127.0.0.1:8000/api/notifications', {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              }
+            }).catch(error => console.error('Error refreshing notifications:', error));
+          }, 1000); // Wait 1 second to ensure backend has processed the notification
+        }
       } else {
         // Create new task
         await axios.post('http://127.0.0.1:8000/api/tasks', taskData, {

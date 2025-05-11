@@ -22,21 +22,43 @@ class NotificationService
             // Get the user to attach the notification to
             $user = User::findOrFail($userId);
             
-            // Create the notification using the polymorphic relationship
-            $notification = $user->notifications()->create([
+            // Log user role - important for debugging project manager issues
+            \Log::info('Creating notification for user', [
+                'user_id' => $userId,
+                'user_role' => $user->role ?? 'unknown',
+                'username' => $user->username ?? 'unknown',
+                'is_project_manager' => ($user->role === 'project_manager') ? 'yes' : 'no'
+            ]);
+            
+            // DIRECT APPROACH: Create the notification with explicit attributes
+            // This bypasses potential polymorphic relationship issues
+            $notification = new \App\Models\Notification([
                 'message' => $message,
                 'type' => $type,
-                'notifiable_type' => $notifiableType,
-                'notifiable_id' => $notifiableId,
+                'notifiable_type' => 'App\Models\User', // Use consistent string format
+                'notifiable_id' => $userId,
                 'read_at' => null // Explicitly set to ensure it's unread
             ]);
             
-            // Reload the notification with relationships to ensure data consistency
+            // Log exactly what we're saving to help debug
+            \Log::info('About to save notification with data', [
+                'notifiable_type' => 'App\Models\User',
+                'notifiable_id' => $userId,
+                'message' => $message,
+                'type' => $type
+            ]);
+            
+            $notification->save();
+            
+            // Reload the notification to ensure data consistency
             $notification = $notification->fresh();
             
             \Log::info('Notification created successfully', [
                 'notification_id' => $notification->id,
-'user_id' => $userId,
+                'user_id' => $userId,
+                'user_role' => $user->role ?? 'unknown',
+                'notifiable_type' => $notification->notifiable_type,
+                'notifiable_id' => $notification->notifiable_id,
                 'type' => $notification->type,
                 'created_at' => $notification->created_at
             ]);
@@ -50,6 +72,99 @@ class NotificationService
                 'type' => $type
             ]);
             throw $e;
+        }
+    }
+    
+    /**
+     * Create a task completion notification specifically for project managers
+     * 
+     * @param Task $task The completed task
+     * @param User $completedBy The user who completed the task
+     * @return Notification|null The created notification or null if failed
+     */
+    public static function notifyTaskCompleted($task, $completedBy = null)
+    {
+        try {
+            \Log::info('notifyTaskCompleted called', [
+                'task_id' => $task->id,
+                'completedBy' => $completedBy ? $completedBy->id : 'null'
+            ]);
+            
+            // Ensure task project relation is loaded
+            if (!$task->relationLoaded('project')) {
+                $task->load('project');
+            }
+            
+            // First check: Verify task has a project and project has a user_id
+            if (!$task->project || !$task->project->user_id) {
+                \Log::warning('Cannot create task completion notification: missing project or project manager', [
+                    'task_id' => $task->id,
+                    'task_title' => $task->title,
+                    'has_project' => $task->project ? 'yes' : 'no',
+                    'project_id' => $task->project_id ?? null,
+                    'project' => $task->project ? json_encode($task->project->toArray()) : 'null',
+                    'project_manager_id' => $task->project ? $task->project->user_id : null
+                ]);
+                
+                // Second check: If we have a project_id but not a loaded project, try to get the project directly
+                if ($task->project_id) {
+                    $project = \App\Models\Project::find($task->project_id);
+                    if ($project && $project->user_id) {
+                        \Log::info('Found project directly', [
+                            'project_id' => $project->id,
+                            'project_name' => $project->project_name,
+                            'user_id' => $project->user_id
+                        ]);
+                        $task->project = $project; // Assign the project to the task's relation
+                    } else {
+                        \Log::warning('Project found but no user_id set', [
+                            'project_id' => $project ? $project->id : null,
+                            'has_user_id' => $project && $project->user_id ? 'yes' : 'no'
+                        ]);
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            }
+            
+            // Get the project manager's user ID
+            $projectManagerId = $task->project->user_id;
+            
+            // Get user who completed the task for the message
+            $completedByName = 'a team member';
+            if ($completedBy) {
+                $completedByName = $completedBy->username ?? $completedBy->name ?? 'a team member';
+            } elseif ($task->assignedUser) {
+                $completedByName = $task->assignedUser->username ?? $task->assignedUser->name ?? 'a team member';
+            }
+            
+            $message = "Task '{$task->title}' has been marked as completed by {$completedByName}";
+            
+            // Log detailed information about this notification creation attempt
+            \Log::info('Creating task completion notification for project manager', [
+                'project_manager_id' => $projectManagerId,
+                'task_id' => $task->id,
+                'task_title' => $task->title,
+                'completed_by' => $completedByName,
+                'message' => $message
+            ]);
+            
+            // Create the notification
+            return self::createNotification(
+                $projectManagerId,
+                $message,
+                'task_completed',
+                'App\Models\Task',  // Use the task as the notifiable entity type
+                $task->id
+            );
+        } catch (\Exception $e) {
+            \Log::error('Failed to create task completion notification', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'task_id' => $task->id ?? 'unknown'
+            ]);
+            return null;
         }
     }
 

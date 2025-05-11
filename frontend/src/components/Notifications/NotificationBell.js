@@ -34,23 +34,37 @@ const NotificationBell = () => {
         setLoadingMore(true);
       }
 
-      // Get user info from localStorage if available
+      // Get comprehensive user info from localStorage
+      const userId = localStorage.getItem('user_id');
       const userRole = localStorage.getItem('user_role');
-      console.log('User role:', userRole || 'Not found in localStorage');
+      const userName = localStorage.getItem('user_name');
+      const userEmail = localStorage.getItem('user_email');
+      
+      console.log('User information from localStorage:', {
+        userId: userId || 'Not found',
+        userRole: userRole || 'Not found',
+        userName: userName || 'Not found',
+        userEmail: userEmail || 'Not found'
+      });
+      
+      // Add user info to the request headers for better server-side debugging
+      const requestHeaders = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Authorization': `Bearer ${token}`,
+        'X-User-Role': userRole || 'unknown',
+        'X-User-Id': userId || 'unknown'
+      };
 
       // Log the API base URL
       const apiBaseUrl = 'http://127.0.0.1:8000';
       console.log('Using API base URL:', apiBaseUrl);
       
-      // Create axios instance with default config
+      // Create axios instance with default config including custom user headers
       const api = axios.create({
         baseURL: apiBaseUrl,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: requestHeaders,
         withCredentials: true,
         validateStatus: (status) => status >= 200 && status < 300 || status === 204
       });
@@ -66,6 +80,11 @@ const NotificationBell = () => {
         data: unreadRes.data,
         headers: unreadRes.headers
       });
+      
+      // Add detailed debug info for notification count
+      if (unreadRes.data && unreadRes.data.debug) {
+        console.log('Backend notification debug info:', unreadRes.data.debug);
+      }
 
       // Fetch notifications with pagination
       console.log('2. Fetching notifications...');

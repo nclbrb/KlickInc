@@ -35,7 +35,14 @@ class User extends Authenticatable
      */
     public function notifications()
     {
-        return $this->morphMany(Notification::class, 'notifiable')
+        \Log::debug('User::notifications() called', [
+            'user_id' => $this->id,
+            'user_role' => $this->role,
+            'model_class' => get_class($this)
+        ]);
+        
+        // This ensures we're using the full namespaced class name for the polymorphic relationship
+        return $this->morphMany(\App\Models\Notification::class, 'notifiable')
             ->orderBy('created_at', 'desc');
     }
 

@@ -30,10 +30,15 @@ class NotificationController extends Controller
             // Log the raw SQL query for debugging
             \DB::enableQueryLog();
             
-            // Get notifications with eager loading of notifiable
-            $query = $user->notifications()
+            // Use the new scope to ensure we get all notifications for this user
+            $query = Notification::forUser($user->id)
                 ->with(['notifiable'])
                 ->orderBy('created_at', 'desc');
+                
+            \Log::info('Using scope-based notification query', [
+                'user_id' => $userId,
+                'user_role' => $user->role
+            ]);
             
             // Log user notifications relationship details
             \Log::debug('User notifications relationship details', [
@@ -63,6 +68,35 @@ class NotificationController extends Controller
                 'time' => $queryLog[count($queryLog)-1]['time'] ?? 0,
                 'user_id' => $userId
             ]);
+            
+            // DIRECT APPROACH: If no notifications were found, try to get them directly based on user role
+            if ($notifications->isEmpty()) {
+                \Log::info('No notifications found with regular approach, trying direct query');
+                
+                // For project managers, use a direct query approach as a fallback
+                if ($user->role === 'project_manager') {
+                    \Log::info('Using direct query approach for project manager');
+                    
+                    // Try all possible formats of the notifiable_type with a direct query
+                    $rawNotifications = \DB::table('notifications')
+                        ->where('notifiable_id', $userId)
+                        ->where(function ($q) {
+                            $q->where('notifiable_type', 'App\\Models\\User')
+                              ->orWhere('notifiable_type', 'App\Models\User')
+                              ->orWhere('notifiable_type', User::class);
+                        })
+                        ->orderBy('created_at', 'desc')
+                        ->paginate($perPage, ['*'], 'page', $page);
+                    
+                    if ($rawNotifications->isNotEmpty()) {
+                        \Log::info('Found project manager notifications with direct query', [
+                            'count' => $rawNotifications->count()
+                        ]);
+                        $notifications = $rawNotifications;
+                        $notificationItems = $notifications->items();
+                    }
+                }
+            }
             
             // Get total count for debugging
             $totalNotifications = $user->notifications()->count();
@@ -186,13 +220,28 @@ class NotificationController extends Controller
     {
         try {
             $user = Auth::user();
-            $count = $user->unreadNotifications()->count();
+            
+            // Using direct query approach for more reliable results
+            $unreadNotifications = Notification::forUser($user->id)
+                ->whereNull('read_at')
+                ->get();
+            
+            $count = $unreadNotifications->count();
+            
+            \Log::info('Marking all notifications as read (direct approach)', [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'count' => $count
+            ]);
             
             if ($count > 0) {
-                $user->unreadNotifications->markAsRead();
+                foreach ($unreadNotifications as $notification) {
+                    $notification->markAsRead();
+                }
                 
                 \Log::info('Marked all notifications as read', [
                     'user_id' => $user->id,
+                    'user_role' => $user->role,
                     'count' => $count
                 ]);
             }
@@ -229,8 +278,41 @@ class NotificationController extends Controller
             'role' => $user->role
         ]);
         
-        // Get the raw SQL query for debugging
-        $query = $user->notifications()->whereNull('read_at');
+        // FIRST: Direct raw query to see ALL notifications in the system
+        $allNotifications = \DB::table('notifications')->get();
+        \Log::info('ALL notifications in system', [
+            'total_count' => $allNotifications->count(),
+            'notification_ids' => $allNotifications->pluck('id')->toArray(),
+            'notification_user_ids' => $allNotifications->pluck('notifiable_id')->toArray(),
+        ]);
+        
+        // SECOND: Check all notifications for this specific user with multiple possible notifiable_type formats
+        $rawUserNotifications = \DB::table('notifications')
+            ->where('notifiable_id', '=', $user->id)
+            ->where(function($query) {
+                // Check all possible formats of the notifiable_type
+                $query->where('notifiable_type', '=', 'App\\Models\\User')
+                      ->orWhere('notifiable_type', '=', 'App\Models\User')
+                      ->orWhere('notifiable_type', '=', User::class);
+            })
+            ->get();
+            
+        // Direct raw SQL query to check what's actually in the database
+        $allNotificationsRaw = \DB::select('SELECT * FROM notifications LIMIT 10');
+        \Log::info('Raw SQL query results', [
+            'count' => count($allNotificationsRaw),
+            'first_few' => array_slice((array)$allNotificationsRaw, 0, 3)
+        ]);
+            
+        \Log::info('Raw user notifications check', [
+            'user_id' => $user->id,
+            'user_role' => $user->role,
+            'notification_count' => $rawUserNotifications->count(),
+            'notification_ids' => $rawUserNotifications->pluck('id')->toArray(),
+        ]);
+        
+        // THIRD: Now try with our scope
+        $query = Notification::forUser($user->id)->whereNull('read_at');
         $sql = $query->toSql();
         $bindings = $query->getBindings();
         
@@ -252,6 +334,9 @@ class NotificationController extends Controller
             'count' => $count,
             'debug' => [
                 'user_id' => $user->id,
+                'user_role' => $user->role,
+                'total_notifications' => $allNotifications->count(),
+                'user_notifications' => $rawUserNotifications->count(),
                 'query' => $sql,
                 'bindings' => $bindings
             ]

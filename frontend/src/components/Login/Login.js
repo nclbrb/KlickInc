@@ -17,8 +17,20 @@ function Login({ onLogin }) {
       const response = await api.post('/login', { email, password });
       const { access_token, user } = response.data;
 
-      // Store token locally (e.g., in localStorage)
+      // Store token and user data in localStorage
       localStorage.setItem('access_token', access_token);
+      localStorage.setItem('user_id', user.id);
+      localStorage.setItem('user_role', user.role);
+      localStorage.setItem('user_email', user.email);
+      localStorage.setItem('user_name', user.username || user.name);
+      
+      // Log what we're storing for debugging
+      console.log('Storing user data in localStorage:', {
+        user_id: user.id,
+        user_role: user.role,
+        user_email: user.email,
+        user_name: user.username || user.name
+      });
       
       // Set the token for subsequent requests
       setAuthToken(access_token);

@@ -236,31 +236,97 @@ class TaskController extends Controller
         // Send notification if status was changed to completed
         if (isset($validated['status']) && $validated['status'] === 'completed' && $oldStatus !== 'completed') {
             try {
-                // Notify the project manager
-                if ($task->project && $task->project->user_id) {
-                    $assignee = $task->assignedUser;
-                    $managerMessage = "Task '{$task->title}' has been marked as completed by " . ($assignee ? $assignee->username : 'a team member');
-                    
-                    NotificationService::createNotification(
-                        $task->project->user_id,
-                        $managerMessage,
-                        'task_completed',
-                        get_class($task),
-                        $task->id
-                    );
-                    
-                    Log::info('Task completion notification sent to project manager', [
+                Log::info('Task has been completed - preparing notification', [
+                    'task_id' => $task->id,
+                    'task_title' => $task->title,
+                    'old_status' => $oldStatus,
+                    'new_status' => $validated['status'],
+                    'user_id' => Auth::id(),
+                    'request_method' => request()->method(),
+                    'user_agent' => request()->header('User-Agent')
+                ]);
+                
+                // CRITICAL: Make sure task project relation is loaded
+                if (!$task->relationLoaded('project')) {
+                    $task->load('project');
+                }
+                
+                // Verify project relationship and manager
+                if (!$task->project) {
+                    Log::error('Task completion notification failed - task has no project relation', [
                         'task_id' => $task->id,
-                        'project_id' => $task->project->id,
-                        'manager_id' => $task->project->user_id,
-                        'message' => $managerMessage
+                        'project_id' => $task->project_id ?? null
+                    ]);
+                    
+                    // Try to load project directly
+                    if ($task->project_id) {
+                        $project = \App\Models\Project::find($task->project_id);
+                        if ($project) {
+                            Log::info('Retrieved project directly for notification', [
+                                'project_id' => $project->id,
+                                'project_name' => $project->project_name,
+                                'user_id' => $project->user_id ?? null
+                            ]);
+                            $task->project = $project;
+                        }
+                    }
+                }
+                
+                // Make sure we have the current user for the notification message
+                $completedBy = Auth::user();
+                
+                // DIRECT APPROACH: Let's ensure the project manager gets a notification
+                // Try getting project manager directly if possible
+                $projectManagerId = null;
+                $message = "Task '{$task->title}' has been marked as completed";
+                
+                if ($completedBy) {
+                    $message .= " by {$completedBy->username}";
+                }
+                
+                if ($task->project && $task->project->user_id) {
+                    $projectManagerId = $task->project->user_id;
+                    
+                    // Create the notification directly without going through the service
+                    $directNotification = new \App\Models\Notification([
+                        'message' => $message,
+                        'type' => 'task_completed',
+                        'notifiable_type' => 'App\Models\User',
+                        'notifiable_id' => $projectManagerId,
+                        'read_at' => null
+                    ]);
+                    
+                    $directNotification->save();
+                    
+                    Log::info('Direct task completion notification created', [
+                        'task_id' => $task->id,
+                        'notification_id' => $directNotification->id,
+                        'project_manager_id' => $projectManagerId,
+                        'message' => $message
+                    ]);
+                } else {
+                    Log::error('Cannot create task completion notification - no project manager found', [
+                        'task_id' => $task->id,
+                        'project_id' => $task->project_id ?? null,
+                        'project_manager_id' => $task->project->user_id ?? null
                     ]);
                 }
+                
+                // ALSO try using the service method as backup
+                $notification = NotificationService::notifyTaskCompleted($task, $completedBy);
+                
+                Log::info('Task completion notification processing complete', [
+                    'task_id' => $task->id,
+                    'service_notification_created' => $notification ? 'yes' : 'no',
+                    'service_notification_id' => $notification ? $notification->id : null,
+                    'direct_notification_created' => isset($directNotification) ? 'yes' : 'no',
+                    'direct_notification_id' => isset($directNotification) ? $directNotification->id : null
+                ]);
             } catch (\Exception $e) {
-                Log::error('Failed to send task completion notification', [
+                Log::error('Error in task completion notification', [
                     'error' => $e->getMessage(),
                     'task_id' => $task->id,
-                    'status' => $validated['status']
+                    'trace' => $e->getTraceAsString()
                 ]);
             }
         }

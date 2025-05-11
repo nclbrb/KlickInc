@@ -29,6 +29,24 @@ class Notification extends Model
     {
         return $this->notifiable;
     }
+    
+    /**
+     * Scope a query to get notifications for the given user ID.
+     */
+    public function scopeForUser($query, $userId)
+    {
+        // The notifiable_type could be stored in multiple formats depending on how it was created
+        // Check all possible class name formats to ensure we find all notifications
+        return $query->where(function($q) use ($userId) {
+            // Full namespaced class
+            $q->where('notifiable_type', User::class)
+              // Legacy format without namespace
+              ->orWhere('notifiable_type', 'App\\Models\\User')
+              // Another possible format
+              ->orWhere('notifiable_type', 'App\Models\User');
+        })
+        ->where('notifiable_id', $userId);
+    }
 
     /**
      * Get the notifiable entity that the notification belongs to.

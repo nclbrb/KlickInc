@@ -99,14 +99,45 @@ function TasksPage({ user, onLogout }) {
     try {
       const token = localStorage.getItem('access_token');
       let updatedTask = { status };
-      if (status === 'pending') {
+      
+      // Check if we're completing a task
+      const isCompletingTask = (status === 'completed' && task.status !== 'completed');
+      
+      if (isCompletingTask) {
+        console.log('Task being completed via dropdown', {
+          taskId: task.id,
+          oldStatus: task.status,
+          newStatus: status
+        });
+        // Add end time for completed tasks
+        updatedTask.end_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      } else if (status === 'pending') {
         updatedTask.start_time = null;
         updatedTask.end_time = null;
       }
+      
       await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, updatedTask, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
+      
       fetchTasks();
+      
+      // If completing a task, force refresh notifications for project manager
+      if (isCompletingTask) {
+        setTimeout(() => {
+          console.log('Forcing notification refresh after task completion via dropdown');
+          // Call notification endpoint directly to ensure notifications are refreshed
+          axios.get('http://127.0.0.1:8000/api/notifications', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          }).catch(error => console.error('Error refreshing notifications:', error));
+        }, 1000); // Wait 1 second to ensure backend has processed the notification
+      }
     } catch (error) {
       console.error('Error updating task status:', error);
       alert('Failed to update task status');
@@ -156,16 +187,39 @@ function TasksPage({ user, onLogout }) {
 
   const handleCompleteTask = async (task) => {
     try {
+      console.log('Completing task via Complete button', {
+        taskId: task.id,
+        oldStatus: task.status,
+        newStatus: 'completed'
+      });
+      
       const token = localStorage.getItem('access_token');
       const updatedTask = {
         ...task,
         status: 'completed',
         end_time: new Date().toISOString().slice(0, 19).replace('T', ' ')
       };
+      
       await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, updatedTask, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
+      
       fetchTasks();
+      
+      // Force refresh notifications to ensure project manager gets the notification
+      setTimeout(() => {
+        console.log('Forcing notification refresh after task completion via Complete button');
+        // Call notification endpoint directly to ensure notifications are refreshed
+        axios.get('http://127.0.0.1:8000/api/notifications', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }).catch(error => console.error('Error refreshing notifications:', error));
+      }, 1000); // Wait 1 second to ensure backend has processed the notification
     } catch (error) {
       console.error('Error completing task:', error);
       alert('Failed to complete task');
