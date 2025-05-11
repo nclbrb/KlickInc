@@ -1,19 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Nav, Button, Modal, ListGroup } from 'react-bootstrap';
-import api from '../../api';
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Nav, Button } from 'react-bootstrap';
 
 const NavBar = ({ user, onLogout }) => {
-  const [showNotifModal, setShowNotifModal] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate(); // Use navigate from react-router-dom
 
-  const getLinkClass = (path) => {
-    const isActive = location.pathname === path || 
-                    (path !== '/' && location.pathname.startsWith(path));
-    return `nav-link text-white mb-2 d-flex align-items-center ${isActive ? 'active bg-primary rounded' : ''}`;
-  };
+  const getLinkClass = ({ isActive }) =>
+    isActive
+      ? 'nav-link active text-white mb-2 d-flex align-items-center'
+      : 'nav-link text-white mb-2 d-flex align-items-center';
+      
+
 
   const roleText =
     user?.role === 'project_manager'
@@ -25,26 +22,7 @@ const NavBar = ({ user, onLogout }) => {
   const displayName = user?.username;
   const roleAndName = roleText && displayName ? `${roleText}: ${displayName}` : '';
 
-  // Notifications feature flag - set to true when implementing notifications
-  const notificationsEnabled = false;
 
-  // Only fetch notifications if the feature is enabled
-  useEffect(() => {
-    if (!notificationsEnabled) return;
-
-    const fetchNotifications = async () => {
-      try {
-        const response = await api.get('/notifications');
-        if (response.data) {
-          setNotifications(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      }
-    };
-
-    fetchNotifications();
-  }, []);
 
   return (
     <>
@@ -64,13 +42,6 @@ const NavBar = ({ user, onLogout }) => {
           <Nav className="flex-column">
             <Nav.Link as={NavLink} to="/dashboard" end className={getLinkClass}>
               <i className="material-icons me-2">dashboard</i> Dashboard
-            </Nav.Link>
-
-            <Nav.Link
-              onClick={() => setShowNotifModal(true)}
-              className="nav-link text-white mb-2 d-flex align-items-center"
-            >
-              <i className="material-icons me-2">notifications</i> Notifications
             </Nav.Link>
 
             {/* Activity Feed Link (Navigate to a separate page) */}
@@ -105,30 +76,7 @@ const NavBar = ({ user, onLogout }) => {
         </div>
       </div>
 
-      {/* Notifications Modal */}
-      <Modal show={showNotifModal} onHide={() => setShowNotifModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Notifications</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-            <ListGroup variant="flush">
-            {notifications.length === 0 ? (
-              <div className="text-muted text-center py-2">No notifications</div>
-            ) : (
-              notifications.map((note, idx) => (
-                <ListGroup.Item key={idx} className="border-0">
-                  {note}
-                </ListGroup.Item>
-              ))
-          )}
-          </ListGroup>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowNotifModal(false)}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+
     </>
   );
 };

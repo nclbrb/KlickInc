@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\Task;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -129,6 +130,54 @@ class CommentController extends Controller
                 'task_id' => $task->id,
                 'user_id' => Auth::id()
             ]);
+
+            // Send notifications for the comment
+            try {
+                $commenter = Auth::user();
+                $task->load(['assignedUser', 'project']);
+                
+                // Determine who should be notified
+                $recipientId = null;
+                
+                if ($commenter->role === 'project_manager') {
+                    // If commenter is PM, notify the assigned team member
+                    if ($task->assigned_to && $task->assigned_to !== $commenter->id) {
+                        $recipientId = $task->assigned_to;
+                    }
+                } else {
+                    // If commenter is a team member, notify the project manager
+                    if ($task->project && $task->project->user_id) {
+                        $recipientId = $task->project->user_id;
+                    }
+                }
+                
+                // Send notification if we have a valid recipient
+                if ($recipientId) {
+                    $message = "New comment on task '{$task->title}' by " . $commenter->username;
+                    
+                    NotificationService::createNotification(
+                        $recipientId,
+                        $message,
+                        'new_comment',
+                        get_class($comment),
+                        $comment->id
+                    );
+                    
+                    \Log::info('Comment notification sent', [
+                        'comment_id' => $comment->id,
+                        'task_id' => $task->id,
+                        'sender_id' => $commenter->id,
+                        'recipient_id' => $recipientId,
+                        'message' => $message
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send comment notification', [
+                    'error' => $e->getMessage(),
+                    'comment_id' => $comment->id,
+                    'task_id' => $task->id
+                ]);
+            }
 
             // Return the comment with user data
             return response()->json([

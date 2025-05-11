@@ -146,7 +146,13 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
   };
   
   return (
-    <Modal show={show} onHide={handleClose} centered size="lg">
+    <Modal 
+      show={show} 
+      onHide={handleClose} 
+      centered 
+      size="md" 
+      dialogClassName="custom-task-modal"
+    >
       <Modal.Header closeButton className="modal-header">
         <Modal.Title>{task ? 'Edit Task' : 'Create New Task'}</Modal.Title>
       </Modal.Header>

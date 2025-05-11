@@ -173,10 +173,26 @@ function TasksPage({ user, onLogout }) {
   };
 
   const handleViewTaskDetails = async (task) => {
-    setSelectedTaskForView(task);
-    setShowTaskDetailsModal(true);
-    // Fetch comments for the selected task
-    await fetchComments(task.id);
+    try {
+      // Fetch the full task details to ensure we have all fields including budget
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Set the task with complete data from the API
+      setSelectedTaskForView(response.data);
+      setShowTaskDetailsModal(true);
+      
+      // Fetch comments for the selected task
+      await fetchComments(task.id);
+    } catch (error) {
+      console.error('Error fetching task details:', error);
+      // Fallback to using the task data we already have
+      setSelectedTaskForView(task);
+      setShowTaskDetailsModal(true);
+      await fetchComments(task.id);
+    }
   };
 
   const closeTaskDetailsModal = () => {
@@ -370,7 +386,10 @@ function TasksPage({ user, onLogout }) {
                         <td><strong>{task.title}</strong>
                           {task.description && <div className="text-muted small">{task.description.slice(0, 50)}{task.description.length > 50 ? '...' : ''}</div>}
                         </td>
-                        <td>{task.project?.project_name} ({task.project?.project_code})</td>
+                        <td>
+                          {task.project ? (task.project.project_name || task.project.title) : 'No Project'}
+                          {task.project && task.project.project_code && <span className="text-muted"> ({task.project.project_code})</span>}
+                        </td>
                         <td>{user.role === 'team_member' ? (
                           <Form.Select size="sm" value={task.status} onChange={e => handleStatusChange(task, e.target.value)}>
                             <option value="pending">Pending</option>
@@ -477,8 +496,11 @@ function TasksPage({ user, onLogout }) {
                 >
                   <h5>{selectedTaskForView.title}</h5>
                   <p>{selectedTaskForView.description}</p>
-                  <p><strong>Project:</strong> {selectedTaskForView.project?.project_name}</p>
-                  <p><strong>Assigned To:</strong> {selectedTaskForView.assigned_to?.name}</p>
+                  <p><strong>Project:</strong> {selectedTaskForView.project?.project_name || selectedTaskForView.project?.title || 'No Project'}</p>
+                  <p><strong>Assigned To:</strong> {selectedTaskForView.assigned_to?.name || 'Unassigned'}</p>
+                  <p><strong>Priority:</strong> {getTaskPriorityBadge(selectedTaskForView.priority)}</p>
+                  <p><strong>Deadline:</strong> {selectedTaskForView.deadline ? formatDeadline(selectedTaskForView.deadline) : 'No deadline set'}</p>
+                  <p><strong>Budget:</strong> {selectedTaskForView.budget ? `₱${parseFloat(selectedTaskForView.budget).toFixed(2)}` : 'No budget set'}</p>
                   <p><strong>Time Spent:</strong> {selectedTaskForView.time_spent ? `${selectedTaskForView.time_spent} secs` : 'No time recorded'}</p>
                   <p><strong>Start Time:</strong> {selectedTaskForView.start_time ? new Date(selectedTaskForView.start_time).toLocaleString() : 'Not started'}</p>
                   <p><strong>End Time:</strong> {selectedTaskForView.end_time ? new Date(selectedTaskForView.end_time).toLocaleString() : 'Not ended'}</p>
