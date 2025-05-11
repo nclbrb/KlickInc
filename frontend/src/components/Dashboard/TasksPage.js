@@ -22,6 +22,12 @@ function TasksPage({ user, onLogout }) {
   const [showTaskDetailsModal, setShowTaskDetailsModal] = useState(false);
   const [selectedTaskForView, setSelectedTaskForView] = useState(null);
 
+  // New comment-related state
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [selectedTaskForComments, setSelectedTaskForComments] = useState(null);
+
   useEffect(() => {
     fetchTasks();
     fetchUsers();
@@ -128,6 +134,21 @@ function TasksPage({ user, onLogout }) {
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+  try {
+    const token = localStorage.getItem('access_token');
+    await axios.delete(`http://127.0.0.1:8000/api/comments/${commentId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    // Refresh comments after deletion
+    fetchComments(selectedTaskForComments.id);
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    alert('Failed to delete comment');
+  }
+};
+
+
   const handleCompleteTask = async (task) => {
     try {
       const token = localStorage.getItem('access_token');
@@ -191,6 +212,48 @@ function TasksPage({ user, onLogout }) {
   const handleViewProject = (project) => {
     setSelectedProjectForView(project);
     setShowProjectModal(true);
+  };
+
+  // === Comments functions ===
+  const fetchComments = async (taskId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`http://127.0.0.1:8000/api/tasks/${taskId}/comments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setComments(response.data);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  const postComment = async () => {
+    if (!newComment.trim()) return;
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(`http://127.0.0.1:8000/api/tasks/${selectedTaskForComments.id}/comments`, {
+        comment: newComment
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNewComment('');
+      fetchComments(selectedTaskForComments.id);
+    } catch (error) {
+      console.error('Error posting comment:', error);
+    }
+  };
+
+  const openCommentsModal = (task) => {
+    setSelectedTaskForComments(task);
+    fetchComments(task.id);
+    setShowCommentsModal(true);
+  };
+
+  const closeCommentsModal = () => {
+    setShowCommentsModal(false);
+    setSelectedTaskForComments(null);
+    setComments([]);
+    setNewComment('');
   };
 
   const formatDeadline = (deadline) => deadline ? new Date(deadline).toLocaleDateString() : 'No deadline';
@@ -267,6 +330,7 @@ function TasksPage({ user, onLogout }) {
                             )}
                             <Button size="sm" variant="outline-info" onClick={() => handleViewTaskDetails(task)}>View</Button>
                             <Button size="sm" variant="outline-warning" onClick={() => openAmountModal(task)}>Update Amount</Button>
+                            <Button size="sm" variant="outline-dark" onClick={() => openCommentsModal(task)}>Comments</Button>
                             {user.role !== 'team_member' && (
                               <>
                                 <Button size="sm" variant="outline-secondary" onClick={() => handleEditTask(task)}>Edit</Button>
@@ -325,6 +389,32 @@ function TasksPage({ user, onLogout }) {
 
       <ProjectModal show={showProjectModal} handleClose={() => setShowProjectModal(false)} project={selectedProjectForView} readOnly />
 
+      {/* Comment Modal */}
+      <Modal show={showCommentsModal} onHide={closeCommentsModal}>
+        <Modal.Header closeButton><Modal.Title>Comments for: {selectedTaskForComments?.title}</Modal.Title></Modal.Header>
+        <Modal.Body>
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            {comments.length ? comments.map((c, idx) => (
+              <div key={idx} className="mb-2 p-2 bg-light rounded">
+                <strong>{c.user?.name || 'User'}:</strong> {c.comment}
+                <div className="text-muted small">{new Date(c.created_at).toLocaleString()}</div>
+                {c.user?.id === user.id && (
+                  <Button size="sm" variant="outline-danger" onClick={() => handleDeleteComment(c.id)}>Delete</Button>
+                  )}
+                  </div>
+                )) : <div className="text-muted">No comments yet.</div>}
+
+          </div>
+          <Form.Group className="mt-3">
+            <Form.Label>Add a Comment</Form.Label>
+            <Form.Control as="textarea" rows={2} value={newComment} onChange={(e) => setNewComment(e.target.value)} />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeCommentsModal}>Close</Button>
+          <Button variant="primary" onClick={postComment}>Post</Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }

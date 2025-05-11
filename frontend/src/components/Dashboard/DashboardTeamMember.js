@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import NavBar from './NavBar'; 
@@ -8,6 +8,8 @@ function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [assignedProjects, setAssignedProjects] = useState([]);
+  const [notifications, setNotifications] = useState([]);  
+  const [showModal, setShowModal] = useState(false); 
 
   useEffect(() => {
     fetchTasks();
@@ -82,26 +84,41 @@ function DashboardTeamMember({ user, onLogout }) {
   };
 
   // Helper to format the budget
-const formatBudget = (budget) => {
-  if (budget === null || budget === undefined || budget === '') {
-    return 'N/A';
-  }
-  
-  const parsedBudget = parseFloat(budget);
-  if (isNaN(parsedBudget)) {
-    return 'Invalid Budget';  // If the value can't be parsed into a number
-  }
+  const formatBudget = (budget) => {
+    if (budget === null || budget === undefined || budget === '') {
+      return 'N/A';
+    }
+    
+    const parsedBudget = parseFloat(budget);
+    if (isNaN(parsedBudget)) {
+      return 'Invalid Budget';  
+    }
 
-  return `₱${parsedBudget.toFixed(2)}`;
-};
+    return `₱${parsedBudget.toFixed(2)}`;
+  };
 
+  // Open the notifications modal
+  const handleShowNotifications = () => {
+    const newNotifications = [
+      'Task 1 has been assigned to you.',
+      'Task 2 has been completed.',
+      'New project has been assigned.',
+    ];
+    setNotifications(newNotifications);
+    setShowModal(true);
+  };
+
+  // Close the notifications modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
       <Row>
         {/* Sidebar via shared NavBar component */}
         <Col xs={12} md={3} lg={2} className="p-0">
-          <NavBar user={user} onLogout={onLogout} navigate={navigate} />
+          <NavBar user={user} onLogout={onLogout} onShowNotifications={handleShowNotifications} />
         </Col>
 
         {/* Main Content */}
@@ -161,7 +178,7 @@ const formatBudget = (budget) => {
                           <th>Status</th>
                           <th>Priority</th>
                           <th>Deadline</th>
-                          <th>Budget</th> 
+                          <th>Budget</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -175,7 +192,7 @@ const formatBudget = (budget) => {
                                 ? new Date(task.deadline).toLocaleDateString()
                                 : 'N/A'}
                             </td>
-                            <td>{formatBudget(task.budget)}</td> {/* Add Budget value */}
+                            <td>{formatBudget(task.budget)}</td> 
                           </tr>
                         ))}
                       </tbody>
@@ -192,6 +209,29 @@ const formatBudget = (budget) => {
           </Row>
         </Col>
       </Row>
+
+      {/* Notifications Modal */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Notifications</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ul>
+            {notifications.length > 0 ? (
+              notifications.map((notification, index) => (
+                <li key={index}>{notification}</li>
+              ))
+            ) : (
+              <li>No new notifications</li>
+            )}
+          </ul>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }
