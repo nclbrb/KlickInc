@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CommentController;
 
 // Public routes for user authentication
 Route::post('/register', [AuthController::class, 'register']);
@@ -39,4 +40,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/tasks/{id}', [TaskController::class, 'update']);
     Route::post('/tasks/{id}/assign', [TaskController::class, 'assignTask']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
+
+    // Comment Endpoints:
+    Route::get('/tasks/{taskId}/comments', [TaskController::class, 'getComments']);
+    Route::post('/tasks/{taskId}/comments', [TaskController::class, 'addComment']);
+    Route::delete('/tasks/{taskId}/comments/{commentId}', [TaskController::class, 'deleteComment']);
 });

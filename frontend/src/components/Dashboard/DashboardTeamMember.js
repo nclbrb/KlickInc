@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Modal } from 'react-bootstrap';
+import { Row, Col, Card, Table, Button, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
-import NavBar from './NavBar'; 
 
 function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
@@ -114,101 +113,93 @@ function DashboardTeamMember({ user, onLogout }) {
   };
 
   return (
-    <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
-      <Row>
-        {/* Sidebar via shared NavBar component */}
-        <Col xs={12} md={3} lg={2} className="p-0">
-          <NavBar user={user} onLogout={onLogout} onShowNotifications={handleShowNotifications} />
-        </Col>
-
-        {/* Main Content */}
-        <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2>Welcome, {user.username}!</h2>
-          <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
-          <Row className="mb-4">
-            <Col md={6}>
-              <Card className="shadow-sm mb-3">
-                <Card.Header className="bg-purp">
-                  <h5 className="mb-0 text-white">Assigned Projects</h5>
-                </Card.Header>
-                <Card.Body>
-                  <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                    <Table hover>
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Code</th>
-                          <th>Budget</th>
-                          <th>Status</th>
+    <div className="main-content">
+      <div className="container-fluid">
+        <h2>Welcome, {user.username}!</h2>
+        <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
+        <Row className="mb-4">
+          <Col md={6}>
+            <Card className="shadow-sm mb-3">
+              <Card.Header className="bg-purp">
+                <h5 className="mb-0 text-white">Assigned Projects</h5>
+              </Card.Header>
+              <Card.Body>
+                <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+                  <Table hover>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Budget</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {assignedProjects.map((project) => (
+                        <tr key={project.id}>
+                          <td>{project.project_name}</td>
+                          <td>{project.project_code}</td>
+                          <td>{formatBudget(project.budget)}</td>
+                          <td>
+                            <span className="badge bg-secondary">{project.status}</span>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {assignedProjects.map((project) => (
-                          <tr key={project.id}>
-                            <td>{project.project_name}</td>
-                            <td>{project.project_code}</td>
-                            <td>{formatBudget(project.budget)}</td>
-                            <td>
-                              <span className="badge bg-secondary">{project.status}</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </div>
-                  <div className="mt-2 text-end">
-                    <Button variant="link" onClick={() => navigate('/projects')}>
-                      View All Projects
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={6}>
-              <Card className="shadow-sm mb-3">
-                <Card.Header className="bg-purp">
-                  <h5 className="mb-0 text-white">Assigned Tasks</h5>
-                </Card.Header>
-                <Card.Body>
-                  <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                    <Table hover>
-                      <thead>
-                        <tr>
-                          <th>Title</th>
-                          <th>Status</th>
-                          <th>Priority</th>
-                          <th>Deadline</th>
-                          <th>Budget</th>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+                <div className="mt-2 text-end">
+                  <Button variant="link" onClick={() => navigate('/projects')}>
+                    View All Projects
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={6}>
+            <Card className="shadow-sm mb-3">
+              <Card.Header className="bg-purp">
+                <h5 className="mb-0 text-white">Assigned Tasks</h5>
+              </Card.Header>
+              <Card.Body>
+                <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+                  <Table hover>
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Deadline</th>
+                        <th>Budget</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tasks.map((task) => (
+                        <tr key={task.id}>
+                          <td>{task.title}</td>
+                          <td>{getTaskStatusBadge(task.status)}</td>
+                          <td>{getTaskPriorityBadge(task.priority)}</td>
+                          <td>
+                            {task.deadline
+                              ? new Date(task.deadline).toLocaleDateString()
+                              : 'N/A'}
+                          </td>
+                          <td>{formatBudget(task.budget)}</td> 
                         </tr>
-                      </thead>
-                      <tbody>
-                        {tasks.map((task) => (
-                          <tr key={task.id}>
-                            <td>{task.title}</td>
-                            <td>{getTaskStatusBadge(task.status)}</td>
-                            <td>{getTaskPriorityBadge(task.priority)}</td>
-                            <td>
-                              {task.deadline
-                                ? new Date(task.deadline).toLocaleDateString()
-                                : 'N/A'}
-                            </td>
-                            <td>{formatBudget(task.budget)}</td> 
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </div>
-                  <div className="mt-2 text-end">
-                    <Button variant="link" onClick={() => navigate('/tasks')}>
-                      View All Tasks
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+                <div className="mt-2 text-end">
+                  <Button variant="link" onClick={() => navigate('/tasks')}>
+                    View All Tasks
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </div>
 
       {/* Notifications Modal */}
       <Modal show={showModal} onHide={handleCloseModal}>
@@ -232,7 +223,7 @@ function DashboardTeamMember({ user, onLogout }) {
           </Button>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </div>
   );
 }
 

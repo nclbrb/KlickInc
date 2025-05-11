@@ -62,6 +62,12 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
   // Handle form field change
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Prevent changing status for new tasks
+    if (name === 'status' && !task) {
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]:
@@ -140,12 +146,12 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
   };
   
   return (
-    <Modal show={show} onHide={handleClose} centered>
+    <Modal show={show} onHide={handleClose} centered size="lg">
       <Modal.Header closeButton className="modal-header">
         <Modal.Title>{task ? 'Edit Task' : 'Create New Task'}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="modal-body">
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} className="mt-3">
           <Form.Group className="mb-3" controlId="project">
             <Form.Label>Project</Form.Label>
             <Form.Select
@@ -192,11 +198,13 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
               value={formData.status}
               onChange={handleChange}
               required
+              disabled={!task} // Disable for new tasks
             >
               <option value="pending">Pending</option>
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
             </Form.Select>
+            {!task && <Form.Text className="text-muted">Status can be updated after creating the task.</Form.Text>}
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="priority">
@@ -255,15 +263,15 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
             {budgetError && <div className="text-danger mt-2">{budgetError}</div>}
           </Form.Group>
 
-          <div className="d-flex justify-content-end gap-2 mt-3">
-            <Button variant="secondary" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button variant="purp" type="submit">
-              {task ? 'Update Task' : 'Create Task'}
-            </Button>
-          </div>
-        </Form>
+              <div className="mt-3 d-flex justify-content-end">
+                <Button variant="secondary" onClick={onClose} className="me-2">
+                  Cancel
+                </Button>
+                <Button variant="primary" type="submit">
+                  {task ? 'Update Task' : 'Create Task'}
+                </Button>
+              </div>
+            </Form>
       </Modal.Body>
     </Modal>
   );

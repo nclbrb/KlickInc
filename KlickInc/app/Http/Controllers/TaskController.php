@@ -14,9 +14,9 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'project_manager') {
-            return Task::with(['project', 'user'])->get();
+            return Task::with(['project', 'user', 'comments.user'])->get();
         }
-        return Task::with(['project', 'user'])->where('assigned_to', $user->id)->get();
+        return Task::with(['project', 'user', 'comments.user'])->where('assigned_to', $user->id)->get();
     }
 
     public function store(Request $request)
@@ -37,7 +37,7 @@ class TaskController extends Controller
             'start_time' => 'nullable|date',
         ]);
         
-
+        
         $task = Task::create($validated);
         return response()->json($task->load(['project', 'user']), 201);
     }
@@ -135,7 +135,114 @@ class TaskController extends Controller
 
     public function show($id)
     {
-        $task = Task::with(['project', 'user'])->findOrFail($id);
+        $task = Task::with(['project', 'user', 'comments.user'])->findOrFail($id);
         return response()->json($task);
+    }
+
+    /**
+     * Get all comments for a task
+     */
+    public function getComments($taskId)
+    {
+        try {
+            $task = Task::findOrFail($taskId);
+            
+            $comments = $task->comments()
+                ->with(['user' => function($query) {
+                    $query->select('id', 'username as name');
+                }])
+                ->latest()
+                ->get()
+                ->map(function($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'user_id' => $comment->user_id,
+                        'task_id' => $comment->task_id,
+                        'comment' => $comment->comment,
+                        'created_at' => $comment->created_at,
+                        'updated_at' => $comment->updated_at,
+                        'user' => $comment->user ? [
+                            'id' => $comment->user->id,
+                            'name' => $comment->user->name
+                        ] : null
+                    ];
+                });
+                
+            return response()->json($comments);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error fetching comments: ' . $e->getMessage(), [
+                'task_id' => $taskId,
+                'exception' => $e
+            ]);
+            
+            return response()->json([
+                'error' => 'Failed to fetch comments',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add a comment to a task
+     */
+    public function addComment(Request $request, $taskId)
+    {
+        \Log::info('Adding comment to task ID: ' . $taskId, [
+            'user_id' => auth()->id(),
+            'request_data' => $request->all()
+        ]);
+
+        try {
+            $validated = $request->validate([
+                'comment' => 'required|string|max:1000',
+            ]);
+
+            $task = Task::findOrFail($taskId);
+            
+            $comment = $task->comments()->create([
+                'user_id' => auth()->id(),
+                'comment' => $validated['comment']
+            ]);
+
+            // Load the user relationship with only the necessary fields
+            $comment->load(['user' => function($query) {
+                $query->select('id', 'username as name');
+            }]);
+
+            \Log::info('Comment created successfully:', $comment->toArray());
+
+            return response()->json($comment, 201);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error adding comment: ' . $e->getMessage(), [
+                'exception' => $e,
+                'task_id' => $taskId,
+                'user_id' => auth()->id()
+            ]);
+            
+            return response()->json([
+                'error' => 'Failed to add comment',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a comment
+     */
+    public function deleteComment($taskId, $commentId)
+    {
+        $comment = \App\Models\Comment::where('task_id', $taskId)
+            ->where('id', $commentId)
+            ->firstOrFail();
+
+        // Only the comment owner or an admin can delete the comment
+        if (auth()->id() !== $comment->user_id && auth()->user()->role !== 'project_manager') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $comment->delete();
+        return response()->json(['message' => 'Comment deleted']);
     }
 }

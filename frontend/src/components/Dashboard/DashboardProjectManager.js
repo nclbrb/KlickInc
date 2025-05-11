@@ -22,6 +22,8 @@ function DashboardProjectManager({ user, onLogout }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [showViewProjectModal, setShowViewProjectModal] = useState(false);
+  const [projectToView, setProjectToView] = useState(null);
 
   useEffect(() => {
     fetchProjects();
@@ -68,6 +70,11 @@ function DashboardProjectManager({ user, onLogout }) {
   const handleEditProject = (project) => {
     setSelectedProject(project);
     setShowProjectModal(true);
+  };
+
+  const handleViewProject = (project) => {
+    setProjectToView(project);
+    setShowViewProjectModal(true);
   };
 
   const handleDeleteProject = (id) => {
@@ -146,147 +153,144 @@ function DashboardProjectManager({ user, onLogout }) {
 
         {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-          <h2>Welcome, {user.username}!</h2>
-          <h3 className="mt-4 mb-4">Dashboard</h3>
-          <Row className="mb-5">
-            {/* Project Section */}
-            <Col md={6} className="d-flex mb-4">
-              <Card className="shadow-sm flex-fill">
-                <Card.Header className="bg-purp">
-                  <h5 className="mb-0 text-white">Recent Projects</h5>
-                </Card.Header>
-                <Card.Body className="p-4">
-                  <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                    <Table hover className="table-striped">
-                      <thead>
+        <h2>Welcome, {user.username}!</h2>
+        <h3 className="mt-4 mb-4">Dashboard</h3>
+        <Row className="mb-5">
+          {/* Project Section */}
+          <Col md={6} className="d-flex mb-4">
+            <Card className="shadow-sm flex-fill">
+              <Card.Header className="bg-purp">
+                <h5 className="mb-0 text-white">Recent Projects</h5>
+              </Card.Header>
+              <Card.Body className="p-4">
+                <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+                  <Table hover className="table-striped">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Budget</th>
+                        <th>Status</th>
+                        <th style={{ width: '200px' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {projects.length === 0 ? (
                         <tr>
-                          <th>Name</th>
-                          <th>Code</th>
-                          <th>Budget</th>
-                          <th>Status</th>
-                          <th style={{ width: '200px' }}>Actions</th>
+                          <td colSpan="5" className="text-center">No Projects Available</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {projects.length === 0 ? (
-                          <tr>
-                            <td colSpan="5" className="text-center">No Projects Available</td>
-                          </tr>
-                        ) : (
-                          projects.map((project) => (
-                            <tr key={project.id}>
-                              <td>{project.project_name}</td>
-                              <td>{project.project_code}</td>
-                              <td>
-                                {project.budget !== null && project.budget !== undefined
-                                  ? !isNaN(parseFloat(project.budget))
+                      ) : (
+                        projects.map((project) => (
+                          <tr key={project.id}>
+                            <td>{project.project_name}</td>
+                            <td>{project.project_code}</td>
+                            <td>
+                              {project.budget !== null && project.budget !== undefined
+                                ? !isNaN(parseFloat(project.budget))
                                     //₱
-                                    ? `₱${parseFloat(project.budget).toFixed(2)}`
-                                    : 'Invalid Budget'
-                                  : 'N/A'}
-                              </td>
-                              <td>{getProjectStatusBadge(project.status)}</td>
-                              <td>
-                                <div>
-                                  <Button
-                                    className="btn-view-outline me-2 mb-2"
-                                    onClick={() => {
-                                      setSelectedProject(project);
-                                      setShowProjectModal(true);
-                                    }}
-                                  >
-                                    View
-                                  </Button>
-                                  <Button
-                                    className="btn-edit-outline me-2 mb-2"
-                                    onClick={() => handleEditProject(project)}
-                                  >
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    className="btn-delete-outline mb-2"
-                                    onClick={() => handleDeleteProject(project.id)}
-                                  >
-                                    Delete
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </Table>
-                  </div>
-                  <div className="mt-3 text-end">
-                    <Button variant="link" onClick={() => navigate('/projects')}>
-                      View All Projects
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-
-            {/* Task Section */}
-            <Col md={6} className="d-flex mb-4">
-              <Card className="shadow-sm flex-fill">
-                <Card.Header className="bg-purp">
-                  <h5 className="mb-0 text-white">Recent Tasks</h5>
-                </Card.Header>
-                <Card.Body className="p-4">
-                  <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                    <Table hover className="table-striped">
-                      <thead>
-                        <tr>
-                          <th>Title</th>
-                          <th>Status</th>
-                          <th>Priority</th>
-                          <th>Budget</th>
-                          <th style={{ width: '120px' }}>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tasks.length === 0 ? (
-                          <tr>
-                            <td colSpan="4" className="text-center">No Tasks Available</td>
+                                  ? `₱${parseFloat(project.budget).toFixed(2)}`
+                                  : 'Invalid Budget'
+                                : 'N/A'}
+                            </td>
+                            <td>{getProjectStatusBadge(project.status)}</td>
+                            <td>
+                              <div>
+                                <Button
+                                  className="btn-view-outline me-2 mb-2"
+                                  onClick={() => handleViewProject(project)}
+                                >
+                                  View
+                                </Button>
+                                <Button
+                                  className="btn-edit-outline me-2 mb-2"
+                                  onClick={() => handleEditProject(project)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  className="btn-delete-outline mb-2"
+                                  onClick={() => handleDeleteProject(project.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
                           </tr>
-                        ) : (
-                          tasks.map((task) => (
-                            <tr key={task.id}>
-                              <td>{task.title}</td>
-                              <td>{getTaskStatusBadge(task.status)}</td>
-                              <td>{getTaskPriorityBadge(task.priority)}</td>
-                              <td>{task.budget!=null?`₱${parseFloat(task.budget).toFixed(2)}`:'N/A'}</td>
-                              <td>
-                                <div className="d-flex flex-row align-items-center">
-                                  <Button
-                                    className="btn-edit-outline me-2"
-                                    onClick={() => handleEditTask(task)}
-                                  >
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    className="btn-delete-outline"
-                                    onClick={() => handleDeleteTask(task.id)}
-                                  >
-                                    Delete
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </Table>
-                  </div>
-                  <div className="mt-3 text-end">
-                    <Button variant="link" onClick={() => navigate('/tasks')}>
-                      View All Tasks
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+                        ))
+                      )}
+                    </tbody>
+                  </Table>
+                </div>
+                <div className="mt-3 text-end">
+                  <Button variant="link" onClick={() => navigate('/projects')}>
+                    View All Projects
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* Task Section */}
+          <Col md={6} className="d-flex mb-4">
+            <Card className="shadow-sm flex-fill">
+              <Card.Header className="bg-purp">
+                <h5 className="mb-0 text-white">Recent Tasks</h5>
+              </Card.Header>
+              <Card.Body className="p-4">
+                <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+                  <Table hover className="table-striped">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Budget</th>
+                        <th style={{ width: '120px' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tasks.length === 0 ? (
+                        <tr>
+                          <td colSpan="4" className="text-center">No Tasks Available</td>
+                        </tr>
+                      ) : (
+                        tasks.map((task) => (
+                          <tr key={task.id}>
+                            <td>{task.title}</td>
+                            <td>{getTaskStatusBadge(task.status)}</td>
+                            <td>{getTaskPriorityBadge(task.priority)}</td>
+                            <td>{task.budget!=null?`₱${parseFloat(task.budget).toFixed(2)}`:'N/A'}</td>
+                            <td>
+                              <div className="d-flex flex-row align-items-center">
+                                <Button
+                                  className="btn-edit-outline me-2"
+                                  onClick={() => handleEditTask(task)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  className="btn-delete-outline"
+                                  onClick={() => handleDeleteTask(task.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </Table>
+                </div>
+                <div className="mt-3 text-end">
+                  <Button variant="link" onClick={() => navigate('/tasks')}>
+                    View All Tasks
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
         </Col>
       </Row>
 
@@ -304,6 +308,14 @@ function DashboardProjectManager({ user, onLogout }) {
         refreshTasks={fetchTasks}
         projects={projects}
         users={[]} 
+      />
+      
+      {/* View Project Modal - Read Only */}
+      <ProjectModal 
+        show={showViewProjectModal} 
+        handleClose={() => setShowViewProjectModal(false)} 
+        project={projectToView} 
+        readOnly={true}
       />
     </Container>
   );

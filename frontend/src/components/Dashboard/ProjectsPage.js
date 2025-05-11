@@ -6,7 +6,8 @@ import ProjectModal from './ProjectModal';
 import ProjectTotalModal from './ProjectTotalModal';
 import GanttChartModal from './GanttChartModal';
 import NavBar from './NavBar';
-import ReportIssueModal from './ReportIssueModal';  // Import the new ReportIssueModal component
+import ReportIssueModal from './ReportIssueModal';
+
 
 function ProjectsPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -26,6 +27,10 @@ function ProjectsPage({ user, onLogout }) {
   const [showTotalsModal, setShowTotalsModal] = useState(false);
   const [selectedProjectForTotals, setSelectedProjectForTotals] = useState(null);
   const [showGanttChart, setShowGanttChart] = useState(false);
+  const [showViewProjectModal, setShowViewProjectModal] = useState(false);
+  const [projectToView, setProjectToView] = useState(null);
+  
+
 
   useEffect(() => {
     fetchProjects();
@@ -127,11 +132,6 @@ function ProjectsPage({ user, onLogout }) {
       });
   };
 
-  const handleViewTotals = (project) => {
-    setSelectedProjectForTotals(project);
-    setShowTotalsModal(true);
-  };
-
   const handleViewGanttChart = (project) => {
     const token = localStorage.getItem('access_token');
     axios.get('http://127.0.0.1:8000/api/tasks', {
@@ -152,6 +152,13 @@ function ProjectsPage({ user, onLogout }) {
       console.error('Error fetching tasks:', error);
     });
   };
+
+  const handleViewProject = (project) => {
+    setProjectToView(project);
+    setShowViewProjectModal(true);
+  };
+  
+
 
   const getProjectStatusBadge = (status) => {
     let badgeClass = 'secondary';
@@ -214,10 +221,22 @@ function ProjectsPage({ user, onLogout }) {
     return !isNaN(parsedBudget) ? `₱${parsedBudget.toFixed(2)}` : 'Invalid Budget';
   };
 
+  // Handle viewing project totals
+  const handleViewTotals = (project) => {
+    setSelectedProjectForTotals(project);
+    setShowTotalsModal(true);
+  };
+
   // Handle reporting issue
   const handleReportIssue = (project) => {
     setSelectedProjectForIssueReport(project);
     setShowReportIssueModal(true);
+  };
+
+  // Handle report issue submission
+  const handleReportIssueSubmit = () => {
+    setShowReportIssueModal(false);
+    fetchProjects();
   };
 
   return (
@@ -288,41 +307,52 @@ function ProjectsPage({ user, onLogout }) {
                               : 'N/A'}
                           </td>
                           <td>{getProjectStatusBadge(project.status)}</td>
-                          {user.role === 'project_manager' && (
-                            <td>
+                          <td>
+                            <div className="d-flex flex-wrap gap-2">
+                              {user.role === 'project_manager' && (
+                                <>
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={() => handleViewTotals(project)}
+                                    className="me-1"
+                                  >
+                                    View Totals
+                                  </Button>
+                                  <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    onClick={() => handleViewGanttChart(project)}
+                                    className="me-1"
+                                  >
+                                    View Chart
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleReportIssue(project)}
+                                    className="me-1"
+                                  >
+                                    Report Issue
+                                  </Button>
+                                </>
+                              )}
                               <Button
                                 variant="outline-primary"
                                 size="sm"
-                                onClick={() => handleViewTotals(project)}
+                                onClick={() => handleViewProject(project)}
+                                className="me-1"
                               >
-                                View Totals
+                                View Project
                               </Button>
-                            </td>
-                          )}
-                          <td>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={() => handleViewTasks(project)}
-                            >
-                              View Tasks
-                            </Button>
-                            <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              onClick={() => handleViewGanttChart(project)}
-                            >
-                              View Chart
-                            </Button>
-
-                            {/* Report Issue Button */}
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() => handleReportIssue(project)}
-                            >
-                              Report Issue
-                            </Button>
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => handleViewTasks(project)}
+                              >
+                                View Tasks
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -399,11 +429,62 @@ function ProjectsPage({ user, onLogout }) {
         refreshProjects={fetchProjects}
       />
 
+      {/* View Project Modal */}
+      <Modal show={showViewProjectModal} onHide={() => setShowViewProjectModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Project Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {projectToView && (
+            <div>
+              <h4>{projectToView.project_name}</h4>
+              <p><strong>Project Code:</strong> {projectToView.project_code}</p>
+              <p><strong>Description:</strong> {projectToView.description || 'N/A'}</p>
+              <p><strong>Status:</strong> {getProjectStatusBadge(projectToView.status)}</p>
+              <p><strong>Budget:</strong> {formatBudget(projectToView.budget)}</p>
+              <p><strong>Start Date:</strong> {new Date(projectToView.start_date).toLocaleDateString()}</p>
+              <p><strong>End Date:</strong> {projectToView.end_date ? new Date(projectToView.end_date).toLocaleDateString() : 'N/A'}</p>
+              <p><strong>Actual Expenditure:</strong> {formatBudget(projectToView.actual_expenditure)}</p>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowViewProjectModal(false)}>
+            Close
+          </Button>
+          {user.role === 'project_manager' && (
+            <>
+              <Button 
+                variant="primary" 
+                onClick={() => {
+                  setSelectedProject(projectToView);
+                  setShowProjectModal(true);
+                  setShowViewProjectModal(false);
+                }}
+              >
+                Edit Project
+              </Button>
+              <Button 
+                variant="danger"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this project?')) {
+                    handleDeleteProject(projectToView.id);
+                    setShowViewProjectModal(false);
+                  }
+                }}
+              >
+                Delete Project
+              </Button>
+            </>
+          )}
+        </Modal.Footer>
+      </Modal>
+
       <ReportIssueModal
         show={showReportIssueModal}
-        handleClose={() => setShowReportIssueModal(false)}
-        projectId={selectedProjectForIssueReport?.id}
-        refreshProjects={fetchProjects}
+        onHide={() => setShowReportIssueModal(false)}
+        project={selectedProjectForIssueReport}
+        onReportSubmit={handleReportIssueSubmit}
       />
     </Container>
   );

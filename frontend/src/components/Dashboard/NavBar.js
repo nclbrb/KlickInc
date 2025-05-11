@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Nav, Button, Modal, ListGroup } from 'react-bootstrap';
-import api from '../../api'; // Assuming you have an API utility for making requests
+import api from '../../api';
 
 const NavBar = ({ user, onLogout }) => {
   const [showNotifModal, setShowNotifModal] = useState(false);
-  const [notifications, setNotifications] = useState([]); // Notifications state
-  const navigate = useNavigate(); // Use navigate from react-router-dom
+  const [notifications, setNotifications] = useState([]);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const getLinkClass = ({ isActive }) =>
-    isActive
-      ? 'nav-link active text-white mb-2 d-flex align-items-center'
-      : 'nav-link text-white mb-2 d-flex align-items-center';
+  const getLinkClass = (path) => {
+    const isActive = location.pathname === path || 
+                    (path !== '/' && location.pathname.startsWith(path));
+    return `nav-link text-white mb-2 d-flex align-items-center ${isActive ? 'active bg-primary rounded' : ''}`;
+  };
 
   const roleText =
     user?.role === 'project_manager'
@@ -23,29 +25,39 @@ const NavBar = ({ user, onLogout }) => {
   const displayName = user?.username;
   const roleAndName = roleText && displayName ? `${roleText}: ${displayName}` : '';
 
-  // Fetch notifications when the component mounts
+  // Notifications feature flag - set to true when implementing notifications
+  const notificationsEnabled = false;
+
+  // Only fetch notifications if the feature is enabled
   useEffect(() => {
-    api.get('/notifications')  // Assuming /notifications is your API endpoint
-      .then((response) => {
-        setNotifications(response.data);  // Assuming the API returns a list of notifications
-      })
-      .catch((error) => {
+    if (!notificationsEnabled) return;
+
+    const fetchNotifications = async () => {
+      try {
+        const response = await api.get('/notifications');
+        if (response.data) {
+          setNotifications(response.data);
+        }
+      } catch (error) {
         console.error('Error fetching notifications:', error);
-      });
+      }
+    };
+
+    fetchNotifications();
   }, []);
 
   return (
     <>
-      <div
-        className="sidebar bg-purp text-white"
-        style={{
-          minHeight: '100vh',
+    <div
+      className="sidebar bg-purp text-white"
+      style={{
+        minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '20px',
-        }}
-      >
+      }}
+    >
         <div>
           <h3 className="mb-1 text-center">My App</h3>
           {roleAndName && <p className="mb-4 text-center small">{roleAndName}</p>}
@@ -99,7 +111,7 @@ const NavBar = ({ user, onLogout }) => {
           <Modal.Title>Notifications</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <ListGroup variant="flush">
+            <ListGroup variant="flush">
             {notifications.length === 0 ? (
               <div className="text-muted text-center py-2">No notifications</div>
             ) : (
@@ -108,7 +120,7 @@ const NavBar = ({ user, onLogout }) => {
                   {note}
                 </ListGroup.Item>
               ))
-            )}
+          )}
           </ListGroup>
         </Modal.Body>
         <Modal.Footer>

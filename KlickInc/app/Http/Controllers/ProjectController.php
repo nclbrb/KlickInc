@@ -34,11 +34,13 @@ class ProjectController extends Controller
             'description'         => 'nullable|string',
             'start_date'          => 'required|date',
             'end_date'            => 'nullable|date',
-            'status'              => 'required|string',
             'budget'              => 'nullable|numeric|min:0',
             'actual_expenditure'  => 'nullable|numeric|min:0',
         ]);
 
+        // Set default status to 'To Do' for new projects
+        $validated['status'] = 'To Do';
+        
         $project = Project::create($validated);
 
         return response()->json($project, 201);
