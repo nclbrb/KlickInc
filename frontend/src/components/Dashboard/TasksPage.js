@@ -463,18 +463,21 @@ function TasksPage({ user, onLogout }) {
                             {task.status === 'in_progress' && user.role === 'team_member' && (
                               <Button size="sm" variant="outline-primary" onClick={() => handleCompleteTask(task)}>Complete</Button>
                             )}
-                            <Button size="sm" variant="outline-info" onClick={() => {
-                              setSelectedTaskForView(task);
-                              fetchComments(task.id);
-                              setShowTaskDetailsModal(true);
-                            }}>View</Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline-info" 
+                              onClick={() => {
+                                setSelectedTaskForView(task);
+                                setSelectedTask(task); // Set the selected task for editing
+                                fetchComments(task.id);
+                                setShowTaskDetailsModal(true);
+                              }}
+                            >
+                              View
+                            </Button>
                             <Button size="sm" variant="outline-warning" onClick={() => openAmountModal(task)}>Update Amount</Button>
                             {user.role !== 'team_member' && (
-                              <>
-                                <Button size="sm" variant="outline-secondary" onClick={() => handleEditTask(task)}>Edit</Button>
-                                <Button size="sm" variant="outline-danger" onClick={() => handleDeleteTask(task.id)}>Delete</Button>
-                                <Button size="sm" variant="outline-primary" onClick={() => handleViewProject(task.project)}>View Project</Button>
-                              </>
+                              <Button size="sm" variant="outline-primary" onClick={() => handleViewProject(task.project)}>View Project</Button>
                             )}
                           </div>
                         </td>
@@ -506,7 +509,7 @@ function TasksPage({ user, onLogout }) {
 
       <Modal show={showTaskDetailsModal} onHide={closeTaskDetailsModal} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Task Details</Modal.Title>
+          <Modal.Title>Task Details: {selectedTaskForView?.title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedTaskForView && (
@@ -548,17 +551,86 @@ function TasksPage({ user, onLogout }) {
                   role="tabpanel"
                   aria-labelledby="details-tab"
                 >
-                  <h5>{selectedTaskForView.title}</h5>
-                  <p>{selectedTaskForView.description}</p>
-                  <p><strong>Project:</strong> {selectedTaskForView.project?.project_name || selectedTaskForView.project?.title || 'No Project'}</p>
-                  <p><strong>Assigned To:</strong> {selectedTaskForView.assigned_to?.name || 'Unassigned'}</p>
-                  <p><strong>Priority:</strong> {getTaskPriorityBadge(selectedTaskForView.priority)}</p>
-                  <p><strong>Deadline:</strong> {selectedTaskForView.deadline ? formatDeadline(selectedTaskForView.deadline) : 'No deadline set'}</p>
-                  <p><strong>Budget:</strong> {selectedTaskForView.budget ? `₱${parseFloat(selectedTaskForView.budget).toFixed(2)}` : 'No budget set'}</p>
-                  <p><strong>Time Spent:</strong> {selectedTaskForView.time_spent ? `${selectedTaskForView.time_spent} secs` : 'No time recorded'}</p>
-                  <p><strong>Start Time:</strong> {selectedTaskForView.start_time ? new Date(selectedTaskForView.start_time).toLocaleString() : 'Not started'}</p>
-                  <p><strong>End Time:</strong> {selectedTaskForView.end_time ? new Date(selectedTaskForView.end_time).toLocaleString() : 'Not ended'}</p>
-                  <p><strong>Status:</strong> {getTaskStatusBadge(selectedTaskForView.status)}</p>
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <h4>{selectedTaskForView.title}</h4>
+                      <p className="text-muted">{selectedTaskForView.description}</p>
+                    </div>
+                    <div className="d-flex gap-2">
+                      {user.role !== 'team_member' && (
+                        <>
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm"
+                            onClick={() => {
+                              setShowTaskDetailsModal(false);
+                              handleEditTask(selectedTaskForView);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="outline-danger" 
+                            size="sm"
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this task?')) {
+                                handleDeleteTask(selectedTaskForView.id);
+                                setShowTaskDetailsModal(false);
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <h6 className="text-muted">Project</h6>
+                        <p>{selectedTaskForView.project?.project_name || selectedTaskForView.project?.title || 'No Project'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Assigned To</h6>
+                        <p>{selectedTaskForView.assigned_to?.name || 'Unassigned'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Priority</h6>
+                        <p>{getTaskPriorityBadge(selectedTaskForView.priority)}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Status</h6>
+                        <p>{getTaskStatusBadge(selectedTaskForView.status)}</p>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <h6 className="text-muted">Deadline</h6>
+                        <p>{selectedTaskForView.deadline ? formatDeadline(selectedTaskForView.deadline) : 'No deadline set'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Budget</h6>
+                        <p>{selectedTaskForView.budget ? `₱${parseFloat(selectedTaskForView.budget).toFixed(2)}` : 'No budget set'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Time Spent</h6>
+                        <p>{selectedTaskForView.time_spent ? `${selectedTaskForView.time_spent} secs` : 'No time recorded'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Time Range</h6>
+                        <p className="mb-1">
+                          <small>Start: </small>
+                          {selectedTaskForView.start_time ? new Date(selectedTaskForView.start_time).toLocaleString() : 'Not started'}
+                        </p>
+                        <p className="mb-0">
+                          <small>End: </small>
+                          {selectedTaskForView.end_time ? new Date(selectedTaskForView.end_time).toLocaleString() : 'Not ended'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div
                   className="tab-pane fade"

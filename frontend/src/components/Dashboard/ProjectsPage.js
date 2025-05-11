@@ -284,8 +284,7 @@ function ProjectsPage({ user, onLogout }) {
                         <th>Budget</th>
                         <th>Dates</th>
                         <th>Status</th>
-                        {user.role === 'project_manager' && <th>Total</th>}
-                        <th style={{ width: '200px' }}>Actions</th>
+                        <th style={{ width: '250px' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -308,50 +307,58 @@ function ProjectsPage({ user, onLogout }) {
                           </td>
                           <td>{getProjectStatusBadge(project.status)}</td>
                           <td>
-                            <div className="d-flex flex-wrap gap-2">
-                              {user.role === 'project_manager' && (
-                                <>
-                                  <Button
-                                    variant="outline-primary"
-                                    size="sm"
-                                    onClick={() => handleViewTotals(project)}
-                                    className="me-1"
-                                  >
-                                    View Totals
-                                  </Button>
-                                  <Button
-                                    variant="outline-secondary"
-                                    size="sm"
-                                    onClick={() => handleViewGanttChart(project)}
-                                    className="me-1"
-                                  >
-                                    View Chart
-                                  </Button>
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    onClick={() => handleReportIssue(project)}
-                                    className="me-1"
-                                  >
-                                    Report Issue
-                                  </Button>
-                                </>
-                              )}
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={() => handleViewProject(project)}
-                                className="me-1"
-                              >
-                                View Project
-                              </Button>
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={() => handleViewTasks(project)}
-                              >
-                                View Tasks
-                              </Button>
+                            <div className="d-flex flex-wrap gap-1 justify-content-start">
+                              {/* Action buttons in a more compact layout */}
+                              <div className="btn-group">
+                                <Button 
+                                  variant="outline-primary" 
+                                  size="sm"
+                                  onClick={() => handleViewProject(project)}
+                                  className="me-1"
+                                >
+                                  <i className="bi bi-eye"></i> View
+                                </Button>
+                                
+                                <Button 
+                                  variant="outline-primary" 
+                                  size="sm"
+                                  onClick={() => handleViewTasks(project)}
+                                  className="me-1"
+                                >
+                                  <i className="bi bi-list-task"></i> Tasks
+                                </Button>
+                                
+                                {user.role === 'project_manager' && (
+                                  <>
+                                    <Button
+                                      variant="outline-secondary"
+                                      size="sm"
+                                      onClick={() => handleViewGanttChart(project)}
+                                      className="me-1"
+                                    >
+                                      <i className="bi bi-bar-chart"></i> Chart
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="outline-info"
+                                      size="sm"
+                                      onClick={() => handleViewTotals(project)}
+                                      className="me-1"
+                                    >
+                                      <i className="bi bi-cash"></i> Totals
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={() => handleReportIssue(project)}
+                                      className="me-1"
+                                    >
+                                      <i className="bi bi-exclamation-triangle"></i> Issue
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </td>
                         </tr>
