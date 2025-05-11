@@ -6,6 +6,7 @@ import ProjectModal from './ProjectModal';
 import ProjectTotalModal from './ProjectTotalModal';
 import GanttChartModal from './GanttChartModal';
 import NavBar from './NavBar';
+import ReportIssueModal from './ReportIssueModal';  // Import the new ReportIssueModal component
 
 function ProjectsPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -16,6 +17,10 @@ function ProjectsPage({ user, onLogout }) {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [tasks, setTasks] = useState([]);
+  
+  // State for Report Issue modal
+  const [showReportIssueModal, setShowReportIssueModal] = useState(false);
+  const [selectedProjectForIssueReport, setSelectedProjectForIssueReport] = useState(null);
 
   // New state for totals modal
   const [showTotalsModal, setShowTotalsModal] = useState(false);
@@ -122,7 +127,6 @@ function ProjectsPage({ user, onLogout }) {
       });
   };
 
-  // New handler for totals modal
   const handleViewTotals = (project) => {
     setSelectedProjectForTotals(project);
     setShowTotalsModal(true);
@@ -208,6 +212,12 @@ function ProjectsPage({ user, onLogout }) {
     }
     const parsedBudget = parseFloat(budget);
     return !isNaN(parsedBudget) ? `₱${parsedBudget.toFixed(2)}` : 'Invalid Budget';
+  };
+
+  // Handle reporting issue
+  const handleReportIssue = (project) => {
+    setSelectedProjectForIssueReport(project);
+    setShowReportIssueModal(true);
   };
 
   return (
@@ -304,6 +314,15 @@ function ProjectsPage({ user, onLogout }) {
                             >
                               View Chart
                             </Button>
+
+                            {/* Report Issue Button */}
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => handleReportIssue(project)}
+                            >
+                              Report Issue
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -317,6 +336,7 @@ function ProjectsPage({ user, onLogout }) {
           </Card>
         </Col>
       </Row>
+
       <Modal
         show={showTasksModal}
         onHide={() => setShowTasksModal(false)}
@@ -376,6 +396,13 @@ function ProjectsPage({ user, onLogout }) {
         show={showProjectModal}
         handleClose={() => setShowProjectModal(false)}
         project={selectedProject}
+        refreshProjects={fetchProjects}
+      />
+
+      <ReportIssueModal
+        show={showReportIssueModal}
+        handleClose={() => setShowReportIssueModal(false)}
+        projectId={selectedProjectForIssueReport?.id}
         refreshProjects={fetchProjects}
       />
     </Container>
