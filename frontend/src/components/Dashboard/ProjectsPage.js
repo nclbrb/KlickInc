@@ -6,7 +6,8 @@ import ProjectModal from './ProjectModal';
 import ProjectTotalModal from './ProjectTotalModal';
 import GanttChartModal from './GanttChartModal';
 import NavBar from './NavBar';
-import ReportIssueModal from './ReportIssueModal';  // Import the new ReportIssueModal component
+import ReportIssueModal from './ReportIssueModal';
+
 
 function ProjectsPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -26,6 +27,10 @@ function ProjectsPage({ user, onLogout }) {
   const [showTotalsModal, setShowTotalsModal] = useState(false);
   const [selectedProjectForTotals, setSelectedProjectForTotals] = useState(null);
   const [showGanttChart, setShowGanttChart] = useState(false);
+  const [showViewProjectModal, setShowViewProjectModal] = useState(false);
+  const [projectToView, setProjectToView] = useState(null);
+  
+
 
   useEffect(() => {
     fetchProjects();
@@ -44,6 +49,7 @@ function ProjectsPage({ user, onLogout }) {
         },
       })
       .then((response) => {
+        console.log('API Projects Data:', response.data);
         setProjects(response.data);
       })
       .catch((error) => {
@@ -61,19 +67,23 @@ function ProjectsPage({ user, onLogout }) {
         },
       })
       .then((response) => {
-        const myTasks = response.data.filter(
-          (task) => task.assigned_to === user.id
-        );
+        console.log('API Tasks Data:', response.data);
+        // Make sure we're getting tasks assigned to this user
+        // Note: the assigned_to field might be an object with an id property
+        const myTasks = response.data.filter(task => {
+          // Handle both formats: assigned_to as ID or as object
+          if (typeof task.assigned_to === 'object') {
+            return task.assigned_to?.id === user.id;
+          } else {
+            return task.assigned_to === user.id;
+          }
+        });
+        console.log('Filtered Tasks:', myTasks);
         setTasks(myTasks);
       })
       .catch((error) => {
-        console.error('Error fetching tasks for filtering projects:', error);
+        console.error('Error fetching tasks:', error);
       });
-  };
-
-  const handleLogout = () => {
-    onLogout();
-    navigate('/login');
   };
 
   const handleCreateProject = () => {
@@ -127,11 +137,6 @@ function ProjectsPage({ user, onLogout }) {
       });
   };
 
-  const handleViewTotals = (project) => {
-    setSelectedProjectForTotals(project);
-    setShowTotalsModal(true);
-  };
-
   const handleViewGanttChart = (project) => {
     const token = localStorage.getItem('access_token');
     axios.get('http://127.0.0.1:8000/api/tasks', {
@@ -153,14 +158,38 @@ function ProjectsPage({ user, onLogout }) {
     });
   };
 
+  const handleViewProject = (project) => {
+    setProjectToView(project);
+    setShowViewProjectModal(true);
+  };
+  
+
+
   const getProjectStatusBadge = (status) => {
+    if (!status) return <span className="badge bg-secondary">N/A</span>;
+    
+    const statusText = String(status).trim();
     let badgeClass = 'secondary';
-    if (status === 'In Progress') {
+    
+    // Handle different possible status formats
+    if (statusText.match(/in[-\s]?progress|in_progress|inprogress/i)) {
       badgeClass = 'warning';
-    } else if (status === 'Done') {
+    } else if (statusText.match(/done|completed|finished/i)) {
       badgeClass = 'success';
+    } else if (statusText.match(/pending|not started|not_started/i)) {
+      badgeClass = 'info';
+    } else if (statusText.match(/cancelled|canceled|stopped/i)) {
+      badgeClass = 'danger';
     }
-    return <span className={`badge bg-${badgeClass}`}>{status}</span>;
+    
+    // Format the status text for display
+    const displayStatus = statusText
+      .toLowerCase()
+      .split(/[\s_]+/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+      
+    return <span className={`badge bg-${badgeClass}`}>{displayStatus}</span>;
   };
 
   const getTaskStatusBadge = (status) => {
@@ -198,26 +227,159 @@ function ProjectsPage({ user, onLogout }) {
     );
   };
 
+  // For debugging - log the raw data
+  useEffect(() => {
+    if (user.role === 'team_member' && projects.length > 0 && tasks.length > 0) {
+      console.log('Debug - Projects for team member:', projects);
+      console.log('Debug - Tasks for team member:', tasks);
+      
+      // Check the first task's structure
+      if (tasks.length > 0) {
+        console.log('Debug - First task structure:', tasks[0]);
+        console.log('Debug - First task project:', tasks[0].project);
+        
+        // If we have tasks but no projects with data, try to create projects from tasks
+        const hasValidProjects = projects.some(p => p.budget || p.status);
+        if (!hasValidProjects && tasks.some(t => t.project)) {
+          console.log('Creating projects from task data...');
+          const projectsFromTasks = [];
+          
+          // Group tasks by project_id
+          const tasksByProject = {};
+          tasks.forEach(task => {
+            if (task.project_id) {
+              if (!tasksByProject[task.project_id]) {
+                tasksByProject[task.project_id] = [];
+              }
+              tasksByProject[task.project_id].push(task);
+            }
+          });
+          
+          // Create project objects from the first task in each group
+          Object.keys(tasksByProject).forEach(projectId => {
+            const firstTask = tasksByProject[projectId][0];
+            const projectData = firstTask.project || {};
+            
+            projectsFromTasks.push({
+              id: parseInt(projectId),
+              project_name: projectData.project_name || projectData.title || 'Project ' + projectId,
+              project_code: projectData.project_code || '',
+              description: projectData.description || '',
+              budget: projectData.budget || '',
+              status: projectData.status || '',
+              start_date: projectData.start_date || '',
+              end_date: projectData.end_date || ''
+            });
+          });
+          
+          if (projectsFromTasks.length > 0) {
+            console.log('Created projects from tasks:', projectsFromTasks);
+            setProjects(prev => [...prev, ...projectsFromTasks]);
+          }
+        }
+      }
+    }
+  }, [projects, tasks, user.role]);
+
   const filteredProjects =
     user.role === 'team_member'
-      ? projects.filter((project) => {
-          const myProjectIds = new Set(tasks.map((task) => task.project_id));
-          return myProjectIds.has(project.id);
-        })
+      ? projects
+          .filter((project) => {
+            // Only include projects that have at least one task assigned to the current user
+            const userTasks = tasks.filter(task => task.project_id === project.id);
+            return userTasks.length > 0;
+          })
+          .map(project => {
+            // Find the first task for this project
+            const projectTasks = tasks.filter(task => task.project_id === project.id);
+            const firstTask = projectTasks[0];
+            
+            // Debug this specific project and its tasks
+            console.log(`Debug - Processing project ${project.id}:`, {
+              project,
+              firstTask,
+              projectTasks: projectTasks.length
+            });
+            
+            // Defensive fallback for deeply nested or missing data
+            const fallbackProject = firstTask?.project || {};
+            
+            // Create a more robust result object with all possible data sources
+            const result = {
+              ...project,
+              project_name: project.project_name || fallbackProject.project_name || '',
+              project_code: project.project_code || fallbackProject.project_code || '',
+              description: project.description || fallbackProject.description || '',
+              // For budget, try all possible locations and property names
+              budget:
+                project.budget ??
+                project.project_budget ??
+                fallbackProject.budget ??
+                fallbackProject.project_budget ??
+                firstTask?.budget ??
+                firstTask?.project_budget ??
+                (firstTask?.project && typeof firstTask.project === 'object' ? firstTask.project.budget : null) ??
+                '',
+              // For status, try all possible locations and property names
+              status:
+                project.status ??
+                project.project_status ??
+                fallbackProject.status ??
+                fallbackProject.project_status ??
+                firstTask?.status ??
+                firstTask?.project_status ??
+                (firstTask?.project && typeof firstTask.project === 'object' ? firstTask.project.status : null) ??
+                '',
+              start_date: project.start_date || fallbackProject.start_date || '',
+              end_date: project.end_date || fallbackProject.end_date || '',
+            };
+            
+            console.log(`Debug - Result for project ${project.id}:`, {
+              budget: result.budget,
+              status: result.status
+            });
+            
+            return result;
+          })
       : projects;
 
   const formatBudget = (budget) => {
-    if (budget === null || budget === undefined) {
+    // Handle all possible budget formats
+    if (budget === null || budget === undefined || budget === '') {
       return 'N/A';
     }
-    const parsedBudget = parseFloat(budget);
-    return !isNaN(parsedBudget) ? `₱${parsedBudget.toFixed(2)}` : 'Invalid Budget';
+    
+    // Handle budget as string or number
+    let parsedBudget;
+    if (typeof budget === 'string') {
+      // Remove any non-numeric characters except decimal point
+      const cleanedBudget = budget.replace(/[^0-9.]/g, '');
+      parsedBudget = parseFloat(cleanedBudget);
+    } else if (typeof budget === 'number') {
+      parsedBudget = budget;
+    } else {
+      return 'N/A';
+    }
+    
+    return !isNaN(parsedBudget) ? `₱${parsedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+  };
+
+  // Handle viewing project totals
+  const handleViewTotals = (project) => {
+    setSelectedProjectForTotals(project);
+    setShowTotalsModal(true);
   };
 
   // Handle reporting issue
   const handleReportIssue = (project) => {
     setSelectedProjectForIssueReport(project);
     setShowReportIssueModal(true);
+  };
+
+  // Handle report issue submission
+  const handleReportIssueSubmit = () => {
+    setShowReportIssueModal(false);
+    fetchProjects();
   };
 
   return (
@@ -265,8 +427,7 @@ function ProjectsPage({ user, onLogout }) {
                         <th>Budget</th>
                         <th>Dates</th>
                         <th>Status</th>
-                        {user.role === 'project_manager' && <th>Total</th>}
-                        <th style={{ width: '200px' }}>Actions</th>
+                        <th style={{ width: '250px' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -280,49 +441,72 @@ function ProjectsPage({ user, onLogout }) {
                               ? '...'
                               : ''}
                           </td>
-                          <td>{formatBudget(project.budget)}</td>
                           <td>
-                            {new Date(project.start_date).toLocaleDateString()} -{' '}
+                            {formatBudget(project.budget)}
+                          </td>
+                          <td>
+                            {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'N/A'} -{' '}
                             {project.end_date
                               ? new Date(project.end_date).toLocaleDateString()
                               : 'N/A'}
                           </td>
-                          <td>{getProjectStatusBadge(project.status)}</td>
-                          {user.role === 'project_manager' && (
-                            <td>
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={() => handleViewTotals(project)}
-                              >
-                                View Totals
-                              </Button>
-                            </td>
-                          )}
                           <td>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={() => handleViewTasks(project)}
-                            >
-                              View Tasks
-                            </Button>
-                            <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              onClick={() => handleViewGanttChart(project)}
-                            >
-                              View Chart
-                            </Button>
-
-                            {/* Report Issue Button */}
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() => handleReportIssue(project)}
-                            >
-                              Report Issue
-                            </Button>
+                            {getProjectStatusBadge(project.status)}
+                          </td>
+                          <td>
+                            <div className="d-flex flex-wrap gap-1 justify-content-start">
+                              {/* Action buttons in a more compact layout */}
+                              <div className="btn-group">
+                                <Button 
+                                  variant="outline-primary" 
+                                  size="sm"
+                                  onClick={() => handleViewProject(project)}
+                                  className="me-1"
+                                >
+                                  <i className="bi bi-eye"></i> View
+                                </Button>
+                                
+                                <Button 
+                                  variant="outline-primary" 
+                                  size="sm"
+                                  onClick={() => handleViewTasks(project)}
+                                  className="me-1"
+                                >
+                                  <i className="bi bi-list-task"></i> Tasks
+                                </Button>
+                                
+                                {user.role === 'project_manager' && (
+                                  <>
+                                    <Button
+                                      variant="outline-secondary"
+                                      size="sm"
+                                      onClick={() => handleViewGanttChart(project)}
+                                      className="me-1"
+                                    >
+                                      <i className="bi bi-bar-chart"></i> Chart
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="outline-info"
+                                      size="sm"
+                                      onClick={() => handleViewTotals(project)}
+                                      className="me-1"
+                                    >
+                                      <i className="bi bi-cash"></i> Totals
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={() => handleReportIssue(project)}
+                                      className="me-1"
+                                    >
+                                      <i className="bi bi-exclamation-triangle"></i> Issue
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -399,11 +583,62 @@ function ProjectsPage({ user, onLogout }) {
         refreshProjects={fetchProjects}
       />
 
+      {/* View Project Modal */}
+      <Modal show={showViewProjectModal} onHide={() => setShowViewProjectModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Project Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {projectToView && (
+            <div>
+              <h4>{projectToView.project_name}</h4>
+              <p><strong>Project Code:</strong> {projectToView.project_code}</p>
+              <p><strong>Description:</strong> {projectToView.description || 'N/A'}</p>
+              <p><strong>Status:</strong> {getProjectStatusBadge(projectToView.status)}</p>
+              <p><strong>Budget:</strong> {formatBudget(projectToView.budget)}</p>
+              <p><strong>Start Date:</strong> {new Date(projectToView.start_date).toLocaleDateString()}</p>
+              <p><strong>End Date:</strong> {projectToView.end_date ? new Date(projectToView.end_date).toLocaleDateString() : 'N/A'}</p>
+              <p><strong>Actual Expenditure:</strong> {formatBudget(projectToView.actual_expenditure)}</p>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowViewProjectModal(false)}>
+            Close
+          </Button>
+          {user.role === 'project_manager' && (
+            <>
+              <Button 
+                variant="primary" 
+                onClick={() => {
+                  setSelectedProject(projectToView);
+                  setShowProjectModal(true);
+                  setShowViewProjectModal(false);
+                }}
+              >
+                Edit Project
+              </Button>
+              <Button 
+                variant="danger"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this project?')) {
+                    handleDeleteProject(projectToView.id);
+                    setShowViewProjectModal(false);
+                  }
+                }}
+              >
+                Delete Project
+              </Button>
+            </>
+          )}
+        </Modal.Footer>
+      </Modal>
+
       <ReportIssueModal
         show={showReportIssueModal}
-        handleClose={() => setShowReportIssueModal(false)}
-        projectId={selectedProjectForIssueReport?.id}
-        refreshProjects={fetchProjects}
+        onHide={() => setShowReportIssueModal(false)}
+        project={selectedProjectForIssueReport}
+        onReportSubmit={handleReportIssueSubmit}
       />
     </Container>
   );

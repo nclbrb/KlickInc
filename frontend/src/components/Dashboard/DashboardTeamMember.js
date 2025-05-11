@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Modal } from 'react-bootstrap';
+import { Row, Col, Card, Table, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
-import NavBar from './NavBar'; 
+import NavBar from './NavBar';
+import NotificationBell from '../Notifications/NotificationBell';
 
 function DashboardTeamMember({ user, onLogout }) {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [assignedProjects, setAssignedProjects] = useState([]);
-  const [notifications, setNotifications] = useState([]);  
-  const [showModal, setShowModal] = useState(false); 
 
   useEffect(() => {
     fetchTasks();
@@ -97,43 +96,30 @@ function DashboardTeamMember({ user, onLogout }) {
     return `₱${parsedBudget.toFixed(2)}`;
   };
 
-  // Open the notifications modal
-  const handleShowNotifications = () => {
-    const newNotifications = [
-      'Task 1 has been assigned to you.',
-      'Task 2 has been completed.',
-      'New project has been assigned.',
-    ];
-    setNotifications(newNotifications);
-    setShowModal(true);
-  };
-
-  // Close the notifications modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
 
   return (
-    <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
+    <div className="dashboard-container" style={{ position: 'relative' }}>
+      {/* Notification Bell at top right */}
+      <div style={{ position: 'absolute', top: 24, right: 40, zIndex: 1050 }}>
+        <NotificationBell />
+      </div>
       <Row>
-        {/* Sidebar via shared NavBar component */}
         <Col xs={12} md={3} lg={2} className="p-0">
-          <NavBar user={user} onLogout={onLogout} onShowNotifications={handleShowNotifications} />
+          <NavBar user={user} onLogout={onLogout} />
         </Col>
-
-        {/* Main Content */}
         <Col xs={12} md={9} lg={10} className="p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
           <h2>Welcome, {user.username}!</h2>
-          <h3 style={{ marginTop: '2.5rem', marginBottom: '2.5rem' }}>Dashboard</h3>
-          <Row className="mb-4">
-            <Col md={6}>
-              <Card className="shadow-sm mb-3">
+          <h3 className="mt-4 mb-4">Dashboard</h3>
+          <Row className="mb-5">
+            {/* Project Section */}
+            <Col md={6} className="d-flex mb-4">
+              <Card className="shadow-sm flex-fill">
                 <Card.Header className="bg-purp">
                   <h5 className="mb-0 text-white">Assigned Projects</h5>
                 </Card.Header>
-                <Card.Body>
+                <Card.Body className="p-4">
                   <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                    <Table hover>
+                    <Table hover className="table-striped">
                       <thead>
                         <tr>
                           <th>Name</th>
@@ -164,14 +150,15 @@ function DashboardTeamMember({ user, onLogout }) {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={6}>
-              <Card className="shadow-sm mb-3">
+            {/* Task Section */}
+            <Col md={6} className="d-flex mb-4">
+              <Card className="shadow-sm flex-fill">
                 <Card.Header className="bg-purp">
                   <h5 className="mb-0 text-white">Assigned Tasks</h5>
                 </Card.Header>
-                <Card.Body>
+                <Card.Body className="p-4">
                   <div className="scrollable-list" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                    <Table hover>
+                    <Table hover className="table-striped">
                       <thead>
                         <tr>
                           <th>Title</th>
@@ -209,30 +196,7 @@ function DashboardTeamMember({ user, onLogout }) {
           </Row>
         </Col>
       </Row>
-
-      {/* Notifications Modal */}
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Notifications</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <ul>
-            {notifications.length > 0 ? (
-              notifications.map((notification, index) => (
-                <li key={index}>{notification}</li>
-              ))
-            ) : (
-              <li>No new notifications</li>
-            )}
-          </ul>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+    </div>
   );
 }
 

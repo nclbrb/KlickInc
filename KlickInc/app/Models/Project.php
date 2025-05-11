@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Task;
+use App\Models\User;
 
 class Project extends Model
 {
@@ -27,6 +28,12 @@ class Project extends Model
         'budget' => 'decimal:2',  // Store with two decimal points (modify if needed)
         'actual_expenditure' => 'decimal:2',  // Store with two decimal points (modify if needed)
     ];
+
+    // Define relationship with User model (1-to-many)
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     // Define relationship with Task model (1-to-many)
     public function tasks()

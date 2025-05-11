@@ -62,6 +62,12 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
   // Handle form field change
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Prevent changing status for new tasks
+    if (name === 'status' && !task) {
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]:
@@ -103,24 +109,52 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
     try {
       const token = localStorage.getItem('access_token');
       const taskData = {
-        title: formData.title, // Use formData for title
-        description: formData.description, // Use formData for description
-        project_id: formData.project_id, // Use formData for project_id
-        assigned_to: formData.assigned_to, // Use formData for assigned_to
-        priority: formData.priority, // Use formData for priority
-        status: formData.status, // Use formData for status
-        budget: parseFloat(formData.budget), // Ensure the budget is a number
-        deadline: formData.deadline, // Use formData for deadline
+        title: formData.title, 
+        description: formData.description, 
+        project_id: formData.project_id, 
+        assigned_to: formData.assigned_to, 
+        priority: formData.priority, 
+        status: formData.status, 
+        budget: parseFloat(formData.budget), 
+        deadline: formData.deadline, 
       };
+      
+      // Check if we're updating a task status to 'completed'
+      const isCompletingTask = task && 
+                               task.status !== 'completed' && 
+                               formData.status === 'completed';
+      
+      if (isCompletingTask) {
+        console.log('Task being marked as completed, notifications should be generated', {
+          taskId: task.id,
+          oldStatus: task.status,
+          newStatus: formData.status
+        });
+      }
   
       if (task) {
         // Update task
-        await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, taskData, {
+        const response = await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, taskData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
+        
+        // If we just completed a task, force refresh notifications
+        if (isCompletingTask) {
+          // Force refresh notifications in the system by polling the notification endpoint
+          setTimeout(() => {
+            console.log('Forcing notification refresh after task completion');
+            // Call notification endpoint directly to ensure it's refreshed
+            axios.get('http://127.0.0.1:8000/api/notifications', {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              }
+            }).catch(error => console.error('Error refreshing notifications:', error));
+          }, 1000); // Wait 1 second to ensure backend has processed the notification
+        }
       } else {
         // Create new task
         await axios.post('http://127.0.0.1:8000/api/tasks', taskData, {
@@ -140,12 +174,18 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
   };
   
   return (
-    <Modal show={show} onHide={handleClose} centered>
+    <Modal 
+      show={show} 
+      onHide={handleClose} 
+      centered 
+      size="md" 
+      dialogClassName="custom-task-modal"
+    >
       <Modal.Header closeButton className="modal-header">
         <Modal.Title>{task ? 'Edit Task' : 'Create New Task'}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="modal-body">
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} className="mt-3">
           <Form.Group className="mb-3" controlId="project">
             <Form.Label>Project</Form.Label>
             <Form.Select
@@ -192,11 +232,13 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
               value={formData.status}
               onChange={handleChange}
               required
+              disabled={!task} // Disable for new tasks
             >
               <option value="pending">Pending</option>
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
             </Form.Select>
+            {!task && <Form.Text className="text-muted">Status can be updated after creating the task.</Form.Text>}
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="priority">
@@ -255,15 +297,15 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects }) {
             {budgetError && <div className="text-danger mt-2">{budgetError}</div>}
           </Form.Group>
 
-          <div className="d-flex justify-content-end gap-2 mt-3">
-            <Button variant="secondary" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button variant="purp" type="submit">
-              {task ? 'Update Task' : 'Create Task'}
-            </Button>
-          </div>
-        </Form>
+              <div className="mt-3 d-flex justify-content-end">
+                <Button variant="secondary" onClick={onClose} className="me-2">
+                  Cancel
+                </Button>
+                <Button variant="primary" type="submit">
+                  {task ? 'Update Task' : 'Create Task'}
+                </Button>
+              </div>
+            </Form>
       </Modal.Body>
     </Modal>
   );

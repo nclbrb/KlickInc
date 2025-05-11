@@ -22,11 +22,8 @@ function TasksPage({ user, onLogout }) {
   const [showTaskDetailsModal, setShowTaskDetailsModal] = useState(false);
   const [selectedTaskForView, setSelectedTaskForView] = useState(null);
 
-  // New comment-related state
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [showCommentsModal, setShowCommentsModal] = useState(false);
-  const [selectedTaskForComments, setSelectedTaskForComments] = useState(null);
 
   useEffect(() => {
     fetchTasks();
@@ -102,14 +99,45 @@ function TasksPage({ user, onLogout }) {
     try {
       const token = localStorage.getItem('access_token');
       let updatedTask = { status };
-      if (status === 'pending') {
+      
+      // Check if we're completing a task
+      const isCompletingTask = (status === 'completed' && task.status !== 'completed');
+      
+      if (isCompletingTask) {
+        console.log('Task being completed via dropdown', {
+          taskId: task.id,
+          oldStatus: task.status,
+          newStatus: status
+        });
+        // Add end time for completed tasks
+        updatedTask.end_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      } else if (status === 'pending') {
         updatedTask.start_time = null;
         updatedTask.end_time = null;
       }
+      
       await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, updatedTask, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
+      
       fetchTasks();
+      
+      // If completing a task, force refresh notifications for project manager
+      if (isCompletingTask) {
+        setTimeout(() => {
+          console.log('Forcing notification refresh after task completion via dropdown');
+          // Call notification endpoint directly to ensure notifications are refreshed
+          axios.get('http://127.0.0.1:8000/api/notifications', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          }).catch(error => console.error('Error refreshing notifications:', error));
+        }, 1000); // Wait 1 second to ensure backend has processed the notification
+      }
     } catch (error) {
       console.error('Error updating task status:', error);
       alert('Failed to update task status');
@@ -135,46 +163,97 @@ function TasksPage({ user, onLogout }) {
   };
 
   const handleDeleteComment = async (commentId) => {
-  try {
-    const token = localStorage.getItem('access_token');
-    await axios.delete(`http://127.0.0.1:8000/api/comments/${commentId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    // Refresh comments after deletion
-    fetchComments(selectedTaskForComments.id);
-  } catch (error) {
-    console.error('Error deleting comment:', error);
-    alert('Failed to delete comment');
-  }
-};
+    if (!selectedTaskForView) return;
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.delete(
+        `http://127.0.0.1:8000/api/tasks/${selectedTaskForView.id}/comments/${commentId}`,
+        {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      // Refresh comments after deletion
+      await fetchComments(selectedTaskForView.id);
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert('Failed to delete comment. Please try again.');
+    }
+  };
 
 
   const handleCompleteTask = async (task) => {
     try {
+      console.log('Completing task via Complete button', {
+        taskId: task.id,
+        oldStatus: task.status,
+        newStatus: 'completed'
+      });
+      
       const token = localStorage.getItem('access_token');
       const updatedTask = {
         ...task,
         status: 'completed',
         end_time: new Date().toISOString().slice(0, 19).replace('T', ' ')
       };
+      
       await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, updatedTask, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
+      
       fetchTasks();
+      
+      // Force refresh notifications to ensure project manager gets the notification
+      setTimeout(() => {
+        console.log('Forcing notification refresh after task completion via Complete button');
+        // Call notification endpoint directly to ensure notifications are refreshed
+        axios.get('http://127.0.0.1:8000/api/notifications', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }).catch(error => console.error('Error refreshing notifications:', error));
+      }, 1000); // Wait 1 second to ensure backend has processed the notification
     } catch (error) {
       console.error('Error completing task:', error);
       alert('Failed to complete task');
     }
   };
 
-  const handleViewTaskDetails = (task) => {
-    setSelectedTaskForView(task);
-    setShowTaskDetailsModal(true);
+  const handleViewTaskDetails = async (task) => {
+    try {
+      // Fetch the full task details to ensure we have all fields including budget
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Set the task with complete data from the API
+      setSelectedTaskForView(response.data);
+      setShowTaskDetailsModal(true);
+      
+      // Fetch comments for the selected task
+      await fetchComments(task.id);
+    } catch (error) {
+      console.error('Error fetching task details:', error);
+      // Fallback to using the task data we already have
+      setSelectedTaskForView(task);
+      setShowTaskDetailsModal(true);
+      await fetchComments(task.id);
+    }
   };
 
   const closeTaskDetailsModal = () => {
     setShowTaskDetailsModal(false);
     setSelectedTaskForView(null);
+    setComments([]);
+    setNewComment('');
   };
 
   const openAmountModal = (task) => {
@@ -216,45 +295,98 @@ function TasksPage({ user, onLogout }) {
 
   // === Comments functions ===
   const fetchComments = async (taskId) => {
+    if (!taskId) {
+      console.error('No task ID provided for fetching comments');
+      setComments([]);
+      return;
+    }
+    
     try {
       const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('No authentication token found');
+        throw new Error('Authentication required');
+      }
+      
+      console.log('Fetching comments for task ID:', taskId);
       const response = await axios.get(`http://127.0.0.1:8000/api/tasks/${taskId}/comments`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
-      setComments(response.data);
+      
+      console.log('Comments API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data
+      });
+      
+      setComments(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error('Error fetching comments:', error);
+      console.error('Error fetching comments:', {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        } : 'No response',
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers
+        }
+      });
+      setComments([]);
     }
   };
 
   const postComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !selectedTaskForView) return;
     try {
       const token = localStorage.getItem('access_token');
-      await axios.post(`http://127.0.0.1:8000/api/tasks/${selectedTaskForComments.id}/comments`, {
-        comment: newComment
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+      console.log('Posting comment with data:', {
+        taskId: selectedTaskForView.id,
+        comment: newComment,
+        token: token ? 'Token exists' : 'No token found'
       });
+      
+      const response = await axios.post(
+        `http://127.0.0.1:8000/api/tasks/${selectedTaskForView.id}/comments`,
+        { comment: newComment },
+        {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      console.log('Comment posted successfully:', response.data);
       setNewComment('');
-      fetchComments(selectedTaskForComments.id);
+      // Refresh comments after posting
+      await fetchComments(selectedTaskForView.id);
     } catch (error) {
-      console.error('Error posting comment:', error);
+      console.error('Error posting comment:', {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        } : 'No response',
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers
+        }
+      });
+      alert('Failed to post comment. Please try again.');
     }
   };
 
-  const openCommentsModal = (task) => {
-    setSelectedTaskForComments(task);
-    fetchComments(task.id);
-    setShowCommentsModal(true);
-  };
 
-  const closeCommentsModal = () => {
-    setShowCommentsModal(false);
-    setSelectedTaskForComments(null);
-    setComments([]);
-    setNewComment('');
-  };
 
   const formatDeadline = (deadline) => deadline ? new Date(deadline).toLocaleDateString() : 'No deadline';
 
@@ -308,7 +440,10 @@ function TasksPage({ user, onLogout }) {
                         <td><strong>{task.title}</strong>
                           {task.description && <div className="text-muted small">{task.description.slice(0, 50)}{task.description.length > 50 ? '...' : ''}</div>}
                         </td>
-                        <td>{task.project?.project_name} ({task.project?.project_code})</td>
+                        <td>
+                          {task.project ? (task.project.project_name || task.project.title) : 'No Project'}
+                          {task.project && task.project.project_code && <span className="text-muted"> ({task.project.project_code})</span>}
+                        </td>
                         <td>{user.role === 'team_member' ? (
                           <Form.Select size="sm" value={task.status} onChange={e => handleStatusChange(task, e.target.value)}>
                             <option value="pending">Pending</option>
@@ -328,15 +463,21 @@ function TasksPage({ user, onLogout }) {
                             {task.status === 'in_progress' && user.role === 'team_member' && (
                               <Button size="sm" variant="outline-primary" onClick={() => handleCompleteTask(task)}>Complete</Button>
                             )}
-                            <Button size="sm" variant="outline-info" onClick={() => handleViewTaskDetails(task)}>View</Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline-info" 
+                              onClick={() => {
+                                setSelectedTaskForView(task);
+                                setSelectedTask(task); // Set the selected task for editing
+                                fetchComments(task.id);
+                                setShowTaskDetailsModal(true);
+                              }}
+                            >
+                              View
+                            </Button>
                             <Button size="sm" variant="outline-warning" onClick={() => openAmountModal(task)}>Update Amount</Button>
-                            <Button size="sm" variant="outline-dark" onClick={() => openCommentsModal(task)}>Comments</Button>
                             {user.role !== 'team_member' && (
-                              <>
-                                <Button size="sm" variant="outline-secondary" onClick={() => handleEditTask(task)}>Edit</Button>
-                                <Button size="sm" variant="outline-danger" onClick={() => handleDeleteTask(task.id)}>Delete</Button>
-                                <Button size="sm" variant="outline-primary" onClick={() => handleViewProject(task.project)}>View Project</Button>
-                              </>
+                              <Button size="sm" variant="outline-primary" onClick={() => handleViewProject(task.project)}>View Project</Button>
                             )}
                           </div>
                         </td>
@@ -366,55 +507,208 @@ function TasksPage({ user, onLogout }) {
         </Modal.Footer>
       </Modal>
 
-      <Modal show={showTaskDetailsModal} onHide={closeTaskDetailsModal}>
-        <Modal.Header closeButton><Modal.Title>Task Details</Modal.Title></Modal.Header>
+      <Modal show={showTaskDetailsModal} onHide={closeTaskDetailsModal} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Task Details: {selectedTaskForView?.title}</Modal.Title>
+        </Modal.Header>
         <Modal.Body>
           {selectedTaskForView && (
             <>
-              <h5>{selectedTaskForView.title}</h5>
-              <p>{selectedTaskForView.description}</p>
-              <p><strong>Project:</strong> {selectedTaskForView.project?.project_name}</p>
-              <p><strong>Assigned To:</strong> {selectedTaskForView.assigned_to?.name}</p>
-              <p><strong>Time Spent:</strong> {selectedTaskForView.time_spent ? `${selectedTaskForView.time_spent} secs` : 'No time recorded'}</p>
-              <p><strong>Start Time:</strong> {selectedTaskForView.start_time ? new Date(selectedTaskForView.start_time).toLocaleString() : 'Not started'}</p>
-              <p><strong>End Time:</strong> {selectedTaskForView.end_time ? new Date(selectedTaskForView.end_time).toLocaleString() : 'Not ended'}</p>
-              <p><strong>Status:</strong> {getTaskStatusBadge(selectedTaskForView.status)}</p>
+              <ul className="nav nav-tabs" id="taskTabs" role="tablist">
+                <li className="nav-item" role="presentation">
+                  <button
+                    className="nav-link active"
+                    id="details-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#details"
+                    type="button"
+                    role="tab"
+                    aria-controls="details"
+                    aria-selected="true"
+                  >
+                    Task Details
+                  </button>
+                </li>
+                <li className="nav-item" role="presentation">
+                  <button
+                    className="nav-link"
+                    id="comments-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#comments"
+                    type="button"
+                    role="tab"
+                    aria-controls="comments"
+                    aria-selected="false"
+                  >
+                    Comments
+                  </button>
+                </li>
+              </ul>
+              <div className="tab-content p-3 border border-top-0 rounded-bottom" id="taskTabsContent">
+                <div
+                  className="tab-pane fade show active"
+                  id="details"
+                  role="tabpanel"
+                  aria-labelledby="details-tab"
+                >
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <h4>{selectedTaskForView.title}</h4>
+                      <p className="text-muted">{selectedTaskForView.description}</p>
+                    </div>
+                    <div className="d-flex gap-2">
+                      {user.role !== 'team_member' && (
+                        <>
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm"
+                            onClick={() => {
+                              setShowTaskDetailsModal(false);
+                              handleEditTask(selectedTaskForView);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="outline-danger" 
+                            size="sm"
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this task?')) {
+                                handleDeleteTask(selectedTaskForView.id);
+                                setShowTaskDetailsModal(false);
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <h6 className="text-muted">Project</h6>
+                        <p>{selectedTaskForView.project?.project_name || selectedTaskForView.project?.title || 'No Project'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Assigned To</h6>
+                        <p>{selectedTaskForView.assigned_to?.name || 'Unassigned'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Priority</h6>
+                        <p>{getTaskPriorityBadge(selectedTaskForView.priority)}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Status</h6>
+                        <p>{getTaskStatusBadge(selectedTaskForView.status)}</p>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <h6 className="text-muted">Deadline</h6>
+                        <p>{selectedTaskForView.deadline ? formatDeadline(selectedTaskForView.deadline) : 'No deadline set'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Budget</h6>
+                        <p>{selectedTaskForView.budget ? `₱${parseFloat(selectedTaskForView.budget).toFixed(2)}` : 'No budget set'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Time Spent</h6>
+                        <p>{selectedTaskForView.time_spent ? `${selectedTaskForView.time_spent} secs` : 'No time recorded'}</p>
+                      </div>
+                      <div className="mb-3">
+                        <h6 className="text-muted">Time Range</h6>
+                        <p className="mb-1">
+                          <small>Start: </small>
+                          {selectedTaskForView.start_time ? new Date(selectedTaskForView.start_time).toLocaleString() : 'Not started'}
+                        </p>
+                        <p className="mb-0">
+                          <small>End: </small>
+                          {selectedTaskForView.end_time ? new Date(selectedTaskForView.end_time).toLocaleString() : 'Not ended'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className="tab-pane fade"
+                  id="comments"
+                  role="tabpanel"
+                  aria-labelledby="comments-tab"
+                >
+                  <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '15px' }}>
+                    {comments && comments.length > 0 ? (
+                      comments.map((comment, index) => {
+                        if (!comment) return null;
+                        
+                        const commentUser = comment.user || { name: 'Unknown User' };
+                        const isCurrentUser = comment.user_id === user?.id;
+                        
+                        return (
+                          <div key={comment.id || `comment-${index}`} className="mb-3 p-2 bg-light rounded">
+                            <div className="d-flex justify-content-between align-items-start">
+                              <div>
+                                <strong className="d-block">
+                                  {commentUser.name}
+                                </strong>
+                                <small className="text-muted">
+                                  {comment.created_at ? new Date(comment.created_at).toLocaleString() : 'Unknown date'}
+                                </small>
+                              </div>
+                              {isCurrentUser && (
+                                <Button 
+                                  size="sm" 
+                                  variant="link" 
+                                  className="text-danger p-0"
+                                  onClick={() => handleDeleteComment(comment.id)}
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </Button>
+                              )}
+                            </div>
+                            <div className="mt-2">{comment.comment || 'No comment content'}</div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-muted text-center py-3">No comments yet. Be the first to comment!</div>
+                    )}
+                  </div>
+                  <Form.Group className="mt-3">
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Write a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="mb-2"
+                    />
+                    <div className="d-flex justify-content-end">
+                      <Button 
+                        variant="primary" 
+                        size="sm" 
+                        onClick={postComment}
+                        disabled={!newComment.trim()}
+                      >
+                        Post Comment
+                      </Button>
+                    </div>
+                  </Form.Group>
+                </div>
+              </div>
             </>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={closeTaskDetailsModal}>Close</Button>
+          <Button variant="secondary" onClick={closeTaskDetailsModal}>
+            Close
+          </Button>
         </Modal.Footer>
       </Modal>
 
       <ProjectModal show={showProjectModal} handleClose={() => setShowProjectModal(false)} project={selectedProjectForView} readOnly />
-
-      {/* Comment Modal */}
-      <Modal show={showCommentsModal} onHide={closeCommentsModal}>
-        <Modal.Header closeButton><Modal.Title>Comments for: {selectedTaskForComments?.title}</Modal.Title></Modal.Header>
-        <Modal.Body>
-          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            {comments.length ? comments.map((c, idx) => (
-              <div key={idx} className="mb-2 p-2 bg-light rounded">
-                <strong>{c.user?.name || 'User'}:</strong> {c.comment}
-                <div className="text-muted small">{new Date(c.created_at).toLocaleString()}</div>
-                {c.user?.id === user.id && (
-                  <Button size="sm" variant="outline-danger" onClick={() => handleDeleteComment(c.id)}>Delete</Button>
-                  )}
-                  </div>
-                )) : <div className="text-muted">No comments yet.</div>}
-
-          </div>
-          <Form.Group className="mt-3">
-            <Form.Label>Add a Comment</Form.Label>
-            <Form.Control as="textarea" rows={2} value={newComment} onChange={(e) => setNewComment(e.target.value)} />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={closeCommentsModal}>Close</Button>
-          <Button variant="primary" onClick={postComment}>Post</Button>
-        </Modal.Footer>
-      </Modal>
     </Container>
   );
 }

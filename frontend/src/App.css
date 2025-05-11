@@ -48,9 +48,116 @@ a:hover {
   color: var(--dark-color);
 }
 
-/* Global Container */
-.container-fluid {
-  padding: var(--padding-base);
+/* Layout */
+.main-content {
+  margin-left: 250px;
+  padding: 20px;
+  width: calc(100% - 250px);
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  background-color: #4e73df;
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.75rem 1rem;
+  margin: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .nav-link i {
+  width: 20px;
+  text-align: center;
+  margin-right: 0.5rem;
+}
+
+/* Main content area */
+.content-wrapper {
+  margin-left: 250px;
+  padding: 1.5rem;
+  transition: all 0.3s;
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 0.35rem;
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  background-color: #f8f9fc;
+  border-bottom: 1px solid #e3e6f0;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.35rem;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #4e73df;
+  border-color: #4e73df;
+}
+
+.btn-primary:hover {
+  background-color: #2e59d9;
+  border-color: #2653d4;
+}
+
+/* Tables */
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: #5a5c69;
+  background-color: #f8f9fc;
+  border-bottom: 1px solid #e3e6f0;
+}
+
+/* Forms */
+.form-control {
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.form-control:focus {
+  border-color: #bac8f3;
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
 }
 
 /* Header Styles */
@@ -234,6 +341,3430 @@ a:hover {
   font-size: 0.8rem;      
   border-radius: 0.25rem;   
   margin-top: 0;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
+}
+
+/* Outline Buttons */
+.btn-view-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-view-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Outline Buttons */
+.btn-total-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.25rem 0.5rem;    
+  font-size: 0.8rem;          
+  border-radius: 0.25rem;     
+  margin-right: 0.5rem;       
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-total-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Similarly for edit & delete */
+.btn-edit-outline {
+  background: transparent;
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-edit-outline:hover {
+  background: var(--warning-color);
+  color: #fff;
+}
+
+.btn-delete-outline {
+  background: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-outline:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+/* Style for all nav links in the sidebar */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 15px;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+}
+
+/* Style for the active nav link */
+.sidebar .nav-link.active {
+  background-color: var(--purp-color);
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5)
+}
+
+/* Role and Name */
+.mb-4.text-center.small{
+margin-top: 1rem;
+}
+
+/* Logout */
+.d-flex.align-items-center.btn.btn-outline-light {
+  border: none;
+}
+
+.d-flex.align-items-center.btn.btn-outline-light:hover {
+  background-color: var(--purp-color);
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.5);
+  border: none;
 }
 
 /* Outline Buttons */

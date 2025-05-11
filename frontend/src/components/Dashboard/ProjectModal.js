@@ -43,7 +43,14 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Prevent changing status for new projects
+    if (name === 'status' && !project) {
+      return;
+    }
+    
+    setFormData({ ...formData, [name]: value });
   };
 
   const validateForm = () => {
@@ -53,7 +60,7 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
       setBudgetError('Please enter a valid budget greater than 0.');
       return false;
     }
-    setBudgetError('');  // Clear error if valid
+    setBudgetError('');  // Clear error if valid 
     return true;
   };
 
@@ -70,6 +77,14 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
       budget: parseFloat(formData.budget) || 0, // Ensure budget is a number
       actual_expenditure: parseFloat(formData.actual_expenditure) || 0, // Optional: Ensure actual_expenditure is a number if provided
     };
+    
+    // Only include status when updating an existing project
+    if (project) {
+      projectData.status = formData.status;
+    } else {
+      // Remove status for new projects (will be set by the backend)
+      delete projectData.status;
+    }
 
     if (readOnly) {
       onClose();
@@ -180,14 +195,19 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
           </Form.Group>
           <Form.Group controlId="status" className="mb-3">
             <Form.Label>Status</Form.Label>
-            {readOnly ? (
-              <div>{getStatusBadge(formData.status)}</div>
-            ) : (
-              <Form.Control as="select" name="status" value={formData.status} onChange={handleChange}>
-                <option value="To Do">To Do</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Done">Done</option>
-              </Form.Control>
+            <Form.Select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              required
+              disabled={readOnly || !project} // Disable for new projects or when in read-only mode
+            >
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+            </Form.Select>
+            {!project && !readOnly && (
+              <Form.Text className="text-muted">Status can be updated after creating the project.</Form.Text>
             )}
           </Form.Group>
           <div className="d-flex justify-content-end gap-2 mt-3">
