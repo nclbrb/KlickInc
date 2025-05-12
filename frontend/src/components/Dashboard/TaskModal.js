@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Button, Form, ListGroup, ProgressBar, Alert, Badge, Spinner } from 'react-bootstrap';
-// Removed direct axios import, will use functions from api.js
+import { Modal, Button, Form, ListGroup, ProgressBar, Alert, Badge, Spinner, Row, Col } from 'react-bootstrap'; // Added Row, Col
 import { uploadTaskFile, getTaskFiles, deleteTaskFile } from '../../api'; // Adjust path if api.js is elsewhere
+import api from '../../api'; // Import the main api instance for task saving
 
 // Assuming currentUser is passed as a prop or available from context for potential UI logic
 function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUser }) {
@@ -31,16 +31,9 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
 
   const fetchUsers = useCallback(async () => {
     try {
-      const token = localStorage.getItem('access_token'); // Still needed for direct axios calls if any remain
-      // This should ideally also use a function from api.js if you centralize all calls
-      const response = await fetch('http://127.0.0.1:8000/api/users', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-      const teamMembers = data.filter(user => user.role === 'team_member');
+      // Using the global api instance now
+      const response = await api.get('/users'); // Assuming /users endpoint exists and returns all users
+      const teamMembers = response.data.filter(user => user.role === 'team_member');
       setUsers(teamMembers);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -157,7 +150,6 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
   };
 
   const validateBudget = () => {
-    // ... (keep existing budget validation)
     const project = projects.find(p => p.id === formData.project_id);
     const taskBudget = parseFloat(formData.budget);
 
@@ -174,26 +166,29 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
     if (!validateBudget()) return;
 
     const taskDataPayload = { ...formData };
-    // Ensure budget is a number or null
     taskDataPayload.budget = taskDataPayload.budget ? parseFloat(taskDataPayload.budget) : null;
 
 
     try {
       let currentTaskId;
+      let responseData; // To store response from task creation/update
+
       if (task && task.id) { // Editing existing task
-        // Use direct axios or create a specific updateTask API function
-        const token = localStorage.getItem('access_token');
-        await axios.put(`http://127.0.0.1:8000/api/tasks/${task.id}`, taskDataPayload, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        });
+        // Using the global api instance now
+        const response = await api.put(`/tasks/${task.id}`, taskDataPayload);
+        responseData = response.data;
         currentTaskId = task.id;
       } else { // Creating new task
-        // Use direct axios or create a specific createTask API function
-        const token = localStorage.getItem('access_token');
-        const response = await axios.post('http://127.0.0.1:8000/api/tasks', taskDataPayload, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        });
-        currentTaskId = response.data.id; // Assuming backend returns the created task with its ID
+        // Using the global api instance now
+        const response = await api.post('/tasks', taskDataPayload);
+        responseData = response.data;
+        // Ensure responseData and responseData.id exist before assigning
+        currentTaskId = responseData && responseData.id ? responseData.id : (responseData.task && responseData.task.id ? responseData.task.id : null);
+        if (!currentTaskId) {
+            console.error("Failed to get task ID from creation response:", responseData);
+            alert("Error: Could not determine task ID after creation.");
+            return;
+        }
       }
 
       // After task is saved, upload the file if selected
@@ -202,11 +197,10 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
       }
 
       refreshTasks();
-      onClose(); // Call onClose which now also resets file states
+      onClose();
     } catch (error) {
       console.error('Error saving task:', error);
-      // More specific error handling for task save
-      const taskSaveError = error.response?.data?.message || 
+      const taskSaveError = error.response?.data?.message ||
                             (error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join(' ') : 'Error saving task');
       alert(taskSaveError);
     }
@@ -219,7 +213,6 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
       </Modal.Header>
       <Modal.Body className="modal-body">
         <Form onSubmit={handleSubmit} className="mt-3">
-          {/* ... (keep existing form groups for project, title, description, etc.) ... */}
           <Form.Group className="mb-3" controlId="project">
             <Form.Label>Project</Form.Label>
             <Form.Select name="project_id" value={formData.project_id} onChange={handleChange} required>
@@ -235,8 +228,8 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
             <Form.Label>Description</Form.Label>
             <Form.Control as="textarea" rows={3} name="description" value={formData.description} onChange={handleChange}/>
           </Form.Group>
-          <Row>
-            <Col md={6}>
+          <Row> {/* Fixed: Row was not defined */}
+            <Col md={6}> {/* Fixed: Col was not defined */}
               <Form.Group className="mb-3" controlId="status">
                 <Form.Label>Status</Form.Label>
                 <Form.Select name="status" value={formData.status} onChange={handleChange} required disabled={!task} >
@@ -247,7 +240,7 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
                 {!task && <Form.Text className="text-muted">Status can be updated after creating the task.</Form.Text>}
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col md={6}> {/* Fixed: Col was not defined */}
               <Form.Group className="mb-3" controlId="priority">
                 <Form.Label>Priority</Form.Label>
                 <Form.Select name="priority" value={formData.priority} onChange={handleChange} required>
@@ -258,8 +251,8 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
               </Form.Group>
             </Col>
           </Row>
-          <Row>
-            <Col md={6}>
+          <Row> {/* Fixed: Row was not defined */}
+            <Col md={6}> {/* Fixed: Col was not defined */}
               <Form.Group className="mb-3" controlId="assigned_to">
                 <Form.Label>Assign To</Form.Label>
                 <Form.Select name="assigned_to" value={formData.assigned_to} onChange={handleChange} required>
@@ -268,7 +261,7 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
                 </Form.Select>
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col md={6}> {/* Fixed: Col was not defined */}
               <Form.Group className="mb-3" controlId="deadline">
                 <Form.Label>Deadline</Form.Label>
                 <Form.Control type="date" name="deadline" value={formData.deadline} onChange={handleChange} />
@@ -281,7 +274,6 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
             {budgetError && <div className="text-danger mt-1 small">{budgetError}</div>}
           </Form.Group>
 
-          {/* --- NEW FILE UPLOAD SECTION --- */}
           <hr />
           <h5>Attachments</h5>
           <Form.Group controlId="formFile" className="mb-3">
@@ -295,7 +287,6 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
           )}
           {fileError && <Alert variant="danger" className="mt-2 small">{fileError}</Alert>}
           
-          {/* Display existing files */}
           <h6>Existing Files:</h6>
           {filesLoading ? (
             <div className="text-center my-3">
@@ -329,7 +320,6 @@ function TaskModal({ show, handleClose, task, refreshTasks, projects, currentUse
           ) : (
             <p className="text-muted small">No files attached to this task yet.</p>
           )}
-          {/* --- END OF NEW FILE UPLOAD SECTION --- */}
           <hr />
           <div className="mt-3 d-flex justify-content-end">
             <Button variant="secondary" onClick={onClose} className="me-2" disabled={isUploading}>

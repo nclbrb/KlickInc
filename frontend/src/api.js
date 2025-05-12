@@ -69,6 +69,15 @@ export const deleteTaskFile = (fileId) => {
   return api.delete(`/files/${fileId}`);
 };
 
+
+/**
+ * Fetches all files associated with tasks within a specific project.
+ * @param {string|number} projectId - The ID of the project.
+ * @returns {Promise<object>} - The API response containing the list of files.
+ */
+export const getProjectFiles = (projectId) => {
+  return api.get(`/projects/${projectId}/files`);
+};
 // --- END OF NEW FILE MANAGEMENT API FUNCTIONS ---
 
 export default api;

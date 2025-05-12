@@ -68,6 +68,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Delete a specific file
     Route::delete('/files/{file}', [FileController::class, 'deleteFile'])->name('files.destroy');
+
+    // Get all files for a specific project (via its tasks)
+    // Route name example: projects.files.index
+    Route::get('/projects/{project}/files', [FileController::class, 'getForProject'])->name('projects.files.index');
     // --------------------------------------------------------------------
 
 });

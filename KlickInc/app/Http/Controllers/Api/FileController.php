@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\File;
+use App\Models\Project; // Ensure this is imported
 use App\Models\Task;
-// use App\Models\Project; // Keep for future use if attaching files to projects
+use App\Models\User; // Ensure this is imported
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,30 +15,31 @@ use Illuminate\Support\Facades\Validator;
 class FileController extends Controller
 {
     /**
-     * Helper function to check if a user can access/manage a task's files.
+     * Helper function to check if a user has rights to access resources related to a specific project.
+     * A user has access if they are the Project Manager or are assigned to any task within that project.
      *
-     * @param \App\Models\User $user
-     * @param Task $task
+     * @param User $user
+     * @param Project $project
      * @return bool
      */
-    private function canUserAccessTaskFiles($user, Task $task): bool
+    private function canUserAccessProjectResources(User $user, Project $project): bool
     {
-        if (!$user || !$task) {
+        if (!$user || !$project) {
             return false;
         }
 
-        // Project Manager of the task's project
-        if ($user->role === 'project_manager' && $task->project && $task->project->user_id === $user->id) {
+        // Rule 1: Project Manager of the project
+        if ($user->role === 'project_manager' && $project->user_id === $user->id) {
             return true;
         }
 
-        // User assigned to the task
-        if ($task->assigned_to === $user->id) {
+        // Rule 2: User is assigned to at least one task within this project
+        $isAssignedToTaskInProject = Task::where('project_id', $project->id)
+                                         ->where('assigned_to', $user->id)
+                                         ->exists();
+        if ($isAssignedToTaskInProject) {
             return true;
         }
-        
-        // Add other conditions if team members of the same project (not just assignee) should access
-        // For example, if $user is part of $task->project->teamMembers() (if such a relationship exists)
 
         return false;
     }
@@ -53,8 +55,9 @@ class FileController extends Controller
     {
         $user = Auth::user();
 
-        // Authorization: PM of the project or assignee of the task can upload.
-        if (!$this->canUserAccessTaskFiles($user, $task)) {
+        // Authorization: User must have access to the task's project resources.
+        // (This implicitly covers PM and task assignees, and other project members)
+        if (!$task->project || !$this->canUserAccessProjectResources($user, $task->project)) {
             return response()->json(['message' => 'Unauthorized to upload files for this task.'], 403);
         }
 
@@ -101,13 +104,9 @@ class FileController extends Controller
     {
         $user = Auth::user();
 
-        // Authorization: PM of the project or assignee of the task can view files.
-        if (!$this->canUserAccessTaskFiles($user, $task)) {
-             // Allow uploader to see files they uploaded even if not assignee/PM (edge case, usually covered by above)
-            $isUploaderForAnyFile = $task->files()->where('user_id', $user->id)->exists();
-            if (!$isUploaderForAnyFile) {
-                 return response()->json(['message' => 'Unauthorized to view files for this task.'], 403);
-            }
+        // Authorization: User must have access to the task's project resources.
+        if (!$task->project || !$this->canUserAccessProjectResources($user, $task->project)) {
+             return response()->json(['message' => 'Unauthorized to view files for this task.'], 403);
         }
 
         $files = $task->files()->with('user:id,username')->latest()->get();
@@ -125,6 +124,44 @@ class FileController extends Controller
     }
 
     /**
+     * Get all files associated with tasks within a specific project.
+     *
+     * @param Project $project
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getForProject(Project $project)
+    {
+        $user = Auth::user();
+
+        // Authorization: User must have access to the project resources.
+        if (!$this->canUserAccessProjectResources($user, $project)) {
+            return response()->json(['message' => 'Unauthorized to view files for this project.'], 403);
+        }
+
+        $files = File::whereHasMorph('fileable', [Task::class], function ($query) use ($project) {
+            $query->where('project_id', $project->id);
+        })->with('user:id,username', 'fileable:id,title,project_id')
+          ->latest()
+          ->get();
+
+        $files->transform(function ($file) {
+            if ($file->disk && $file->stored_filename) {
+                $file->url = Storage::disk($file->disk)->url($file->stored_filename);
+            } else {
+                $file->url = null;
+            }
+            if ($file->fileable_type === Task::class && $file->fileable) {
+                $file->task_title = $file->fileable->title;
+                $file->task_id = $file->fileable->id;
+            }
+            return $file;
+        });
+
+        return response()->json($files);
+    }
+
+
+    /**
      * Download a specific file.
      *
      * @param File $file The File model instance (route model binding)
@@ -139,17 +176,15 @@ class FileController extends Controller
         if ($user->id === $file->user_id) {
             $canDownload = true;
         }
-        // Rule 2: If the file is attached to a Task, check task access permissions.
+        // Rule 2: If the file is attached to a Task, check project resource access for that task's project.
         else if ($file->fileable_type === Task::class && $file->fileable instanceof Task) {
             /** @var Task $task */
             $task = $file->fileable;
-            if ($this->canUserAccessTaskFiles($user, $task)) {
+            if ($task->project && $this->canUserAccessProjectResources($user, $task->project)) {
                 $canDownload = true;
             }
         }
-        // Future: Add similar logic if files are directly attached to Projects
-        // else if ($file->fileable_type === Project::class && $file->fileable instanceof Project) { ... }
-
+        // Future: Add similar logic if files are directly attached to Projects and have different access rules.
 
         if (!$canDownload) {
             return response()->json(['message' => 'Unauthorized to download this file.'], 403);
@@ -187,7 +222,6 @@ class FileController extends Controller
                 }
             }
             // Future: Add similar logic if files are directly attached to Projects
-            // else if ($file->fileable_type === Project::class && $file->fileable instanceof Project) { ... }
         }
 
         if (!$canDelete) {
