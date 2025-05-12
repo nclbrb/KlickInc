@@ -4,7 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation
+  // useLocation // Not used in App.js directly, but Layout uses it. Keep if Layout is part of App.js file.
 } from 'react-router-dom';
 import Login from './components/Login/Login';
 import Register from './components/Register/Register';
@@ -14,61 +14,39 @@ import TasksPage from './components/Dashboard/TasksPage';
 import ProjectsPage from './components/Dashboard/ProjectsPage';
 import FilePage from './components/Dashboard/FilePage';
 import ActivityFeedPage from './components/Dashboard/ActivityFeed';
-import NavBar from './components/Dashboard/NavBar';
+// NavBar is likely used within the page components like FilePage, ProjectsPage etc.
+// So direct import here might not be needed if those pages handle their own NavBar.
+// However, if you have a global Layout component defined elsewhere that uses NavBar, that's fine.
+// import NavBar from './components/Dashboard/NavBar';
 import api, { setAuthToken } from './api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
 
-
-// Layout component that includes the NavBar and content
-const Layout = ({ children, user, onLogout }) => {
-  const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-
-  if (isAuthPage) {
-    return <div>{children}</div>;
-  }
-
-  return (
-    <div className="d-flex" style={{ minHeight: '100vh' }}>
-      {/* Sidebar */}
-      <div style={{ width: '250px', backgroundColor: '#4e73df', color: 'white' }}>
-        <NavBar user={user} onLogout={onLogout} />
-      </div>
-      
-      {/* Main Content */}
-      <div className="flex-grow-1" style={{ paddingLeft: '20px' }}>
-
-        
-        {/* Page Content */}
-        <div className="p-4">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Protected Route Wrapper
-const ProtectedRoute = ({ user, children }) => {
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-};
+// Note: The Layout component was defined in the prompt but not used in the Routes directly.
+// If your page components (FilePage, ProjectsPage, etc.) render their own NavBar,
+// they need the onLogout prop. If you intended a global Layout wrapper around routes,
+// that would be a different structure. The fix below assumes page components handle their NavBar.
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  console.log('App rendering, user:', user, 'loading:', loading);
+
+  // console.log('App rendering, user:', user, 'loading:', loading); // Keep for debugging if needed
+
+  // Define handleLogout here so it's stable and can be passed down
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
+    setAuthToken(null);
+    // No need to navigate here, ProtectedRoute will handle it
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem('access_token');
     if (storedToken) {
       setAuthToken(storedToken);
-      // Fetch current user info from the API
       api.get('/user')
         .then(response => {
           setUser(response.data);
@@ -76,15 +54,15 @@ function App() {
         })
         .catch(error => {
           console.error('Error fetching user info:', error);
-          handleLogout();
+          // Call the stable handleLogout function
+          handleLogout(); // This will clear state and token
           setLoading(false);
         });
     } else {
       setLoading(false);
     }
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
-  // After a successful login
   const handleLogin = (userData, token) => {
     if (userData && token) {
       setUser(userData);
@@ -96,111 +74,92 @@ function App() {
     }
   };
 
-  // On logout
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('access_token');
-    setAuthToken(null);
-  };
 
   if (loading) {
-    console.log('App is loading...');
+    // console.log('App is loading...'); // Keep for debugging
     return <div>Loading...</div>;
   }
 
-
-
   return (
+    <Router>
+      <div className="App">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={
+            user ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
+          } />
+          <Route path="/register" element={
+            user ? <Navigate to="/dashboard" replace /> : <Register />
+          } />
 
-      <Router>
-        <div className="App">
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={
-              user ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />
-            } />
-            <Route path="/register" element={
-              user ? <Navigate to="/" replace /> : <Register />
-            } />
-            
-        {/* Unified Dashboard Route */}
-        <Route
-          path="/dashboard"
-          element={
-            user ? (
-              user.role === 'project_manager' ? (
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              user ? (
+                user.role === 'project_manager' ? (
                   <DashboardProjectManager user={user} onLogout={handleLogout} />
                 ) : (
                   <DashboardTeamMember user={user} onLogout={handleLogout} />
                 )
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Projects Page */}
-        <Route
-          path="/projects"
-          element={
-            user ? (
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              user ? (
                 <ProjectsPage user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Tasks Page */}
-        <Route
-          path="/tasks"
-          element={
-            user ? (
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              user ? (
                 <TasksPage user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/files"
+            element={
+              user ? (
+                // Pass the onLogout prop here
+                <FilePage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/activity-feed"
+            element={
+              user ? (
+                // Assuming ActivityFeedPage also uses NavBar and needs onLogout
+                <ActivityFeedPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
 
-        {/* File Page Route */}
-        <Route
-          path="/files"
-          element={
-            user ? (
-              <FilePage user={user} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Activity Feed Route */}
-        <Route
-          path="/activity-feed"
-          element={
-            user ? (
-              <ActivityFeedPage user={user} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Fallback Route */}
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to={user ? '/dashboard' : '/login'}
-            />
-          }
-        />
-          </Routes>
-        </div>
-      </Router>
-
+          {/* Fallback Route - Redirect to dashboard if logged in, else to login */}
+          <Route
+            path="*"
+            element={
+              <Navigate to={user ? '/dashboard' : '/login'} replace />
+            }
+          />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
