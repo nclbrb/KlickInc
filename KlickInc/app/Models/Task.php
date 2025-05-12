@@ -4,6 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\File;
 
 class Task extends Model
 {
@@ -48,5 +49,9 @@ class Task extends Model
                 $query->select('id', 'username as name');
             }])
             ->latest();
+    }
+        public function files()
+    {
+        return $this->morphMany(File::class, 'fileable');
     }
 }

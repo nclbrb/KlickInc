@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+App\Models\File;
 
 class Comment extends Model
 {
@@ -27,4 +28,8 @@ class Comment extends Model
         return $this->belongsTo(User::class, 'user_id')
             ->select(['id', 'username as name']);
     }
+    public function files()
+{
+    return $this->morphMany(File::class, 'fileable');
+}
 }

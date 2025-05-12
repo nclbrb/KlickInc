@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\File;
 
 class Project extends Model
 {
@@ -47,4 +48,8 @@ class Project extends Model
         // Ensure budget and actual_expenditure are numbers, avoid null or negative values
         return max(0, $this->budget - $this->actual_expenditure);
     }
+    public function files()
+{
+    return $this->morphMany(File::class, 'fileable');
+}
 }
