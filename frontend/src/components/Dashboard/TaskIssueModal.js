@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import axios from 'axios';
 
-function ReportIssueModal({ show, onHide, project, onReportSubmit }) {
+function TaskIssueModal({ show, onHide, task, onReportSubmit }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,9 +26,9 @@ function ReportIssueModal({ show, onHide, project, onReportSubmit }) {
         {
           title,
           description,
-          project_id: project.id,
-          type: 'project',
-          amount: amount ? parseFloat(amount) : null
+          project_id: task.project_id,
+          task_id: task.id,
+          type: 'task'
         },
         {
           headers: {
@@ -39,14 +38,22 @@ function ReportIssueModal({ show, onHide, project, onReportSubmit }) {
         }
       );
 
-      // Clear form and close modal
       setTitle('');
       setDescription('');
-      setAmount('');
       setError('');
-      
-      // Call onReportSubmit to trigger the transition to project details
+      // Notify parent components that a new issue was created
       onReportSubmit();
+      
+      // Refresh the project modal if it's open
+      const projectModalElement = document.querySelector('.modal.show');
+      if (projectModalElement) {
+        const projectId = task.project_id;
+        if (projectId) {
+          // Trigger a custom event that ProjectModal will listen for
+          const refreshEvent = new CustomEvent('refreshProjectIssues', { detail: { projectId } });
+          projectModalElement.dispatchEvent(refreshEvent);
+        }
+      }
     } catch (error) {
       console.error('Error reporting issue:', error);
       setError(error.response?.data?.message || 'Error reporting issue. Please try again.');
@@ -58,7 +65,6 @@ function ReportIssueModal({ show, onHide, project, onReportSubmit }) {
   const handleClose = () => {
     setTitle('');
     setDescription('');
-    setAmount('');
     setError('');
     onHide();
   };
@@ -66,7 +72,7 @@ function ReportIssueModal({ show, onHide, project, onReportSubmit }) {
   return (
     <Modal show={show} onHide={handleClose} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Report Issue for {project?.project_name}</Modal.Title>
+        <Modal.Title>Report Issue for Task: {task?.title}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
@@ -93,18 +99,6 @@ function ReportIssueModal({ show, onHide, project, onReportSubmit }) {
             />
           </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Amount</Form.Label>
-            <Form.Control
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="Enter amount (optional)"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </Form.Group>
-
           {error && <Alert variant="danger">{error}</Alert>}
 
           <div className="d-flex justify-content-end gap-2">
@@ -121,4 +115,4 @@ function ReportIssueModal({ show, onHide, project, onReportSubmit }) {
   );
 }
 
-export default ReportIssueModal;
+export default TaskIssueModal; 

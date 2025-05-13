@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Table, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Table, Modal, Form } from 'react-bootstrap';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProjectModal from './ProjectModal';
@@ -30,7 +31,11 @@ function ProjectsPage({ user, onLogout }) {
   const [showViewProjectModal, setShowViewProjectModal] = useState(false);
   const [projectToView, setProjectToView] = useState(null);
   
-
+  // Add new state for issues
+  const [projectIssues, setProjectIssues] = useState([]);
+  const [isLoadingIssues, setIsLoadingIssues] = useState(false);
+  const [showActivitiesModal, setShowActivitiesModal] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState(null);
 
   useEffect(() => {
     fetchProjects();
@@ -161,6 +166,7 @@ function ProjectsPage({ user, onLogout }) {
   const handleViewProject = (project) => {
     setProjectToView(project);
     setShowViewProjectModal(true);
+    fetchProjectIssues(project.id);
   };
   
 
@@ -376,10 +382,152 @@ function ProjectsPage({ user, onLogout }) {
     setShowReportIssueModal(true);
   };
 
-  // Handle report issue submission
+  // Add new helper function for issue type badge
+  const getIssueTypeBadge = (type) => {
+    const issueType = type || 'task';
+    return <span className={`badge bg-${issueType.toLowerCase() === 'task' ? 'info' : 'warning'}`}>{issueType}</span>;
+  };
+
+  // Update fetchProjectIssues to get both project and task issues with task details
+  const fetchProjectIssues = async (projectId) => {
+    setIsLoadingIssues(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      // First get all tasks for this project to have their amounts
+      const tasksResponse = await axios.get(`http://127.0.0.1:8000/api/tasks?project_id=${projectId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      // Create a map of task details by ID for quick lookup
+      const taskMap = tasksResponse.data.reduce((acc, task) => {
+        acc[task.id] = task;
+        return acc;
+      }, {});
+
+      // Now get the issues
+      const response = await axios.get(`http://127.0.0.1:8000/api/issues?project_id=${projectId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      // Map the issues and include full task data
+      const issuesWithTasks = response.data.map(issue => {
+        if (issue.task_id && taskMap[issue.task_id]) {
+          return { ...issue, task: taskMap[issue.task_id] };
+        }
+        return issue;
+      });
+
+      setProjectIssues(issuesWithTasks);
+    } catch (error) {
+      console.error('Error fetching issues:', error);
+    } finally {
+      setIsLoadingIssues(false);
+    }
+  };
+
+  // Update handleReportIssueSubmit to show project details after submission
   const handleReportIssueSubmit = () => {
     setShowReportIssueModal(false);
-    fetchProjects();
+    if (projectToView) {
+      fetchProjectIssues(projectToView.id);
+    }
+  };
+
+  const handleAmountUpdate = async (issueId, amount) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const issue = projectIssues.find(i => i.id === issueId);
+      
+      if (!issue) return;
+
+      if (issue.type === 'task' && issue.task_id) {
+        // Update task's budget
+        await axios.put(
+          `http://127.0.0.1:8000/api/tasks/${issue.task_id}`,
+          { budget: amount ? parseFloat(amount) : null },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        // Fetch updated task data
+        const taskResponse = await axios.get(`http://127.0.0.1:8000/api/tasks/${issue.task_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }
+        });
+
+        // Update the local state with full task data
+        setProjectIssues(prevIssues =>
+          prevIssues.map(i => 
+            i.id === issueId
+              ? { ...i, task: taskResponse.data }
+              : i
+          )
+        );
+      } else {
+        // Update issue amount
+        await axios.put(
+          `http://127.0.0.1:8000/api/issues/${issueId}`,
+          { amount: amount ? parseFloat(amount) : null },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        // Update the local state
+        setProjectIssues(prevIssues =>
+          prevIssues.map(i =>
+            i.id === issueId
+              ? { ...i, amount: amount ? parseFloat(amount) : null }
+              : i
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating amount:', error);
+      alert('Error updating amount. Please try again.');
+    }
+  };
+
+  const handleViewActivities = (issue) => {
+    setSelectedIssue(issue);
+    setShowActivitiesModal(true);
+  };
+
+  // Helper function to get issue status badge
+  const getIssueStatusBadge = (status) => {
+    let variant = 'secondary';
+    switch (status) {
+      case 'open':
+        variant = 'danger';
+        break;
+      case 'in_progress':
+        variant = 'warning';
+        break;
+      case 'resolved':
+        variant = 'success';
+        break;
+      case 'closed':
+        variant = 'secondary';
+        break;
+      default:
+        variant = 'secondary';
+    }
+    return <span className={`badge bg-${variant}`}>{status.replace('_', ' ').toUpperCase()}</span>;
   };
 
   return (
@@ -583,7 +731,7 @@ function ProjectsPage({ user, onLogout }) {
         refreshProjects={fetchProjects}
       />
 
-      {/* View Project Modal */}
+      {/* Update View Project Modal */}
       <Modal show={showViewProjectModal} onHide={() => setShowViewProjectModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Project Details</Modal.Title>
@@ -598,7 +746,109 @@ function ProjectsPage({ user, onLogout }) {
               <p><strong>Budget:</strong> {formatBudget(projectToView.budget)}</p>
               <p><strong>Start Date:</strong> {new Date(projectToView.start_date).toLocaleDateString()}</p>
               <p><strong>End Date:</strong> {projectToView.end_date ? new Date(projectToView.end_date).toLocaleDateString() : 'N/A'}</p>
-              <p><strong>Actual Expenditure:</strong> {formatBudget(projectToView.actual_expenditure)}</p>
+              <p><strong>Actual Expenditure: {projectIssues
+                        .filter(issue => issue.type === 'task' && issue.task?.budget)
+                        .reduce((total, issue) => total + parseFloat(issue.task.budget || 0), 0)
+                        .toFixed(2)}</strong></p>
+              
+
+              {/* Issues Section */}
+              <div className="mt-4">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h5>Project Issues</h5>
+                </div>
+                {isLoadingIssues ? (
+                  <div className="text-center">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                ) : projectIssues.length > 0 ? (
+                  <div className="table-responsive">
+                    <Table hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Title</th>
+                          <th>Description</th>
+                          <th>Type</th>
+                          <th>Amount</th>
+                          <th>Status</th>
+                          <th>Reported By</th>
+                          <th>Date</th>
+                          {user.role === 'team_manager' && <th>Actions</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projectIssues.map(issue => (
+                          <tr key={issue.id}>
+                            <td>{issue.title}</td>
+                            <td>
+                              <span
+                                title={issue.description}
+                                style={{ 
+                                  cursor: 'pointer',
+                                  display: 'block',
+                                  maxWidth: '300px',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis'
+                                }}
+                              >
+                                {issue.description}
+                              </span>
+                            </td>
+                            <td>{getIssueTypeBadge(issue.type)}</td>
+                            <td>
+                              {user.role === 'team_manager' ? (
+                                <Form.Control
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  value={issue.type === 'task' ? 
+                                    (issue.task?.budget || '') : 
+                                    (issue.amount || '')}
+                                  onChange={(e) => handleAmountUpdate(issue.id, e.target.value)}
+                                  size="sm"
+                                  style={{ width: '100px' }}
+                                />
+                              ) : (
+                                issue.type === 'task' ? 
+                                  issue.task?.budget ? 
+                                    `$${parseFloat(issue.task.budget).toFixed(2)}` : 
+                                    'N/A' :
+                                  issue.amount ? 
+                                    `$${parseFloat(issue.amount).toFixed(2)}` : 
+                                    'N/A'
+                              )}
+                            </td>
+                            <td>
+                              {issue.type === 'task' && issue.task ? 
+                                getTaskStatusBadge(issue.task.status) : 
+                                getIssueStatusBadge(issue.status)
+                              }
+                            </td>
+                            <td>{issue.reporter?.username || issue.reporter?.name || 'Unknown'}</td>
+                            <td>{new Date(issue.created_at).toLocaleDateString()}</td>
+                            {user.role === 'team_manager' && (
+                              <td>
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => handleViewActivities(issue)}
+                                >
+                                  View History
+                                </Button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                ) : (
+                  <p className="text-muted">No issues reported for this project.</p>
+                )}
+              </div>
             </div>
           )}
         </Modal.Body>
@@ -640,6 +890,52 @@ function ProjectsPage({ user, onLogout }) {
         project={selectedProjectForIssueReport}
         onReportSubmit={handleReportIssueSubmit}
       />
+
+      {/* Activities Modal */}
+      <Modal
+        show={showActivitiesModal}
+        onHide={() => setShowActivitiesModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Activity Feed</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedIssue?.activities?.length > 0 ? (
+            <div className="activity-feed">
+              {selectedIssue.activities
+                .filter(activity => activity.type === 'amount_updated')
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .map((activity, index) => (
+                  <div key={index} className="activity-item mb-3 p-2 border-bottom">
+                    <div className="d-flex align-items-center mb-1">
+                      <div className="activity-icon me-2">
+                        <i className="fas fa-dollar-sign text-success"></i>
+                      </div>
+                      <div>
+                        <strong>{activity.user?.name || 'Unknown User'}</strong>
+                        <span className="ms-2 badge bg-info">Amount Updated</span>
+                      </div>
+                    </div>
+                    <div className="text-muted ms-4">
+                      Changed from ${activity.changes?.old_amount || '0.00'} to ${activity.changes?.new_amount || '0.00'}
+                    </div>
+                    <small className="text-muted d-block ms-4">
+                      {new Date(activity.created_at).toLocaleString()}
+                    </small>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-muted">No amount update history available.</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowActivitiesModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }

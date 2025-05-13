@@ -1,0 +1,45 @@
+-- Create the database
+CREATE DATABASE dailyhaven_db;
+
+-- Use the created database
+USE dailyhaven_db;
+
+-- Users Table
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL,
+  password VARCHAR(255) NOT NULL
+);
+
+-- Insert data into users table
+-- Ensure string values are enclosed in quotes
+INSERT INTO users (username, password)
+VALUES ('kate', MD5('password'));
+
+-- Products Table
+CREATE TABLE products (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  barcode VARCHAR(255) UNIQUE,
+  description VARCHAR(255), -- Fixed length from 225 to 255 for consistency
+  price DECIMAL(10, 2),
+  quantity INT,
+  category VARCHAR(50)
+);
+
+-- Registered Users Table
+CREATE TABLE Regusers (
+  UserID INT AUTO_INCREMENT PRIMARY KEY, 
+  FullName VARCHAR(255) NOT NULL,
+  EmailAddress VARCHAR(255) NOT NULL UNIQUE,
+  Username VARCHAR(50) NOT NULL UNIQUE, 
+  PasswordH VARCHAR(255) NOT NULL
+);
+
+-- Customer Information Table
+CREATE TABLE CustomerInfo (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  FullName VARCHAR(100) NOT NULL,    
+  Address TEXT NOT NULL,             
+  ZipCode VARCHAR(50) NOT NULL,      
+  PaymentMethod VARCHAR(255) NOT NULL
+);

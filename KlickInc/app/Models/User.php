@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
 use App\Models\Notification;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
     
     protected $table = 'klick_users';
     
@@ -35,7 +37,7 @@ class User extends Authenticatable
      */
     public function notifications()
     {
-        \Log::debug('User::notifications() called', [
+        Log::debug('User::notifications() called', [
             'user_id' => $this->id,
             'user_role' => $this->role,
             'model_class' => get_class($this)
