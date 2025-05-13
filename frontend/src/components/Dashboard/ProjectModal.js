@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Nav, Badge, ListGroup } from 'react-bootstrap';
 import api from '../../api';
 
 function ProjectModal({ show, handleClose, project, refreshProjects, readOnly }) {
@@ -16,9 +16,97 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
 
   const [formData, setFormData] = useState(emptyForm);
   const [budgetError, setBudgetError] = useState('');
+  const [activeTab, setActiveTab] = useState('details');
+  const [files, setFiles] = useState([]);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [issues, setIssues] = useState([]);
+  const [isLoadingIssues, setIsLoadingIssues] = useState(false);
+
+  const fetchProjectIssues = async (projectId) => {
+    setIsLoadingIssues(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await api.get(`/projects/${projectId}/issues`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIssues(response.data);
+    } catch (error) {
+      console.error('Error fetching project issues:', error);
+    } finally {
+      setIsLoadingIssues(false);
+    }
+  };
+
+  // Event listener for refreshing issues
+  useEffect(() => {
+    const modalElement = document.querySelector('.modal.show');
+    if (modalElement) {
+      const handleRefresh = (event) => {
+        const { projectId } = event.detail;
+        if (projectId === project?.id) {
+          fetchProjectIssues(projectId);
+        }
+      };
+
+      modalElement.addEventListener('refreshProjectIssues', handleRefresh);
+      return () => modalElement.removeEventListener('refreshProjectIssues', handleRefresh);
+    }
+  }, [show, project]);
+
+  const fetchProjectFiles = async (projectId) => {
+    setIsLoadingFiles(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await api.get(`/projects/${projectId}/files`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFiles(response.data);
+    } catch (error) {
+      console.error('Error fetching project files:', error);
+    } finally {
+      setIsLoadingFiles(false);
+    }
+  };
+
+  const handleDownload = async (file) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await api.get(`/files/${file.id}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', file.original_name);
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      alert('Error downloading file. Please try again.');
+    }
+  };
 
   useEffect(() => {
     if (show) {
+      // Reset active tab when modal opens
+      setActiveTab('details');
+
+      // Fetch data if project exists
+      if (project?.id) {
+        fetchProjectIssues(project.id);
+        fetchProjectFiles(project.id);
+      }
       if (project) {
         setFormData({
           project_name: project.project_name || '',
@@ -124,7 +212,35 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
         <Modal.Title>{readOnly ? 'View Project' : project ? 'Edit Project' : 'Create Project'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form onSubmit={handleSubmit}>
+        <Nav variant="tabs" className="mb-3">
+          <Nav.Item>
+            <Nav.Link 
+              active={activeTab === 'details'}
+              onClick={() => setActiveTab('details')}
+            >
+              Details
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link 
+              active={activeTab === 'issues'}
+              onClick={() => setActiveTab('issues')}
+            >
+              Issues
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link 
+              active={activeTab === 'files'}
+              onClick={() => setActiveTab('files')}
+            >
+              Files
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+
+        {activeTab === 'details' ? (
+          <Form onSubmit={handleSubmit}>
           <Form.Group controlId="project_name" className="mb-3">
             <Form.Label>Project Name</Form.Label>
             <Form.Control
@@ -222,6 +338,79 @@ function ProjectModal({ show, handleClose, project, refreshProjects, readOnly })
             )}
           </div>
         </Form>
+        ) : activeTab === 'issues' ? (
+          <div className="issues-tab">
+            {isLoadingIssues ? (
+              <div className="text-center py-3">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            ) : issues.length > 0 ? (
+              <ListGroup variant="flush">
+                {issues.map((issue) => (
+                  <ListGroup.Item key={issue.id} className="py-3">
+                    <div className="d-flex justify-content-between align-items-start">
+                      <div>
+                        <h6 className="mb-1">{issue.title}</h6>
+                        <p className="mb-1 text-muted small">{issue.description}</p>
+                        <small className="text-muted">
+                          Reported by: {issue.reporter?.name || 'Unknown'} | 
+                          Task: {issue.task?.title || 'Unknown'} |
+                          {new Date(issue.created_at).toLocaleDateString()}
+                        </small>
+                      </div>
+                      <Badge 
+                        bg={issue.status === 'resolved' ? 'success' : 'warning'}
+                        className="ms-2"
+                      >
+                        {issue.status}
+                      </Badge>
+                    </div>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            ) : (
+              <p className="text-center text-muted py-3">No issues reported for this project.</p>
+            )}
+          </div>
+        ) : activeTab === 'files' ? (
+          <div className="files-tab">
+            {isLoadingFiles ? (
+              <div className="text-center py-3">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            ) : files.length > 0 ? (
+              <ListGroup variant="flush">
+                {files.map((file) => (
+                  <ListGroup.Item key={file.id} className="py-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div>
+                        <h6 className="mb-1">{file.original_name}</h6>
+                        <small className="text-muted">
+                          Task: {file.task?.title || 'Unknown'} | 
+                          Uploaded by: {file.uploader?.name || 'Unknown'} | 
+                          {new Date(file.created_at).toLocaleDateString()}
+                        </small>
+                      </div>
+                      <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        onClick={() => handleDownload(file)}
+                      >
+                        Download
+                      </Button>
+                    </div>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            ) : (
+              <p className="text-center text-muted py-3">No files uploaded for this project.</p>
+            )}
+          </div>
+        ) : null}
       </Modal.Body>
     </Modal>
   );

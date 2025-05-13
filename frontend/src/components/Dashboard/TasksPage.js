@@ -7,6 +7,7 @@ import ProjectModal from './ProjectModal';
 import NavBar from './NavBar';
 import { getTaskFiles, deleteTaskFile } from '../../api'; // Import file API functions
 import api from '../../api'; // Ensure api is imported if not already
+import TaskIssueModal from './TaskIssueModal';
 
 function TasksPage({ user, onLogout }) {
   const navigate = useNavigate();
@@ -34,6 +35,8 @@ function TasksPage({ user, onLogout }) {
   const [viewFileError, setViewFileError] = useState('');
   // --- END OF NEW STATE ---
 
+  const [showIssueModal, setShowIssueModal] = useState(false);
+  const [selectedTaskForIssue, setSelectedTaskForIssue] = useState(null);
 
   // --- Data Fetching ---
   const fetchTasks = useCallback(async () => { // Wrap in useCallback
@@ -425,6 +428,16 @@ function TasksPage({ user, onLogout }) {
     return <span className={`badge bg-${map[status] || 'secondary'}`}>{status ? status.replace('_', ' ').toUpperCase() : 'N/A'}</span>;
   };
 
+  const handleReportIssue = (task) => {
+    setSelectedTaskForIssue(task);
+    setShowIssueModal(true);
+  };
+
+  const handleIssueSubmit = () => {
+    setShowIssueModal(false);
+    fetchTasks(); // Refresh tasks after issue submission
+  };
+
   // --- Render ---
   return (
     <Container fluid className="p-0" style={{ overflowX: 'hidden' }}>
@@ -506,6 +519,15 @@ function TasksPage({ user, onLogout }) {
                              )}
                             {user && user.role === 'project_manager' && task.project && (
                               <Button size="sm" variant="outline-secondary" onClick={() => handleViewProject(task.project)} title="View Project Details">Project</Button>
+                            )}
+                            {user && user.role === 'team_member' && task.assigned_to === user.id && task.status !== 'completed' && (
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleReportIssue(task)}
+                              >
+                                <i className="bi bi-exclamation-triangle"></i> Issue
+                              </Button>
                             )}
                           </div>
                         </td>
@@ -726,6 +748,14 @@ function TasksPage({ user, onLogout }) {
 
       {/* View Project Modal */}
       <ProjectModal show={showProjectModal} handleClose={() => setShowProjectModal(false)} project={selectedProjectForView} readOnly />
+
+      {/* Add TaskIssueModal */}
+      <TaskIssueModal
+        show={showIssueModal}
+        onHide={() => setShowIssueModal(false)}
+        task={selectedTaskForIssue}
+        onReportSubmit={handleIssueSubmit}
+      />
 
     </Container>
   );

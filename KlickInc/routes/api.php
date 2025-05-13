@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\IssueController;
 // use App\Http\Controllers\CommentController; // Already present in your provided context
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Api\FileController; // <-- ADD THIS IMPORT
@@ -73,5 +74,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route name example: projects.files.index
     Route::get('/projects/{project}/files', [FileController::class, 'getForProject'])->name('projects.files.index');
     // --------------------------------------------------------------------
+
+    // Issue Endpoints
+    Route::get('/issues', [IssueController::class, 'index']);
+    Route::post('/issues', [IssueController::class, 'store']);
+    Route::get('/issues/{id}', [IssueController::class, 'show']);
+    Route::put('/issues/{id}', [IssueController::class, 'update']);
+    Route::delete('/issues/{id}', [IssueController::class, 'destroy']);
 
 });
